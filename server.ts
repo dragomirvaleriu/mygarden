@@ -108,7 +108,7 @@ const transporter = nodemailer.createTransport(smtpConfig);
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = 3001;
 
   // Run health check
   await checkFirestoreHealth();

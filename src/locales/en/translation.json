@@ -1067,5 +1067,6 @@
   "Collected This Month": "Collected This Month",
   "Needs Action": "Needs Action",
   "Collect from {{count}} debtors": "Collect from {{count}} debtors",
-  "{{count}} visits today": "{{count}} visits today"
+  "{{count}} visits today": "{{count}} visits today",
+  "New here? Create account": "New here? Create account"
 }

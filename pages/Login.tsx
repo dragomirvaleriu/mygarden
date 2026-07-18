@@ -538,7 +538,7 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
             {!isAlreadyLoggedIn ? (
               <div className="flex flex-col gap-2 pt-4 text-center">
                 <button type="button" onClick={() => { setIsRegister(!isRegister); setError(''); }} className="text-[11px] font-bold text-text-secondary uppercase tracking-wider hover:text-main transition-colors py-2">
-                  {isRegister ? t('Already have an account? Login') : t('New company? Register')}
+                  {isRegister ? t('Already have an account? Login') : (isHomeownerApp ? t('New here? Create account') : t('New company? Register'))}
                 </button>
               </div>
             ) : (
