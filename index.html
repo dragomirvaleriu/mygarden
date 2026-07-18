@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ro" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grădina Mea</title>
+    <meta name="description" content="Aplicația ta personală de îngrijire a grădinii — ghid de gazon, calculatoare de tratamente, jurnal și scanare AI a plantelor.">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" href="/icon.png">
+    <meta name="theme-color" content="#85b022">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root, [data-theme='light'] {
+            --bg-main: #f8f9fa; /* Lighter, cleaner gray (Zinc 50) */
+            --bg-card: #ffffff;
+            --text-main: #09090b; /* Zinc 950 */
+            --text-secondary: #3f3f46; /* Increased contrast (Zinc 700) */
+            --border-color: #e4e4e7; /* Zinc 200 */
+            --accent-color: #f07d00; /* Stihl Orange */
+            --accent-text: #ffffff;
+            --shadow-color: rgba(0,0,0,0.05);
+            
+            /* Brand Colors */
+            --brand-olive: #333e25;
+            --brand-green: #85b022;
+
+            /* Heatmap & Chart Colors for Light Theme */
+            --heatmap-bg-empty: #ebedf0;
+            --heatmap-bg-l1: color-mix(in srgb, var(--accent-color) 15%, #ffffff);
+            --heatmap-bg-l2: color-mix(in srgb, var(--accent-color) 32%, #ffffff);
+            --heatmap-bg-l3: color-mix(in srgb, var(--accent-color) 48%, #ffffff);
+            --heatmap-bg-l4: color-mix(in srgb, var(--accent-color) 65%, #ffffff);
+            --heatmap-bg-l5: color-mix(in srgb, var(--accent-color) 82%, #ffffff);
+            --heatmap-bg-l6: var(--accent-color);
+
+            --chart-comp-today: var(--accent-color);
+            --chart-comp-past: color-mix(in srgb, var(--accent-color) 70%, #ffffff);
+            --chart-comp-future: color-mix(in srgb, var(--accent-color) 25%, #ffffff);
+            --chart-rem-today: color-mix(in srgb, var(--accent-color) 30%, #ffffff);
+            --chart-rem-past: color-mix(in srgb, var(--accent-color) 40%, #ffffff);
+            --chart-rem-future: color-mix(in srgb, var(--accent-color) 15%, #ffffff);
+        }
+        [data-theme='dark'] {
+            --bg-main: #060606; /* Deeper background for stronger depth */
+            --bg-card: #18181B; /* Elevated card background */
+            --text-main: #F2F2F2; /* Linear white text */
+            --text-secondary: #A1A1AA; /* Balanced secondary text (Zinc 400) */
+            --border-color: rgba(255, 255, 255, 0.08); /* Glass effect subtle borders */
+            --accent-color: #f07d00;
+            --accent-text: #ffffff;
+            --shadow-color: rgba(0,0,0,0.5);
+
+            /* Brand Colors for Dark Mode (better contrast) */
+            --brand-olive: #e5eadc;
+            --brand-green: #9bd028;
+
+            --dark-chart-base: color-mix(in srgb, var(--accent-color) 75%, white);
+
+            /* Heatmap & Chart Colors for Dark Theme */
+            --heatmap-bg-empty: rgba(255, 255, 255, 0.05);
+            --heatmap-bg-l1: color-mix(in srgb, var(--dark-chart-base) 20%, transparent);
+            --heatmap-bg-l2: color-mix(in srgb, var(--dark-chart-base) 40%, transparent);
+            --heatmap-bg-l3: color-mix(in srgb, var(--dark-chart-base) 60%, transparent);
+            --heatmap-bg-l4: color-mix(in srgb, var(--dark-chart-base) 80%, transparent);
+            --heatmap-bg-l5: var(--dark-chart-base);
+            --heatmap-bg-l6: color-mix(in srgb, var(--dark-chart-base) 80%, white);
+
+            --chart-comp-today: var(--dark-chart-base);
+            --chart-comp-past: color-mix(in srgb, var(--dark-chart-base) 50%, transparent);
+            --chart-comp-future: color-mix(in srgb, var(--dark-chart-base) 25%, transparent);
+            --chart-rem-today: color-mix(in srgb, var(--dark-chart-base) 35%, transparent);
+            --chart-rem-past: color-mix(in srgb, var(--dark-chart-base) 45%, transparent);
+            --chart-rem-future: color-mix(in srgb, var(--dark-chart-base) 15%, transparent);
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-secondary);
+            transition: background-color 0.2s, color 0.2s;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        .stihl-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 8px var(--shadow-color);
+        }
+
+        .stihl-button {
+            background-color: var(--accent-color);
+            color: var(--accent-text);
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 0.8rem 1.5rem;
+            transition: background-color 0.2s;
+        }
+        .stihl-button:hover {
+            filter: brightness(1.1);
+        }
+
+        .hover-tint {
+            transition: all 0.2s;
+        }
+        .hover-tint:hover {
+            background-color: color-mix(in srgb, var(--accent-color), transparent 90%);
+            color: var(--accent-color);
+        }
+
+        input, select, textarea {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 0.75rem;
+            color: var(--text-main);
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--text-main);
+            font-weight: 900;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div id="root">
+        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background-color: var(--bg-main); color: var(--text-main); font-family: 'Inter', system-ui, sans-serif;">
+            <div style="text-align: center; display: flex; flex-direction: column; align-items: center;">
+                <div style="position: relative; width: 80px; height: 80px; margin-bottom: 20px;">
+                    <div style="position: absolute; inset: 0; border-radius: 50%; border: 3px solid transparent; border-top-color: var(--brand-green); border-right-color: var(--brand-green); animation: spin 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;"></div>
+                    <div style="position: absolute; inset: 5px; border-radius: 50%; border: 3px solid transparent; border-bottom-color: var(--brand-olive); border-left-color: var(--brand-olive); animation: spin 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite reverse opacity-80;"></div>
+                    <img src="/logo.png" alt="Logo" style="position: absolute; inset: 15px; width: 50px; height: 50px; object-fit: contain; animation: float 3s ease-in-out infinite;" />
+                </div>
+                
+                <h2 style="margin: 0; font-size: 38px; letter-spacing: -1px; font-weight: 900; line-height: 1;">
+                    <span style="color: var(--brand-olive); transition: color 0.3s;">Scapeflow</span>
+                </h2>
+                
+                <p style="color: var(--text-secondary); font-size: 10px; margin-top: 12px; font-weight: 900; letter-spacing: 0.15em; transition: color 0.3s; text-align: center;">
+                    LANDSCAPE FLOW<br/>MANAGEMENT
+                </p>
+            </div>
+        </div>
+        <style>
+            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            @keyframes float { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-5px) scale(1.05); } }
+        </style>
+    </div>
+    <script type="module" src="/src/index.tsx"></script>
+</body>
+</html>

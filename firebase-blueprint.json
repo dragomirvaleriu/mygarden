@@ -1,0 +1,133 @@
+{
+  "firestore": {
+    "audit_logs": {
+      "schema": "AuditLog",
+      "description": "Collection of audit logs"
+    },
+    "leads": {
+      "schema": "PotentialClient",
+      "description": "Collection of potential clients (leads)"
+    },
+    "equipment": {
+      "schema": "Equipment",
+      "description": "Collection of equipment"
+    },
+    "clients": {
+      "schema": "Client",
+      "description": "Collection of clients"
+    },
+    "properties": {
+      "schema": "Property",
+      "description": "Collection of properties"
+    },
+    "visits": {
+      "schema": "Visit",
+      "description": "Collection of visits"
+    },
+    "service_types": {
+      "schema": "ServiceType",
+      "description": "Collection of service types"
+    },
+    "products": {
+      "schema": "Product",
+      "description": "Collection of products"
+    },
+    "client_history": {
+      "schema": "ClientHistory",
+      "description": "Collection of client history"
+    },
+    "user_settings": {
+      "schema": "UserSettings",
+      "description": "User specific settings (theme, etc)"
+    }
+  },
+  "entities": {
+    "AuditLog": {
+      "title": "Audit Log",
+      "description": "Records of user actions for auditing purposes",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "UID of the user who performed the action" },
+        "userName": { "type": "string", "description": "Display name or email of the user" },
+        "action": { "type": "string", "description": "The action performed (e.g., 'CREATE_CLIENT', 'UPDATE_VISIT')" },
+        "entityType": { "type": "string", "description": "The type of entity affected" },
+        "entityId": { "type": "string", "description": "The ID of the entity affected" },
+        "details": { "type": "string", "description": "Additional details about the action" },
+        "timestamp": { "type": "string", "format": "date-time", "description": "When the action occurred" },
+        "organizationId": { "type": "string", "description": "Organization ID" }
+      },
+      "required": ["userId", "action", "timestamp", "organizationId"]
+    },
+    "UserSettings": {
+      "title": "User Settings",
+      "description": "User specific settings",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "User ID" },
+        "themeDesktop": { "type": "string", "description": "Desktop theme" },
+        "themeMobile": { "type": "string", "description": "Mobile theme" }
+      },
+      "required": ["userId"]
+    },
+    "PotentialClient": {
+      "title": "Potential Client",
+      "description": "A lead or potential client",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Document ID" },
+        "displayName": { "type": "string", "description": "Full name of the lead" },
+        "phone": { "type": "string", "description": "Phone number" },
+        "address": { "type": "string", "description": "Address" },
+        "status": { "type": "string", "enum": ["nou", "ofertat", "confirmat", "pierdut", "castigat"], "description": "Current status" },
+        "ofertatAt": { "type": "string", "format": "date-time", "description": "When the status was set to 'ofertat'" },
+        "organizationId": { "type": "string", "description": "Organization ID" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When the lead was created" }
+      },
+      "required": ["displayName", "status", "organizationId"]
+    },
+    "Equipment": {
+      "title": "Equipment",
+      "description": "A piece of equipment",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Document ID" },
+        "name": { "type": "string", "description": "Name of the equipment" },
+        "category": { "type": "string", "description": "Category" },
+        "value": { "type": "number", "description": "Value" },
+        "status": { "type": "string", "enum": ["operational", "in_service", "retired"], "description": "Current status" },
+        "organizationId": { "type": "string", "description": "Organization ID" },
+        "purchaseDate": { "type": "string", "format": "date-time", "description": "When the equipment was purchased" }
+      },
+      "required": ["name", "status", "organizationId"]
+    },
+    "Client": {
+      "title": "Client",
+      "description": "A client",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Document ID" },
+        "nume": { "type": "string", "description": "Name" },
+        "telefon": { "type": "string", "description": "Phone" },
+        "email": { "type": "string", "description": "Email" },
+        "organizationId": { "type": "string", "description": "Organization ID" }
+      },
+      "required": ["nume", "organizationId"]
+    },
+    "Visit": {
+      "title": "Visit",
+      "description": "A visit",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Document ID" },
+        "clientId": { "type": "string", "description": "Client ID" },
+        "propertyId": { "type": "string", "description": "Property ID" },
+        "data": { "type": "string", "description": "Date" },
+        "originalData": { "type": "string", "description": "Original scheduled date" },
+        "reprogrammed": { "type": "boolean", "description": "Whether the appointment has been rescheduled" },
+        "status": { "type": "string", "description": "Status" },
+        "organizationId": { "type": "string", "description": "Organization ID" }
+      },
+      "required": ["clientId", "propertyId", "data", "status", "organizationId"]
+    }
+  }
+}

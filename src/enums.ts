@@ -1,0 +1,15 @@
+export enum Page {
+  Dashboard = 'Dashboard',
+  Clients = 'Clients',
+  Scheduler = 'Scheduler',
+  Reports = 'Reports',
+  Administration = 'Administration',
+  Services = 'Services',
+  Registru = 'Registru',
+  Details = 'Details',
+  ClientForm = 'ClientForm',
+  ClientPortal = 'ClientPortal',
+  Equipment = 'Equipment',
+  Logs = 'Logs',
+  AuditTrail = 'AuditTrail',
+}

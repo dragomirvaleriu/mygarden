@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "landscapeos": "landscapeos-c3701",
+    "default": "landscapeos-c3701"
+  },
+  "targets": {},
+  "etags": {}
+}

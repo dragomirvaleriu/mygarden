@@ -1,0 +1,39 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Verifică dacă utilizatorul este autentificat
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    // Obține organizationId direct din Custom Claims (token-ul JWT de autentificare)
+    function getOrganizationIdFromToken() {
+      return request.auth.token.organizationId;
+    }
+
+    // Obține organizationId din documentul utilizatorului din Firestore (ca fallback extrem de sigur)
+    function getOrganizationIdFromFirestore() {
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.organizationId;
+    }
+
+    // Verifică dacă utilizatorul aparține organizației specificate în calea folderului
+    function isMemberOf(orgId) {
+      return isSignedIn() && (
+        getOrganizationIdFromToken() == orgId ||
+        getOrganizationIdFromFirestore() == orgId
+      );
+    }
+
+    // Match nested folders under organizationId and user-specific userId
+    match /uploads/{organizationId}/{userId}/{allPaths=**} {
+      allow read: if isMemberOf(organizationId);
+      allow write: if isMemberOf(organizationId)
+                   && request.auth.uid == userId
+                   && (request.resource == null || (
+                       request.resource.size < 2 * 1024 * 1024
+                       && request.resource.contentType in ['image/jpeg', 'image/png', 'image/webp']
+                      ));
+    }
+  }
+}

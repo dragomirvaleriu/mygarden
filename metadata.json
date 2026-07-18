@@ -1,0 +1,7 @@
+{
+  "name": "Scapeflow by VLI",
+  "description": "A high-performance landscaping management tool ",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}

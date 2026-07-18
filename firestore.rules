@@ -1,0 +1,318 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- FUNCȚII REUTILIZABILE (Helper Functions) ---
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isMemberOf(orgId) {
+      return isSignedIn() && (
+        ('organizationId' in request.auth.token && request.auth.token.organizationId == orgId) ||
+        (
+          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          'organizationId' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.organizationId == orgId
+        ) ||
+        (
+          exists(/databases/$(database)/documents/organizations/$(orgId)) &&
+          'adminUid' in get(/databases/$(database)/documents/organizations/$(orgId)).data &&
+          get(/databases/$(database)/documents/organizations/$(orgId)).data.adminUid == request.auth.uid
+        )
+      );
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        ('role' in request.auth.token && request.auth.token.role in ['admin', 'owner']) ||
+        (
+          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          'role' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'owner']
+        )
+      );
+    }
+
+    function isSuperAdmin() {
+      return isSignedIn() && request.auth.token.email == 'dragomirvaleriu@gmail.com';
+    }
+
+    // Verifică dacă utilizatorul este cont de tip PJ (Business/Pro)
+    function isPJ() {
+      return isSignedIn() && (
+        ('accountType' in request.auth.token && request.auth.token.accountType == 'PJ') ||
+        (
+          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          (
+            !('accountType' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data) || 
+            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.accountType == 'PJ'
+          )
+        )
+      );
+    }
+
+    // --- VALIDĂRI TIPURI ȘI SCHEME ---
+
+    function isOptionalString(data, field) {
+      return !(field in data) || data[field] is string || data[field] == null;
+    }
+    function isOptionalStringOrNull(data, field) {
+      return !(field in data) || data[field] is string || data[field] == null;
+    }
+    function isOptionalNumber(data, field) {
+      return !(field in data) || data[field] is int || data[field] is float || data[field] == null;
+    }
+    function isOptionalBool(data, field) {
+      return !(field in data) || data[field] is bool || data[field] == null;
+    }
+    function isOptionalTimestamp(data, field) {
+      return !(field in data) || data[field] is timestamp || data[field] == null;
+    }
+    function isOptionalList(data, field) {
+      return !(field in data) || data[field] is list || data[field] == null;
+    }
+    function isOptionalMap(data, field) {
+      return !(field in data) || data[field] is map || data[field] == null;
+    }
+
+    function isValidInvoice(data) {
+      return data.clientId is string
+          && data.propertyId is string
+          && data.organizationId is string
+          && data.billingMonth is string
+          && (data.amount is int || data.amount is float)
+          && (data.remainingAmount is int || data.remainingAmount is float)
+          && data.status in ['unpaid', 'partially_paid', 'paid']
+          && data.createdAt is timestamp;
+    }
+
+    function isValidVisit(data) {
+      return data.organizationId is string
+          && data.clientId is string
+          && data.data is string
+          && data.tipLucrare is string
+          && isOptionalString(data, 'detalii')
+          && isOptionalString(data, 'details')
+          && data.status in ['Programat', 'Activ', 'Finalizat', 'Anulat']
+          && isOptionalTimestamp(data, 'createdAt')
+          && isOptionalString(data, 'clientName')
+          && isOptionalString(data, 'propertyId')
+          && isOptionalString(data, 'propertyAddress')
+          && isOptionalString(data, 'clientAddress')
+          && isOptionalString(data, 'propertyMapsLink')
+          && isOptionalBool(data, 'nextVisitScheduled')
+          && isOptionalNumber(data, 'latitude')
+          && isOptionalNumber(data, 'longitude')
+          && isOptionalString(data, 'originalData')
+          && isOptionalBool(data, 'reprogrammed')
+          && isOptionalString(data, 'oraProgramare')
+          && isOptionalTimestamp(data, 'currentSessionStart')
+          && isOptionalString(data, 'finishNote')
+          && isOptionalTimestamp(data, 'completedAt')
+          && isOptionalTimestamp(data, 'scheduledDate')
+          && isOptionalNumber(data, 'estimatedDuration')
+          && isOptionalNumber(data, 'interventieCost')
+          && isOptionalBool(data, 'interventieIncasata')
+          && isOptionalList(data, 'photos')
+          && isOptionalList(data, 'workSessions')
+          && isOptionalList(data, 'servicii_efectuate')
+          && isOptionalStringOrNull(data, 'oraInceput')
+          && isOptionalStringOrNull(data, 'oraSfarsit')
+          && isOptionalStringOrNull(data, 'autoScheduledNextVisitId')
+          && isOptionalMap(data, 'checkinCoordinates');
+    }
+
+    // --- REGULI COLECȚII ---
+
+    // Profilul utilizatorului
+    match /users/{userId} {
+      allow read: if isSuperAdmin() || request.auth.uid == userId || isMemberOf(resource.data.organizationId);
+      allow create: if request.auth.uid == userId || isSuperAdmin();
+      allow update, delete: if request.auth.uid == userId || isSuperAdmin() || (isAdmin() && isMemberOf(resource.data.organizationId));
+    }
+
+    // Setări utilizator
+    match /user_settings/{userId} {
+      allow read, write: if request.auth.uid == userId || isSuperAdmin();
+    }
+
+    // Organizații
+    match /organizations/{orgId} {
+      allow read: if isSuperAdmin() || isMemberOf(orgId) || (isSignedIn() && resource.data.adminUid == request.auth.uid);
+      allow update: if isSuperAdmin() || (isMemberOf(orgId) && isAdmin());
+      allow delete: if isSuperAdmin();
+      allow create: if isSignedIn();
+    }
+
+    // Invitații
+    match /invitations/{inviteId} {
+      // Anonymous invite-code lookup goes through /api/invite-lookup?code=... (Admin SDK,
+      // scoped to a single matching invite). The old "|| resource.data.code != null"
+      // clause was always true, letting anyone list/dump every pending invitation.
+      allow read: if isSignedIn();
+      allow create: if isMemberOf(request.resource.data.organizationId) && isAdmin();
+      allow delete: if isMemberOf(resource.data.organizationId) && isAdmin();
+      allow update: if (isMemberOf(resource.data.organizationId) && isAdmin()) || 
+                       (isSignedIn() && request.resource.data.status == 'accepted');
+    }
+
+    // --- COLECȚII VIZIBILE ȘI FILTRATE PE BAZĂ DE TENANCY (PF și PJ) ---
+
+    // Grădinile și Zonele (Properties)
+    // Utilizatorii PF pot vedea și edita doar documentele de proprietate care aparțin propriei organizații
+    match /properties/{docId} {
+      // Public Client Portal reads go through /api/client-portal/:clientId (Admin SDK,
+      // scoped to a single clientId server-side) — direct client-side Firestore access
+      // requires org membership. See firestore.rules audit notes / server.ts.
+      allow read: if isSuperAdmin() || isMemberOf(resource.data.organizationId);
+      allow create: if isSuperAdmin() || isMemberOf(request.resource.data.organizationId);
+      allow update, delete: if isSuperAdmin() || isMemberOf(resource.data.organizationId);
+    }
+
+    match /clients/{docId} {
+      // Public Client Portal reads go through /api/client-portal/:clientId (Admin SDK,
+      // scoped to a single clientId server-side) — direct client-side Firestore access
+      // (get or list) requires org membership.
+      allow read: if isSuperAdmin() || isMemberOf(resource.data.organizationId);
+      allow create: if isSuperAdmin() || isMemberOf(request.resource.data.organizationId);
+      allow update, delete: if isSuperAdmin() || isMemberOf(resource.data.organizationId);
+    }
+
+    match /visits/{docId} {
+      // Public Client Portal reads go through /api/client-portal/:clientId (Admin SDK).
+      allow read: if isSuperAdmin() || isMemberOf(resource.data.organizationId);
+      allow create: if (isSuperAdmin() || isMemberOf(request.resource.data.organizationId)) && isValidVisit(request.resource.data);
+      allow update: if (isSuperAdmin() || isMemberOf(resource.data.organizationId)) && isValidVisit(request.resource.data);
+      allow delete: if isSuperAdmin() || isMemberOf(resource.data.organizationId) || (!('organizationId' in resource.data) && isSignedIn());
+    }
+
+    match /service_types/{docId} {
+      allow read: if isSuperAdmin() || isMemberOf(resource.data.organizationId);
+      allow create: if isSuperAdmin() || isMemberOf(request.resource.data.organizationId);
+      allow update, delete: if isSuperAdmin() || isMemberOf(resource.data.organizationId);
+    }
+
+    match /products/{docId} {
+      allow read: if isSuperAdmin() || isMemberOf(resource.data.organizationId);
+      allow create: if isSuperAdmin() || isMemberOf(request.resource.data.organizationId);
+      allow update, delete: if isSuperAdmin() || isMemberOf(resource.data.organizationId);
+    }
+
+    match /equipment/{docId} {
+      allow read: if isSuperAdmin() || isMemberOf(resource.data.organizationId);
+      allow create: if isSuperAdmin() || isMemberOf(request.resource.data.organizationId);
+      allow update, delete: if isSuperAdmin() || isMemberOf(resource.data.organizationId);
+    }
+
+    match /client_history/{docId} {
+      // Public Client Portal reads go through /api/client-portal/:clientId (Admin SDK).
+      allow read: if isSuperAdmin() || isMemberOf(resource.data.organizationId);
+      allow create: if isSuperAdmin() || isMemberOf(request.resource.data.organizationId);
+      allow update, delete: if isSuperAdmin() || isMemberOf(resource.data.organizationId) || (!('organizationId' in resource.data) && isSignedIn());
+    }
+
+    match /invoices/{docId} {
+      allow read: if isSuperAdmin() || isMemberOf(resource.data.organizationId);
+      allow create: if (isSuperAdmin() || isMemberOf(request.resource.data.organizationId)) && isValidInvoice(request.resource.data);
+      allow update: if (isSuperAdmin() || isMemberOf(resource.data.organizationId)) && isValidInvoice(request.resource.data);
+      allow delete: if isSuperAdmin() || isMemberOf(resource.data.organizationId);
+    }
+
+    match /audit_logs/{docId} {
+      allow read: if isSuperAdmin() || isMemberOf(resource.data.organizationId);
+      allow create: if isSuperAdmin() || isMemberOf(request.resource.data.organizationId);
+    }
+
+    match /garden_tasks/{docId} {
+      allow read: if isSuperAdmin() || isMemberOf(resource.data.organizationId);
+      allow create: if isSuperAdmin() || isMemberOf(request.resource.data.organizationId);
+      allow update, delete: if isSuperAdmin() || isMemberOf(resource.data.organizationId);
+    }
+
+    // Jurnalul personal al grădinii (PF) — izolat per userId
+    match /garden_journal/{docId} {
+      allow read: if isSuperAdmin() || (isSignedIn() && request.auth.uid == resource.data.userId) || isMemberOf(resource.data.organizationId);
+      allow create: if isSignedIn() && request.auth.uid == request.resource.data.userId;
+      allow update, delete: if isSuperAdmin() || (isSignedIn() && request.auth.uid == resource.data.userId);
+    }
+
+    match /temporary_shares/{docId} {
+      // "get" (single doc, by the unguessable share-link ID) is open to an unexpired
+      // holder of that link; "list" requires org membership so the collection can't
+      // be enumerated to discover every active share link.
+      allow get: if isSuperAdmin() || isMemberOf(resource.data.targetOrganizationId) || request.time < resource.data.expiresAt;
+      allow list: if isSuperAdmin() || isMemberOf(resource.data.targetOrganizationId);
+      allow create: if isSuperAdmin() || isMemberOf(request.resource.data.targetOrganizationId);
+      allow update, delete: if isSuperAdmin() || isMemberOf(resource.data.targetOrganizationId);
+    }
+
+    match /team_messages/{docId} {
+      allow read: if isSuperAdmin() || isMemberOf(resource.data.organizationId);
+      allow create: if isSuperAdmin() || isMemberOf(request.resource.data.organizationId);
+      allow update, delete: if isSuperAdmin() || isMemberOf(resource.data.organizationId);
+    }
+
+    match /time_logs/{docId} {
+      allow read: if isSuperAdmin() || request.auth.uid == resource.data.userId || (isMemberOf(resource.data.organizationId) && isAdmin());
+      allow create: if isSignedIn() && (request.auth.uid == request.resource.data.userId || (isMemberOf(request.resource.data.organizationId) && isAdmin()));
+      allow update: if isSuperAdmin() || request.auth.uid == resource.data.userId || (isMemberOf(resource.data.organizationId) && isAdmin());
+      allow delete: if isSuperAdmin() || (isMemberOf(resource.data.organizationId) && isAdmin());
+    }
+
+    // --- COLECȚII EXCLUSIV PJ (Accesul PF este complet interzis / 403) ---
+
+    match /leads/{docId} {
+      allow read: if isMemberOf(resource.data.organizationId) && isPJ();
+      allow create: if (isMemberOf(request.resource.data.organizationId) && isPJ()) || 
+                       (request.resource.data.source == 'Booking Widget' && request.resource.data.status == 'new');
+      allow update, delete: if isMemberOf(resource.data.organizationId) && isPJ();
+    }
+
+    match /financial_reports/{docId} {
+      allow read: if isMemberOf(resource.data.organizationId) && isPJ();
+      allow create: if isMemberOf(request.resource.data.organizationId) && isPJ();
+      allow update, delete: if isMemberOf(resource.data.organizationId) && isPJ();
+    }
+
+    match /billing_transactions/{docId} {
+      allow read: if isMemberOf(resource.data.organizationId) && isPJ();
+      allow create: if isMemberOf(request.resource.data.organizationId) && isPJ();
+      allow update, delete: if isMemberOf(resource.data.organizationId) && isPJ();
+    }
+
+    match /routes/{docId} {
+      allow read: if isMemberOf(resource.data.organizationId) && isPJ();
+      allow create: if isMemberOf(request.resource.data.organizationId) && isPJ();
+      allow update, delete: if isMemberOf(resource.data.organizationId) && isPJ();
+    }
+
+    match /gsm_cards/{docId} {
+      allow read: if isMemberOf(resource.data.organizationId) && isPJ();
+      allow create: if isMemberOf(request.resource.data.organizationId) && isPJ();
+      allow update, delete: if isMemberOf(resource.data.organizationId) && isPJ();
+    }
+
+    match /treatment_products/{docId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && isPJ();
+    }
+
+    match /gift_codes/{docId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && request.auth.token.email == 'dragomirvaleriu@gmail.com';
+      allow update: if isSignedIn() && (request.auth.token.email == 'dragomirvaleriu@gmail.com' || (resource.data.used == false && request.resource.data.used == true));
+    }
+
+    match /system/craiova_weather {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && request.auth.token.email == 'dragomirvaleriu@gmail.com';
+    }
+
+    match /system_config/{docId} {
+      allow read: if isSignedIn();
+      allow write: if isSuperAdmin();
+    }
+  }
+}

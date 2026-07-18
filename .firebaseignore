@@ -1,0 +1,7 @@
+node_modules
+.git
+.env
+dist
+firebase-debug.log
+functions/node_modules
+functions/src

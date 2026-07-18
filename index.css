@@ -1,0 +1,277 @@
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Special+Elite&display=swap');
+@import "tailwindcss";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+@theme {
+  --color-bg-main: var(--bg-main);
+  --color-bg-card: var(--bg-card);
+  --color-text-main: var(--text-main);
+  --color-text-secondary: var(--text-secondary);
+  --color-border-color: var(--border-color);
+  --color-accent-color: var(--accent-color);
+  --color-accent-text: var(--accent-text);
+}
+
+body {
+  @apply antialiased m-0 p-0 overflow-x-hidden bg-bg-main text-text-secondary;
+  font-family: 'Roboto', sans-serif;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+/* Remove browser focus outline from Recharts chart containers */
+.recharts-wrapper,
+.recharts-wrapper svg,
+.recharts-surface {
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+
+.bg-lead-accent {
+  background: color-mix(in srgb, var(--accent-color) 5%, transparent);
+}
+.hover\:bg-lead-accent-hover:hover {
+  background: color-mix(in srgb, var(--accent-color) 10%, transparent);
+}
+
+.moleskine-paper {
+  background-color: #fefdfb; /* Lighter background */
+  background-image: linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px); /* More faded lines */
+  background-size: 100% 1.5rem;
+  line-height: 1.5rem;
+  position: relative;
+  padding-left: 60px !important;
+  color: #002b66; /* Darker blue pen color */
+}
+
+.moleskine-paper::before {
+  content: '';
+  position: absolute;
+  left: 45px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background-color: rgba(255, 0, 0, 0.15); /* More faded red line */
+}
+
+@media (max-width: 767px) {
+  .moleskine-paper::before {
+    display: none;
+  }
+  .moleskine-paper {
+    padding-left: 20px !important;
+  }
+}
+
+.font-handwritten {
+  font-family: 'Caveat', 'Segoe Print', 'Comic Sans MS', cursive;
+  font-weight: 500;
+}
+
+.font-typewriter {
+  font-family: 'Special Elite', cursive;
+  color: #333; /* Keep title dark for contrast */
+}
+
+.hand-drawn-circle {
+  width: 20px;
+  height: 20px;
+  border: 1.5px solid #0047ab; /* Blue border for circle */
+  border-radius: 48% 52% 51% 49% / 49% 51% 52% 48%;
+  display: inline-block;
+  position: relative;
+  transform: rotate(-2deg);
+}
+
+.pen-line {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* Dark Mode Chalkboard Redesign */
+[data-theme='dark'] .moleskine-paper {
+  background-color: #1a1a1a;
+  background-image: 
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.02) 0%, transparent 100%),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  background-blend-mode: overlay;
+  background-size: auto;
+  border: 1px solid #2a2a2a;
+  color: rgba(255, 255, 255, 0.9) !important;
+  box-shadow: inset 0 0 80px rgba(0,0,0,0.9);
+  padding-left: 24px !important; /* More compact than 60px */
+  padding-right: 24px !important;
+  border-radius: 4px;
+}
+
+[data-theme='dark'] .moleskine-paper::before {
+  display: none;
+}
+
+[data-theme='dark'] .font-handwritten {
+  font-family: 'Caveat', cursive;
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 
+    0 0 1px rgba(255, 255, 255, 0.5),
+    0 0 2px rgba(255, 255, 255, 0.2);
+  letter-spacing: 0.02em;
+}
+
+[data-theme='dark'] .font-typewriter {
+  color: #fff;
+  border-bottom-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+[data-theme='dark'] .pen-line {
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.15);
+  box-shadow: none;
+  padding-top: 0.5rem !important;
+  padding-bottom: 0.5rem !important;
+}
+
+[data-theme='dark'] .hand-drawn-circle {
+  border-color: rgba(255, 255, 255, 0.7) !important;
+}
+
+[data-theme='dark'] .pen-line:hover {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+}
+
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 1; }
+}
+.animate-blink {
+  animation: blink 1s infinite;
+}
+
+@keyframes pulsate-bg {
+  0% { background-color: rgba(249, 115, 22, 0.1); }
+  50% { background-color: rgba(249, 115, 22, 0.4); }
+  100% { background-color: rgba(249, 115, 22, 0.1); }
+}
+.animate-pulsate-bg {
+  animation: pulsate-bg 2s infinite ease-in-out;
+}
+
+/* Hide spinners for number inputs */
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  transition: background 0.2s;
+}
+
+[data-theme='dark'] .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+[data-theme='dark'] .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ────── ACCESSIBILITY, CONTRAST & MOBILE OPTIMIZATIONS ────── */
+
+/* Input Placeholders accessibility in Light and Dark themes */
+::placeholder {
+  color: #71717a !important; /* Zinc 500 */
+  opacity: 1 !important;
+}
+
+[data-theme='dark'] ::placeholder {
+  color: #a1a1aa !important; /* Zinc 400 */
+  opacity: 1 !important;
+}
+
+/* Ensure text elements with Tailwind opacity classes retain readable contrast */
+span[class*="opacity-"],
+p[class*="opacity-"],
+th[class*="opacity-"],
+td[class*="opacity-"],
+label[class*="opacity-"] {
+  opacity: 0.82 !important;
+}
+
+[data-theme='dark'] span[class*="opacity-"],
+[data-theme='dark'] p[class*="opacity-"],
+[data-theme='dark'] th[class*="opacity-"],
+[data-theme='dark'] td[class*="opacity-"],
+[data-theme='dark'] label[class*="opacity-"] {
+  opacity: 0.88 !important;
+}
+
+/* Mobile text legibility scaling and table padding */
+@media (max-width: 767px) {
+  .text-\[8px\], .text-\[9px\], .text-\[10px\], .text-\[11px\], .text-xs {
+    font-size: 12px !important;
+  }
+  .text-sm {
+    font-size: 13px !important;
+  }
+  table th, table td {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+  /* Increase touch target size for text buttons */
+  button.px-4, button.px-5, button.px-3 {
+    min-height: 44px;
+  }
+}
+
+/* ────── MARQUEE ANIMATIONS ────── */
+@keyframes scroll-x {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-scroll-x {
+  animation: scroll-x 30s linear infinite;
+}
+.animate-scroll-x:hover {
+  animation-play-state: paused;
+}
+
+.animate-scroll-x-slow {
+  animation: scroll-x 60s linear infinite;
+}
+.animate-scroll-x-slow:hover {
+  animation-play-state: paused;
+}
+
+@keyframes scroll-y {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+.animate-scroll-y {
+  animation: scroll-y 25s linear infinite;
+}
+.animate-scroll-y:hover {
+  animation-play-state: paused;
+}
+
