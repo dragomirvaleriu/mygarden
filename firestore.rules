@@ -238,6 +238,13 @@ service cloud.firestore {
       allow update, delete: if isSuperAdmin() || (isSignedIn() && request.auth.uid == resource.data.userId);
     }
 
+    // Plantele adăugate de utilizator din Explorează — izolate per userId
+    match /user_plants/{docId} {
+      allow read: if isSuperAdmin() || (isSignedIn() && request.auth.uid == resource.data.userId) || isMemberOf(resource.data.organizationId);
+      allow create: if isSignedIn() && request.auth.uid == request.resource.data.userId;
+      allow update, delete: if isSuperAdmin() || (isSignedIn() && request.auth.uid == resource.data.userId);
+    }
+
     match /temporary_shares/{docId} {
       // "get" (single doc, by the unguessable share-link ID) is open to an unexpired
       // holder of that link; "list" requires org membership so the collection can't

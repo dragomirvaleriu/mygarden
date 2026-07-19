@@ -50,7 +50,7 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [firmName, setFirmName] = useState('');
-  // Grădina Mea is homeowner-only, so new accounts are always PF (see src/config/appVariant).
+  // My Garden is homeowner-only, so new accounts are always PF (see src/config/appVariant).
   const [accountType, setAccountType] = useState<'PF' | 'PJ'>(APP_VARIANT);
   const [rememberMe, setRememberMe] = useState(true);
   
@@ -392,16 +392,16 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-bg-main relative overflow-hidden text-main">
-      <div className="stihl-card w-full max-w-md rounded-lg p-10 relative z-10 shadow-xl animate-in fade-in zoom-in duration-500 bg-bg-card border border-border-color">
+      <div className="stihl-card w-full max-w-md rounded-2xl p-10 relative z-10 shadow-xl animate-in fade-in zoom-in duration-500 bg-bg-card border border-border-color">
         <div className="flex flex-col items-center mb-10 text-center">
-          <img src="/logo.png" alt="Grădina Mea Logo" className="w-24 h-24 object-contain mb-2 drop-shadow-md" />
+          <img src="/logo.svg" alt="My Garden Logo" className="w-24 h-24 object-contain mb-2 drop-shadow-md" />
           <div className="flex flex-col items-center">
             <h1 className="text-4xl font-black tracking-tighter mb-0 leading-none" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-              <span style={{ color: 'var(--brand-olive)' }}>Grădina</span>
-              <span style={{ color: 'var(--brand-green)' }}> Mea</span>
+              <span style={{ color: 'var(--brand-olive)' }}>My</span>
+              <span style={{ color: 'var(--brand-green)' }}> Garden</span>
             </h1>
             <span className="text-[10px] font-black tracking-[0.2em] uppercase opacity-80 mt-2 mb-4 text-center leading-tight" style={{ color: 'var(--brand-olive)' }}>
-              Grădina ta,<br/>îngrijită inteligent
+              Your garden,<br/>smartly cared for
             </span>
           </div>
         </div>

@@ -44,39 +44,27 @@ import { queuePhoto, getQueuedPhotos, removeQueuedPhoto } from '../utils/offline
 import { Toaster } from 'react-hot-toast';
 import { usePlan } from './hooks/usePlan';
 
-import { BookingWidget } from '../components/BookingWidget';
-
-const Dashboard = React.lazy(() => import('../pages/Dashboard'));
-const Clients = React.lazy(() => import('../pages/Clients'));
-const Schedule = React.lazy(() => import('../pages/Schedule'));
-const Administration = React.lazy(() => import('../pages/Administration'));
-const Registru = React.lazy(() => import('../pages/Registru'));
-const ClientDetails = React.lazy(() => import('../pages/ClientDetails'));
-const ClientForm = React.lazy(() => import('../pages/ClientForm'));
-const ClientPortal = React.lazy(() => import('../pages/ClientPortal'));
-const Equipment = React.lazy(() => import('../pages/Equipment'));
-const Reports = React.lazy(() => import('../pages/Reports'));
-const ServicesConfig = React.lazy(() => import('../pages/ServicesConfig'));
-const Logs = React.lazy(() => import('../pages/Logs'));
-const AuditTrail = React.lazy(() => import('../pages/AuditTrail'));
-const SuperAdmin = React.lazy(() => import('../pages/SuperAdmin'));
+// My Garden is homeowner-only: this is the PF-native page set. The B2B pages
+// (Dashboard, Clients, Schedule, Administration, Registru, ClientDetails/Form,
+// ClientPortal, Equipment, Reports, ServicesConfig, Logs, AuditTrail, SuperAdmin,
+// EmployeeDashboard) were removed entirely — see LandscapeOS for the business edition.
 const CareCalendar = React.lazy(() => import('../pages/CareCalendar'));
 const GardenJournal = React.lazy(() => import('../pages/GardenJournal'));
-const GardenGallery = React.lazy(() => import('../pages/GardenGallery'));
 
 const PFDashboard = React.lazy(() => import('../pages/PFDashboard'));
 const Academy = React.lazy(() => import('../pages/Academy').then(m => ({ default: m.Academy })));
 
 import { AdBanner } from './components/AdBanner';
-const EmployeeDashboard = React.lazy(() => import('../pages/EmployeeDashboard'));
 import Login from '../pages/Login';
+import { APP_NAME } from './config/appVariant';
 
 import { rescheduleOverdueVisits } from '../services/reschedule';
 import DesktopSidebar from '../components/DesktopSidebar';
 import MobileDock from '../components/MobileDock';
-const PfClientFormWrapper = React.lazy(() => import('./components/PfClientFormWrapper').then(m => ({ default: m.PfClientFormWrapper })));
 const PFTools = React.lazy(() => import('../pages/PFTools'));
 const GardenSetup = React.lazy(() => import('../pages/GardenSetup').then(m => ({ default: m.GardenSetup })));
+const AccountSettings = React.lazy(() => import('../pages/AccountSettings'));
+const Explore = React.lazy(() => import('../pages/Explore'));
 
 const App: React.FC = () => {
   const { t } = useTranslation();
@@ -86,9 +74,6 @@ const App: React.FC = () => {
   const [organization, setOrganization] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isReady, setIsReady] = useState(false);
-  const [isPortalView, setIsPortalView] = useState(false);
-  const [isBookingView, setIsBookingView] = useState(false);
-  const [bookingOrgId, setBookingOrgId] = useState('');
   const [members, setMembers] = useState<UserProfile[]>([]);
 
   useEffect(() => {
@@ -132,20 +117,10 @@ const App: React.FC = () => {
   }, [profile?.organizationId, profile?.uid]);
 
   useEffect(() => {
-    const handleHash = () => {
-      if (window.location.hash.startsWith('#client-portal/')) {
-        setIsPortalView(true);
-        setIsBookingView(false);
-      } else if (window.location.hash.startsWith('#booking/')) {
-        const orgId = window.location.hash.substring('#booking/'.length);
-        setBookingOrgId(orgId);
-        setIsBookingView(true);
-        setIsPortalView(false);
-      } else {
-        setIsPortalView(false);
-        setIsBookingView(false);
-      }
-    };
+    // Client Portal (#client-portal/...) and public Booking Widget (#booking/...) are
+    // B2B-only lead-capture/share-link surfaces from the LandscapeOS codebase — not
+    // used by the homeowner app, so there's nothing to route here.
+    const handleHash = () => {};
     handleHash();
     window.addEventListener('hashchange', handleHash);
 
@@ -384,8 +359,8 @@ const App: React.FC = () => {
                 userId: firebaseUser.uid,
                 themeDesktop: 'light',
                 themeMobile: 'dark',
-                accentColorDesktop: '#f07d00',
-                accentColorMobile: '#f07d00'
+                accentColorDesktop: '#4A7C59',
+                accentColorMobile: '#68B0AB'
               };
               setUserSettings(defaults);
             }
@@ -937,27 +912,19 @@ const App: React.FC = () => {
         <div className="relative w-[80px] h-[80px] mb-5">
           <div className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-[var(--brand-green)] border-r-[var(--brand-green)] animate-[spin_1.5s_cubic-bezier(0.68,-0.55,0.265,1.55)_infinite]"></div>
           <div className="absolute top-[5px] left-[5px] right-[5px] bottom-[5px] rounded-full border-[3px] border-transparent border-b-[var(--brand-olive)] border-l-[var(--brand-olive)] animate-[spin_2s_cubic-bezier(0.68,-0.55,0.265,1.55)_infinite_reverse] opacity-80"></div>
-          <img src="/logo.png" alt="Logo" className="absolute top-[15px] left-[15px] w-[50px] h-[50px] object-contain animate-[bounce_3s_ease-in-out_infinite]" style={{ animation: 'float 3s ease-in-out infinite' }} />
+          <img src="/logo.svg" alt="Logo" className="absolute top-[15px] left-[15px] w-[50px] h-[50px] object-contain animate-[bounce_3s_ease-in-out_infinite]" style={{ animation: 'float 3s ease-in-out infinite' }} />
         </div>
         
         <h2 className="m-0 text-[38px] tracking-[-1px] font-black leading-none">
-          <span style={{ color: 'var(--brand-olive)', transition: 'color 0.3s' }}>Scapeflow</span>
+          <span style={{ color: 'var(--brand-olive)', transition: 'color 0.3s' }}>{APP_NAME}</span>
         </h2>
-        
+
         <p style={{ color: 'var(--text-secondary)' }} className="text-[10px] mt-3 font-black tracking-[0.15em] text-center transition-colors duration-300 uppercase">
-          LANDSCAPE FLOW<br/>MANAGEMENT
+          YOUR GARDEN,<br/>SMARTLY CARED FOR
         </p>
       </div>
     </div>
   );
-
-  if (isPortalView) {
-    return <ClientPortal />;
-  }
-
-  if (isBookingView) {
-    return <BookingWidget organizationId={bookingOrgId} />;
-  }
 
   // Development mode: allow app to render without a logged‑in user.
   if (!user) {
@@ -1008,14 +975,13 @@ const App: React.FC = () => {
   const renderPage = () => {
     if (!profile) return <Login onOnboarded={(p) => setProfile(p)} />;
     
-    const commonProps = { 
-      organizationId: profile.organizationId, 
-      userRole: profile.role, 
+    const commonProps = {
+      organizationId: profile.organizationId,
+      userRole: profile.role,
       userProfile: profile,
-      accountType: profile.accountType || 'PJ'
+      accountType: 'PF' as const
     };
-    const isPF = profile.accountType === 'PF';
-    
+
     return (
       <ErrorBoundary>
         <React.Suspense fallback={
@@ -1025,64 +991,21 @@ const App: React.FC = () => {
         }>
         {(() => {
           switch (currentPage) {
-            case Page.Dashboard: 
-              if (isPF) return <PFDashboard onNavigate={navigateTo} organizationId={profile.organizationId} userProfile={profile} accountType='PF' />;
-              return profile.role === 'admin' 
-                ? <Dashboard onNavigate={navigateTo} {...commonProps} activeVisit={activeVisit} onStopWork={handleOpenGlobalStop} />
-                : <EmployeeDashboard organizationId={profile.organizationId} onNavigate={navigateTo} />;
+            case Page.Dashboard:
+              return <PFDashboard onNavigate={navigateTo} organizationId={profile.organizationId} userProfile={profile} accountType='PF' />;
             case Page.Tools:
-              return isPF ? <PFTools /> : <Dashboard onNavigate={navigateTo} {...commonProps} />;
+              return <PFTools />;
             case Page.GardenSetup:
-              return isPF ? <GardenSetup /> : <Dashboard onNavigate={navigateTo} {...commonProps} />;
-            case Page.Clients: 
-              return isPF 
-                ? <PfClientFormWrapper onNavigate={navigateTo} {...commonProps} />
-                : <Clients onNavigate={navigateTo} {...commonProps} />;
-            case Page.Schedule: 
-              return isPF ? <Dashboard onNavigate={navigateTo} {...commonProps} /> : <Schedule onNavigate={navigateTo} {...commonProps} />;
-            case Page.Administration: return (
-            profile.role === 'admin' || profile.role === 'employee') ? (
-              <Administration 
-                onNavigate={navigateTo} 
-                {...commonProps} 
-                theme={currentTheme as 'light' | 'dark'}
-                onToggleTheme={toggleTheme}
-                accentColors={organization?.accentColors || ['#f07d00', '#22c55e', '#3b82f6', '#a855f7', '#ef4444']}
-                selectedAccentColor={profile.accentColor || '#f07d00'}
-                onSelectAccentColor={selectAccentColor}
-                profile={profile}
-                subscriptionTier={subscriptionTier}
-                userRole={profile.role}
-                userSettings={userSettings}
-                onUpdateUserSettings={async (s) => {
-                  if (!user) return;
-                  await updateUserSettings(user.uid, s);
-                  setUserSettings(prev => ({ ...prev, ...s } as UserSettings));
-                }}
-              />
-            ) : <Dashboard onNavigate={navigateTo} {...commonProps} />;
-            case Page.Registru: 
-              return isPF ? <Dashboard onNavigate={navigateTo} {...commonProps} /> : <Registru organizationId={profile.organizationId} onNavigate={navigateTo} />;
-            case Page.Details: return <ClientDetails id={selectedClientId || ''} onNavigate={navigateTo} {...commonProps} />;
-            case Page.ClientForm: return <ClientForm id={selectedClientId} onNavigate={navigateTo} {...commonProps} />;
-            case Page.Services: 
-              return isPF ? <Dashboard onNavigate={navigateTo} {...commonProps} /> : <ServicesConfig {...commonProps} onNavigate={navigateTo} />;
-            case Page.ClientPortal: return <ClientPortal />;
-            case Page.Equipment: return <Equipment organizationId={profile.organizationId} onNavigate={navigateTo} />;
-            case Page.Reports: 
-              return (profile.role === 'admin' && !isPF) ? <Reports organizationId={profile.organizationId} /> : <Dashboard onNavigate={navigateTo} {...commonProps} />;
-            case Page.Logs: 
-              return (profile.role === 'admin' && !isPF) ? <Logs organizationId={profile.organizationId} /> : <Dashboard onNavigate={navigateTo} {...commonProps} />;
-            case Page.AuditTrail: 
-              return (profile.role === 'admin' && !isPF) ? <AuditTrail organizationId={profile.organizationId} /> : <Dashboard onNavigate={navigateTo} {...commonProps} />;
-            case Page.SuperAdmin: return profile.email === 'dragomirvaleriu@gmail.com' ? <SuperAdmin profile={profile} /> : <Dashboard onNavigate={navigateTo} {...commonProps} />;
+              return <GardenSetup />;
+            case Page.Administration:
+              return <AccountSettings userProfile={profile} onNavigate={navigateTo} subscriptionTier={subscriptionTier} />;
             case Page.CareCalendar: return <CareCalendar {...commonProps} />;
-            case Page.GardenJournal: return <GardenJournal organizationId={profile.organizationId} onNavigate={navigateTo} userId={profile.uid} isPF={isPF} />;
-            case Page.Gallery: return isPF ? <GardenJournal organizationId={profile.organizationId} onNavigate={navigateTo} userId={profile.uid} isPF={true} /> : <GardenGallery organizationId={profile.organizationId} onNavigate={navigateTo} accountType={profile.accountType || 'PJ'} userId={profile.uid} />;
+            case Page.GardenJournal: return <GardenJournal organizationId={profile.organizationId} onNavigate={navigateTo} userId={profile.uid} isPF={true} />;
+            case Page.Gallery: return <GardenJournal organizationId={profile.organizationId} onNavigate={navigateTo} userId={profile.uid} isPF={true} />;
             case Page.Academy: return <Academy subscriptionTier={subscriptionTier} onNavigateToUpgrade={() => navigateTo(Page.Administration)} />;
+            case Page.Explore: return <Explore organizationId={profile.organizationId} />;
 
-
-            default: return <Dashboard onNavigate={navigateTo} {...commonProps} />;
+            default: return <PFDashboard onNavigate={navigateTo} organizationId={profile.organizationId} userProfile={profile} accountType='PF' />;
           }
         })()}
         </React.Suspense>
@@ -1112,10 +1035,10 @@ const App: React.FC = () => {
           activeVisit={activeVisit} 
           onStopWork={handleOpenGlobalStop} 
           isAdmin={profile.role === 'admin'} 
-          accentColors={organization?.accentColors || ['#f07d00', '#22c55e', '#3b82f6', '#a855f7', '#ef4444']}
+          accentColors={organization?.accentColors || ['#4A7C59', '#68B0AB', '#3b82f6', '#a855f7', '#ef4444']}
           subscriptionTier={subscriptionTier}
 
-          selectedAccentColor={profile.accentColor || '#f07d00'}
+          selectedAccentColor={profile.accentColor || '#4A7C59'}
           onSelectAccentColor={selectAccentColor}
           profile={profile}
           hasUnreadMessages={hasUnreadMessages}

@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.landscapeos.app',
-  appName: 'Scapeflow',
+  appId: 'com.mygarden.app',
+  appName: 'My Garden',
   webDir: 'dist'
 };
 

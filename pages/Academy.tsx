@@ -31,7 +31,7 @@ const BuyButton: React.FC<{ onClick: () => void; loading: boolean }> = ({ onClic
     onClick={onClick}
     disabled={loading}
     className="relative w-full group overflow-hidden"
-    aria-label="Cumpără abonament anual Scapeflow PRO"
+    aria-label="Cumpără abonament anual My Garden PRO"
   >
     <div className="absolute -inset-1 bg-gradient-to-r from-emerald-400 via-amber-300 to-emerald-500 md:min-h-[104px] rounded-3xl blur opacity-60 group-hover:opacity-90 animate-pulse transition-opacity" />
     <div className="relative flex items-center justify-center gap-3 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-black py-5 px-8 md:min-h-[104px] rounded-2xl transition-all duration-300 active:scale-95 shadow-xl shadow-emerald-500/30">
@@ -462,7 +462,7 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
                 <GraduationCap size={24} className="text-white" />
               </div>
               <div>
-                <p className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-[0.3em]">Scapeflow</p>
+                <p className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-[0.3em]">My Garden</p>
                 <h1 className="text-2xl md:text-3xl font-black text-emerald-950 dark:text-white tracking-tighter leading-none">Master Academy</h1>
               </div>
             </div>

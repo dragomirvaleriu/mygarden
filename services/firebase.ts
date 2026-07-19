@@ -55,12 +55,16 @@ import { Capacitor } from '@capacitor/core';
 
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-// Initialize Firestore with modern, robust multi-tab offline persistence (fixes HMR b815 / ca9 assertions)
-const db = initializeFirestore(app, {
-  localCache: persistentLocalCache({
-    tabManager: (Capacitor.isNativePlatform() || isMobile) ? persistentSingleTabManager({ forceOwnership: false }) : persistentMultipleTabManager()
-  })
-}, firebaseConfig.firestoreDatabaseId);
+// In dev, Vite HMR re-runs this module without releasing the previous IndexedDB
+// persistence lock, which is what causes the b815/ca9 internal assertion crashes.
+// Persistent multi-tab cache is only safe to enable in production builds.
+const db = import.meta.env.DEV
+  ? initializeFirestore(app, {}, firebaseConfig.firestoreDatabaseId)
+  : initializeFirestore(app, {
+      localCache: persistentLocalCache({
+        tabManager: (Capacitor.isNativePlatform() || isMobile) ? persistentSingleTabManager({ forceOwnership: false }) : persistentMultipleTabManager()
+      })
+    }, firebaseConfig.firestoreDatabaseId);
 
 const auth = getAuth(app);
 const storage = getStorage(app);

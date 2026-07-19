@@ -57,7 +57,7 @@ export const PFTools: React.FC = () => {
                   <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition"></div>
                   <h3 className="text-lg font-black text-gray-900 mb-2">{task.title}</h3>
                   <p className="text-sm text-gray-500 font-medium leading-relaxed mb-4">
-                    {task.notes || 'Această sarcină a fost programată automat de asistentul tău Scapeflow.'}
+                    {task.notes || 'Această sarcină a fost programată automat de asistentul tău My Garden.'}
                   </p>
                   <button className="flex items-center gap-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:text-emerald-700 px-4 py-2 rounded-xl text-sm font-bold transition w-full justify-center">
                     <Zap size={16} /> Începe Acțiunea

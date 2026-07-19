@@ -363,7 +363,8 @@ export enum Page {
   Academy = 'academy',
   Tools = 'tools',
   GardenSetup = 'garden-setup',
-  Timesheets = 'timesheets'
+  Timesheets = 'timesheets',
+  Explore = 'explore'
 }
 
 export type PaymentHistory = ClientHistory;
@@ -397,4 +398,15 @@ export interface GardenTask {
   status: 'pending' | 'completed';
   notes?: string;
   history?: { date: any; note?: string }[];
+}
+
+export interface UserPlant {
+  id: string;
+  userId: string;
+  organizationId: string;
+  catalogId: string;
+  name: string;
+  emoji: string;
+  type: 'interior' | 'exterior';
+  addedAt: any; // timestamp
 }

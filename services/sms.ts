@@ -14,7 +14,7 @@ export const sendSms = async (to: string, message: string) => {
         'content-type': 'application/json'
       },
       body: JSON.stringify({
-        sender: { name: "Scapeflow", email: "no-reply@landscapeos.com" },
+        sender: { name: "My Garden", email: "no-reply@landscapeos.com" },
         to: [{ email: "delivered@landscapeos.com" }], // Replace with actual email or use Brevo SMS API
         subject: `SMS to ${to}`,
         htmlContent: `<p>${message}</p>`

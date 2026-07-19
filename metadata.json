@@ -1,6 +1,6 @@
 {
-  "name": "Scapeflow by VLI",
-  "description": "A high-performance landscaping management tool ",
+  "name": "My Garden",
+  "description": "Aplicația personală de îngrijire a grădinii — ghid de gazon, calculatoare de tratamente, jurnal și scanare AI a plantelor.",
   "requestFramePermissions": [
     "geolocation"
   ]

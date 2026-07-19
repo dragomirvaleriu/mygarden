@@ -3,31 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grădina Mea</title>
+    <title>My Garden</title>
     <meta name="description" content="Aplicația ta personală de îngrijire a grădinii — ghid de gazon, calculatoare de tratamente, jurnal și scanare AI a plantelor.">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="icon" type="image/png" href="/icon.png">
-    <meta name="theme-color" content="#85b022">
+    <meta name="theme-color" content="#4A7C59">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root, [data-theme='light'] {
-            --bg-main: #f8f9fa; /* Lighter, cleaner gray (Zinc 50) */
-            --bg-card: #ffffff;
-            --text-main: #09090b; /* Zinc 950 */
-            --text-secondary: #3f3f46; /* Increased contrast (Zinc 700) */
-            --border-color: #e4e4e7; /* Zinc 200 */
-            --accent-color: #f07d00; /* Stihl Orange */
+            --bg-main: #F8F9FA;
+            --bg-card: #FFFFFF;
+            --text-main: #2D3A3A; /* gri-petrol închis, din logo */
+            --text-secondary: #6B7876;
+            --border-color: #E9ECEC;
+            --accent-color: #4A7C59; /* verde-smarald */
             --accent-text: #ffffff;
-            --shadow-color: rgba(0,0,0,0.05);
-            
+            --shadow-color: rgba(45,58,58,0.06);
+
             /* Brand Colors */
-            --brand-olive: #333e25;
-            --brand-green: #85b022;
+            --brand-olive: #2D3A3A; /* gri-petrol, pt. tonul închis din logo */
+            --brand-green: #68B0AB; /* verde-mentă, tonul secundar din logo */
 
             /* Heatmap & Chart Colors for Light Theme */
             --heatmap-bg-empty: #ebedf0;
@@ -46,18 +46,18 @@
             --chart-rem-future: color-mix(in srgb, var(--accent-color) 15%, #ffffff);
         }
         [data-theme='dark'] {
-            --bg-main: #060606; /* Deeper background for stronger depth */
-            --bg-card: #18181B; /* Elevated card background */
+            --bg-main: #0B0F0E; /* Deep petrol-black for stronger depth */
+            --bg-card: #161C1B; /* Elevated card background, subtle green undertone */
             --text-main: #F2F2F2; /* Linear white text */
             --text-secondary: #A1A1AA; /* Balanced secondary text (Zinc 400) */
             --border-color: rgba(255, 255, 255, 0.08); /* Glass effect subtle borders */
-            --accent-color: #f07d00;
-            --accent-text: #ffffff;
+            --accent-color: #68B0AB; /* verde-mentă — mai vizibil pe fundal întunecat */
+            --accent-text: #0B0F0E;
             --shadow-color: rgba(0,0,0,0.5);
 
             /* Brand Colors for Dark Mode (better contrast) */
-            --brand-olive: #e5eadc;
-            --brand-green: #9bd028;
+            --brand-olive: #DCE6E3;
+            --brand-green: #7EC9A6;
 
             --dark-chart-base: color-mix(in srgb, var(--accent-color) 75%, white);
 
@@ -79,7 +79,7 @@
         }
 
         body {
-            font-family: 'Roboto', sans-serif;
+            font-family: 'Inter', system-ui, sans-serif;
             background-color: var(--bg-main);
             color: var(--text-secondary);
             transition: background-color 0.2s, color 0.2s;
@@ -133,15 +133,15 @@
                 <div style="position: relative; width: 80px; height: 80px; margin-bottom: 20px;">
                     <div style="position: absolute; inset: 0; border-radius: 50%; border: 3px solid transparent; border-top-color: var(--brand-green); border-right-color: var(--brand-green); animation: spin 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;"></div>
                     <div style="position: absolute; inset: 5px; border-radius: 50%; border: 3px solid transparent; border-bottom-color: var(--brand-olive); border-left-color: var(--brand-olive); animation: spin 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite reverse opacity-80;"></div>
-                    <img src="/logo.png" alt="Logo" style="position: absolute; inset: 15px; width: 50px; height: 50px; object-fit: contain; animation: float 3s ease-in-out infinite;" />
+                    <img src="/logo.svg" alt="Logo" style="position: absolute; inset: 15px; width: 50px; height: 50px; object-fit: contain; animation: float 3s ease-in-out infinite;" />
                 </div>
                 
                 <h2 style="margin: 0; font-size: 38px; letter-spacing: -1px; font-weight: 900; line-height: 1;">
-                    <span style="color: var(--brand-olive); transition: color 0.3s;">Scapeflow</span>
+                    <span style="color: var(--brand-olive); transition: color 0.3s;">My Garden</span>
                 </h2>
-                
+
                 <p style="color: var(--text-secondary); font-size: 10px; margin-top: 12px; font-weight: 900; letter-spacing: 0.15em; transition: color 0.3s; text-align: center;">
-                    LANDSCAPE FLOW<br/>MANAGEMENT
+                    YOUR GARDEN,<br/>SMARTLY CARED FOR
                 </p>
             </div>
         </div>

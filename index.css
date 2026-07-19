@@ -15,7 +15,7 @@
 
 body {
   @apply antialiased m-0 p-0 overflow-x-hidden bg-bg-main text-text-secondary;
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   transition: background-color 0.2s, color 0.2s;
 }
 

@@ -47,7 +47,7 @@ window.onunhandledrejection = function(event) {
   }
 };
 
-console.log("Scapeflow: index.tsx is running...");
+console.log("My Garden: index.tsx is running...");
 const rootElement = document.getElementById('root');
 if (!rootElement) {
   throw new Error("Could not find root element to mount to");
@@ -73,7 +73,7 @@ const queryClient = new QueryClient({
   },
 });
 
-console.log("Scapeflow: Starting root.render...");
+console.log("My Garden: Starting root.render...");
 root.render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
@@ -81,4 +81,4 @@ root.render(
     </QueryClientProvider>
   </React.StrictMode>
 );
-console.log("Scapeflow: root.render call completed.");
+console.log("My Garden: root.render call completed.");

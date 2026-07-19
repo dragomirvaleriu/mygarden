@@ -8,7 +8,7 @@ export interface QueuedPhoto {
     timestamp: number;
 }
 
-const DB_NAME = 'Scapeflow_OfflineStore';
+const DB_NAME = 'MyGarden_OfflineStore';
 const STORE_NAME = 'photoQueue';
 const DB_VERSION = 1;
 

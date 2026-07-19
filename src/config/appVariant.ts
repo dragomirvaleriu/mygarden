@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────
-// Grădina Mea — homeowner (PF) edition of the platform.
+// My Garden — homeowner (PF) edition of the platform.
 //
 // This project was forked from the shared LandscapeOS/Scapeflow codebase so the
 // two products can evolve independently. Everything here is the homeowner side:
@@ -12,7 +12,7 @@
 
 export const APP_VARIANT: 'PF' | 'PJ' = 'PF';
 
-export const APP_NAME = 'Grădina Mea';
-export const APP_TAGLINE = 'Grădina ta, îngrijită inteligent';
+export const APP_NAME = 'My Garden';
+export const APP_TAGLINE = 'Your garden, smartly cared for';
 
 export const isHomeownerApp = APP_VARIANT === 'PF';

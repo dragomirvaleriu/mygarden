@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Page, Visit, UserProfile } from '../src/types';
 import { auth, logout, db, doc, updateDoc } from '../services/firebase';
-import { Sun, Moon, LogOut, Briefcase, Users, Calendar, Warehouse, Settings, Wrench, LayoutDashboard, Square, Map, BarChart, Wifi, WifiOff, ShieldCheck, CreditCard, Zap, Shield, User, Sprout, Camera, Signal, Image as ImageIcon, BookOpen, Clock, CheckCircle2, ArrowUpCircle } from 'lucide-react';
+import { Sun, Moon, LogOut, Briefcase, Users, Calendar, Warehouse, Settings, Wrench, LayoutDashboard, Square, Map, BarChart, Wifi, WifiOff, ShieldCheck, CreditCard, Zap, Shield, User, Sprout, Camera, Signal, Image as ImageIcon, BookOpen, Clock, CheckCircle2, ArrowUpCircle, Search } from 'lucide-react';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import { useTranslation } from 'react-i18next';
 import { AdBanner } from '../src/components/AdBanner';
@@ -70,49 +70,26 @@ const DesktopSidebar: React.FC<Props> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const isPF = profile?.accountType === 'PF';
-
   const navItems: { id: Page; label: string; icon: any; hasNotification?: boolean }[] = [
     { id: Page.Dashboard, label: t('Dashboard'), icon: LayoutDashboard },
   ];
 
-  if (isPF) {
-    if (isExpertMode) {
-      navItems.push(
-        { id: Page.Tools, label: 'Trusa de Scule', icon: Wrench },
-        { id: Page.Gallery, label: 'Jurnalul Grădinii', icon: Camera },
-        { id: Page.Academy, label: 'Calendar & Academie', icon: BookOpen },
-        { id: Page.GardenSetup, label: 'Configurare Curte', icon: Sprout },
-        { id: Page.Administration, label: 'Profilul Tău', icon: User, hasNotification: hasUnreadMessages }
-      );
-    } else {
-      navItems.push(
-        { id: Page.Tools, label: 'Sarcinile Mele', icon: CheckCircle2 },
-        { id: Page.Academy, label: 'Ghiduri & Sfaturi', icon: BookOpen },
-        { id: Page.Administration, label: 'Setări Cont', icon: User, hasNotification: hasUnreadMessages }
-      );
-    }
+  if (isExpertMode) {
+    navItems.push(
+      { id: Page.Tools, label: 'Trusa de Scule', icon: Wrench },
+      { id: Page.Explore, label: 'Explorează', icon: Search },
+      { id: Page.Gallery, label: 'Jurnalul Grădinii', icon: Camera },
+      { id: Page.Academy, label: 'Calendar & Academie', icon: BookOpen },
+      { id: Page.GardenSetup, label: 'Configurare Curte', icon: Sprout },
+      { id: Page.Administration, label: 'Profilul Tău', icon: User, hasNotification: hasUnreadMessages }
+    );
   } else {
     navItems.push(
-      { id: Page.Clients, label: t('Clients Portfolio'), icon: Users },
-      { id: Page.Schedule, label: t('Schedule'), icon: Calendar }
+      { id: Page.Tools, label: 'Sarcinile Mele', icon: CheckCircle2 },
+      { id: Page.Explore, label: 'Explorează', icon: Search },
+      { id: Page.Academy, label: 'Ghiduri & Sfaturi', icon: BookOpen },
+      { id: Page.Administration, label: 'Setări Cont', icon: User, hasNotification: hasUnreadMessages }
     );
-    if (isAdmin) {
-      navItems.push({ id: Page.Reports, label: t('Reports'), icon: BarChart });
-    }
-    navItems.push({ id: Page.Gallery, label: t('Garden Gallery'), icon: ImageIcon });
-
-    if (isAdmin || profile?.role === 'employee') {
-      navItems.push({
-        id: Page.Administration,
-        label: isAdmin ? t('Administration') : t('Company Data'),
-        icon: Settings,
-        hasNotification: hasUnreadMessages
-      });
-    }
-  }
-  if (profile?.email === 'dragomirvaleriu@gmail.com') {
-    navItems.push({ id: Page.SuperAdmin, label: t('Super Admin'), icon: ShieldCheck });
   }
 
   return (
@@ -126,11 +103,11 @@ const DesktopSidebar: React.FC<Props> = ({
         } transition-all duration-500`}
       />
       <div className="mb-6 flex flex-col items-center px-2 mt-2 gap-1.5 w-full">
-        {/* Row 1: logo + title side by side, the "o" in Scapeflow shows online status */}
+        {/* Row 1: logo + title side by side */}
         <div className="flex items-center justify-center gap-2.5 w-full">
           <div className="shrink-0" style={{ width: '2.4rem', height: '2.4rem' }}>
             <img
-              src="/logo.png"
+              src="/logo.svg"
               alt={`${APP_NAME} Logo`}
               className="w-full h-full object-contain transition-transform duration-500 hover:scale-105"
             />
@@ -141,7 +118,7 @@ const DesktopSidebar: React.FC<Props> = ({
               fontFamily: 'Inter, system-ui, sans-serif',
               fontSize: '2rem',
               fontWeight: 400,
-              color: '#3d5a5e',
+              color: '#2D3A3A',
               letterSpacing: '-0.5px',
               lineHeight: 1
             }}
@@ -151,7 +128,7 @@ const DesktopSidebar: React.FC<Props> = ({
         </div>
 
         {/* Row 2: slogan below both */}
-        <p className="text-[11.5px] font-medium text-center w-full" style={{ color: '#5b6b6d', letterSpacing: '0.01em' }}>
+        <p className="text-[11.5px] font-medium text-center w-full" style={{ color: '#6B7876', letterSpacing: '0.01em' }}>
           {t('premiumSubtitle')}
         </p>
       </div>
@@ -209,7 +186,7 @@ const DesktopSidebar: React.FC<Props> = ({
         </div>
       )}
 
-      {isPF && showSidebarAds && <AdBanner subscriptionTier={subscriptionTier} variant="compact" />}
+      {showSidebarAds && <AdBanner subscriptionTier={subscriptionTier} variant="compact" />}
 
       <div className="mt-auto pt-4 border-t border-border-color">
         <div className="flex items-center gap-2 px-2 pb-2">
@@ -308,25 +285,15 @@ const DesktopSidebar: React.FC<Props> = ({
           <div className="flex-1 min-w-0">
             <p className="text-xs font-black text-main truncate">{profile?.displayName || t('User')}</p>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <p className="text-[11px] text-text-secondary font-black uppercase tracking-widest truncate">
-                {profile?.email === 'dragomirvaleriu@gmail.com' ? 'Super Admin' : (isPF ? '' : (profile?.role === 'admin' ? t('Admin') : t('Employee')))}
-              </p>
               {/* Subscription badge */}
               {subscriptionTier !== 'free' ? (
                 <span className="px-1.5 py-0.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-[7px] font-black rounded-full uppercase tracking-widest shadow-sm shrink-0">
                   {subscriptionTier === 'enterprise' ? 'Enterprise' : 'PRO'}
                 </span>
-              ) : isPF ? (
+              ) : (
                 <span className="px-1.5 py-0.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-[7px] font-black rounded-full uppercase tracking-widest shadow-sm shrink-0">
                   Free
                 </span>
-              ) : (
-                <button
-                  onClick={() => onNavigate(Page.Administration)}
-                  className="px-1.5 py-0.5 bg-bg-main hover:bg-black/5 dark:hover:bg-white/5 border border-border-color text-text-secondary text-[7px] font-black rounded-full uppercase tracking-widest transition-colors shrink-0"
-                >
-                  Free ↑
-                </button>
               )}
             </div>
           </div>

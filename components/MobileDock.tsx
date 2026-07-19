@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Page, Visit } from '../src/types';
-import { LayoutDashboard, Users, Calendar, Settings, X, Power, BarChart, Wifi, WifiOff, Plus, Square, ShieldCheck, CreditCard, Sun, Sprout, Camera, Image as ImageIcon, Wrench, BookOpen, User, Clock } from 'lucide-react';
+import { LayoutDashboard, Sprout, Camera, Wrench, BookOpen, User, Square, WifiOff, Search } from 'lucide-react';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 
 interface Props {
@@ -14,46 +14,27 @@ interface Props {
   subscriptionTier: 'free' | 'pro' | 'enterprise' | 'lifetime';
 }
 
-const MobileDock: React.FC<Props> = ({ activePage, onNavigate, activeVisit, onStopWork, isAdmin, profile, subscriptionTier }) => {
+const MobileDock: React.FC<Props> = ({ activePage, onNavigate, activeVisit, onStopWork, profile }) => {
   const { t } = useTranslation();
   const isOnline = useOnlineStatus();
-  const isPF = profile?.accountType === 'PF';
-  
-  let items: { id: Page; icon: any }[] = [
+
+  const items: { id: Page; icon: any }[] = [
     { id: Page.Dashboard, icon: LayoutDashboard },
+    { id: Page.Tools, icon: Wrench },
+    { id: Page.Explore, icon: Search },
+    { id: Page.Gallery, icon: Camera },
+    { id: Page.Academy, icon: BookOpen },
+    { id: Page.GardenSetup, icon: Sprout },
+    { id: Page.Administration, icon: User },
   ];
 
-  if (isPF) {
-    items = items.concat([
-      { id: Page.Tools, icon: Wrench },
-      { id: Page.Gallery, icon: Camera },
-      { id: Page.Academy, icon: BookOpen },
-      { id: Page.GardenSetup, icon: Sprout },
-      { id: Page.Administration, icon: User }
-    ]);
-  } else {
-    items.push({ id: Page.Clients, icon: Users });
-    items.push({ id: Page.Schedule, icon: Calendar });
-    if (isAdmin) {
-      items.push({ id: Page.Reports, icon: BarChart });
-    }
-    items.push({ id: Page.Gallery, icon: ImageIcon });
-
-    if (isAdmin || profile?.role === 'employee') {
-      items.push({ id: Page.Administration, icon: Settings });
-    }
-  }
-
-  // For labels, we can map common page IDs to short labels
   const getLabel = (id: string) => {
     if (id === Page.Dashboard) return t('Acasă');
-    if (id === Page.Clients) return t('Clienți');
-    if (id === Page.Schedule) return t('Program');
-    if (id === Page.Reports) return t('Rapoarte');
     if (id === Page.Administration) return t('Setări');
     if (id === Page.GardenSetup) return t('Curte');
     if (id === Page.Academy) return t('Ghiduri');
     if (id === Page.Tools) return t('Scule');
+    if (id === Page.Explore) return t('Explorează');
     if (id === Page.Gallery) return t('Galerie');
     return '';
   };

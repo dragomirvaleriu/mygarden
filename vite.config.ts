@@ -23,11 +23,11 @@ export default defineConfig(({ mode }) => {
           },
           includeAssets: ['icon.png', 'apple-touch-icon.png'],
           manifest: {
-            name: 'Scapeflow',
-            short_name: 'Scapeflow',
-            description: 'Premium field service management for landscapers.',
-            theme_color: '#f07d00',
-            background_color: '#09090b',
+            name: 'My Garden',
+            short_name: 'My Garden',
+            description: 'Aplicația personală de îngrijire a grădinii.',
+            theme_color: '#4A7C59',
+            background_color: '#0B0F0E',
             display: 'standalone',
             start_url: '.',
             icons: [
