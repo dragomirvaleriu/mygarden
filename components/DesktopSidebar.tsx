@@ -141,8 +141,9 @@ const DesktopSidebar: React.FC<Props> = ({
           return (
             <button
               key={item.id}
+              title={item.label}
               onClick={() => onNavigate(item.id)}
-              className={`w-full flex items-center gap-3 transition-all relative group
+              className={`w-full min-w-0 flex items-center gap-3 transition-all relative group
                 ${
                   isActive
                     ? 'px-2 py-2 my-0.5 rounded-2xl bg-bg-main border border-accent-color/25 shadow-lg shadow-accent-color/10 scale-[1.02] z-10'
@@ -158,7 +159,7 @@ const DesktopSidebar: React.FC<Props> = ({
               >
                 <Icon size={isActive ? 18 : 18} />
               </div>
-              <span className={`text-[15px] font-black tracking-wide transition-colors
+              <span className={`min-w-0 flex-1 text-left truncate text-[15px] font-black tracking-wide transition-colors
                 ${isActive ? 'text-main' : 'text-text-secondary group-hover:text-main'}`}
               >
                 {item.label}
