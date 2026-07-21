@@ -53,7 +53,9 @@ interface CareCalendarProps {
 const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
   const { t } = useTranslation();
   const { gardenTasks, properties, loading, organization, globalSystemConfig, serviceTypes } = useData();
-  const accountType = userProfile?.accountType || 'PJ';
+  // My Garden is homeowner-only, so every account is PF. Default to PF when the
+  // profile field is missing rather than falling back to the B2B (PJ) layout.
+  const accountType = userProfile?.accountType || 'PF';
   const isPF = accountType === 'PF';
   const [showAddModal, setShowAddModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);

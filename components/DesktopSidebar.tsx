@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Page, Visit, UserProfile } from '../src/types';
+import { Page, UserProfile } from '../src/types';
 import { auth, logout, db, doc, updateDoc } from '../services/firebase';
 import { Sun, Moon, LogOut, Briefcase, Users, Calendar, Warehouse, Settings, Wrench, LayoutDashboard, Square, Map, BarChart, Wifi, WifiOff, ShieldCheck, CreditCard, Zap, Shield, User, Sprout, Camera, Signal, Image as ImageIcon, BookOpen, Clock, CheckCircle2, ArrowUpCircle, Search } from 'lucide-react';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
@@ -13,52 +13,31 @@ interface Props {
   onNavigate: (page: Page) => void;
   theme: 'light' | 'dark';
   onToggleTheme: () => void;
-  activeVisit?: Visit | null;
-  onStopWork?: () => void;
-  isAdmin: boolean;
   accentColors: string[];
   selectedAccentColor: string;
   onSelectAccentColor: (color: string) => void;
   profile: UserProfile | null;
   subscriptionTier: 'free' | 'pro' | 'enterprise' | 'lifetime';
-  hasUnreadMessages?: boolean;
   showSidebarAds?: boolean;
 }
 
-const DesktopSidebar: React.FC<Props> = ({ 
-  activePage, 
-  onNavigate, 
-  theme, 
-  onToggleTheme, 
-  activeVisit,
-  onStopWork,
-  isAdmin,
+const DesktopSidebar: React.FC<Props> = ({
+  activePage,
+  onNavigate,
+  theme,
+  onToggleTheme,
   accentColors,
   selectedAccentColor,
   onSelectAccentColor,
   profile,
   subscriptionTier,
-  hasUnreadMessages,
   showSidebarAds = true
 }) => {
-  const [duration, setDuration] = useState("0h 0m");
   const isOnline = useOnlineStatus();
   const { t, i18n } = useTranslation();
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const langMenuRef = React.useRef<HTMLDivElement>(null);
   const { isExpertMode } = useData();
-
-  useEffect(() => {
-    if (!activeVisit?.currentSessionStart) return;
-    const interval = setInterval(() => {
-      const start = activeVisit.currentSessionStart.toDate();
-      const diff = new Date().getTime() - start.getTime();
-      const h = Math.floor(diff / 3600000);
-      const m = Math.floor((diff % 3600000) / 60000);
-      setDuration(`${h}h ${m}m`);
-    }, 10000);
-    return () => clearInterval(interval);
-  }, [activeVisit]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -81,14 +60,14 @@ const DesktopSidebar: React.FC<Props> = ({
       { id: Page.Gallery, label: 'Jurnalul Grădinii', icon: Camera },
       { id: Page.Academy, label: 'Calendar & Academie', icon: BookOpen },
       { id: Page.GardenSetup, label: 'Configurare Curte', icon: Sprout },
-      { id: Page.Administration, label: 'Profilul Tău', icon: User, hasNotification: hasUnreadMessages }
+      { id: Page.Administration, label: 'Profilul Tău', icon: User }
     );
   } else {
     navItems.push(
       { id: Page.Tools, label: 'Sarcinile Mele', icon: CheckCircle2 },
       { id: Page.Explore, label: 'Explorează', icon: Search },
       { id: Page.Academy, label: 'Ghiduri & Sfaturi', icon: BookOpen },
-      { id: Page.Administration, label: 'Setări Cont', icon: User, hasNotification: hasUnreadMessages }
+      { id: Page.Administration, label: 'Setări Cont', icon: User }
     );
   }
 
@@ -171,21 +150,6 @@ const DesktopSidebar: React.FC<Props> = ({
           )
         })}
       </nav>
-
-      {activeVisit && (
-        <div className="my-4 p-4 stihl-card bg-bg-main border border-accent-color/20 rounded-xl">
-            <div className="flex items-center gap-3 mb-2">
-                <div className="w-2 h-2 bg-accent-color rounded-full animate-pulse"></div>
-                <span className="text-[11px] font-black text-accent-color uppercase tracking-[0.2em]">{t('Active Job')}</span>
-            </div>
-            <p className="text-sm font-black text-main truncate mb-1">{activeVisit.clientName}</p>
-            <p className="text-[11px] text-text-secondary font-bold mb-3">{t('Time')}: {duration}</p>
-            <button onClick={onStopWork} className="w-full py-2.5 bg-red-600 text-white text-[11px] font-black uppercase tracking-widest flex items-center justify-center gap-2 rounded-lg shadow-md hover:bg-red-700 transition-all active:scale-95">
-                <Square size={12} fill="currentColor" />
-                {t('Finalize')}
-            </button>
-        </div>
-      )}
 
       {showSidebarAds && <AdBanner subscriptionTier={subscriptionTier} variant="compact" />}
 

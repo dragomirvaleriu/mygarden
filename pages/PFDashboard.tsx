@@ -10,6 +10,7 @@ import { AILensScanner } from '../components/vision/AILensScanner';
 import { GardenVitalityRing } from '../components/gamification/GardenVitalityRing';
 import { FloatingDock } from '../components/layout/FloatingDock';
 import { SmartTroubleshooter } from '../components/SmartTroubleshooter';
+import { Card, SectionHeader } from '../components/ui/primitives';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sprout, Calendar, BookOpen, Camera, ChevronRight, CheckCircle2,
@@ -692,19 +693,20 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
           <SmartTroubleshooter />
 
           {/* Recent Journal */}
-          <div className="bg-bg-card border border-border-color rounded-2xl p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-text-secondary flex items-center gap-2">
-                <BookOpen size={12} className="text-accent-color" />
-                {t('Recent Journal')}
-              </h3>
-              <button
-                onClick={() => onNavigate(Page.GardenJournal)}
-                className="text-[10px] font-black text-accent-color uppercase tracking-wider flex items-center gap-1 hover:gap-2 transition-all"
-              >
-                {t('All')} <ChevronRight size={11} />
-              </button>
-            </div>
+          <Card>
+            <SectionHeader
+              icon={BookOpen}
+              action={
+                <button
+                  onClick={() => onNavigate(Page.GardenJournal)}
+                  className="text-[10px] font-black text-accent-color uppercase tracking-wider flex items-center gap-1 hover:gap-2 transition-all"
+                >
+                  {t('All')} <ChevronRight size={11} />
+                </button>
+              }
+            >
+              {t('Recent Journal')}
+            </SectionHeader>
 
             {journalLoading ? (
               <div className="space-y-3">
@@ -751,7 +753,7 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
                 </button>
               </motion.div>
             )}
-          </div>
+          </Card>
 
           {/* My Garden Zones mini-card */}
           {myGarden && myGarden.zones.length > 0 && (
@@ -798,7 +800,9 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
       {/* ── FLOATING DOCK ── */}
       <FloatingDock onNavigate={onNavigate} activePage={Page.Dashboard} />
       
-      {/* TEMP DEV BUTTON */}
+      {/* TEMP DEV BUTTON — only ever rendered in the local dev build (import.meta.env.DEV),
+          never in a production bundle, so homeowners can't see or trigger it. */}
+      {import.meta.env.DEV && (
       <button
         onClick={async () => {
           try {
@@ -835,6 +839,7 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
       >
         DEV: Generează Istoric Aleatoriu (5 intrări)
       </button>
+      )}
 
       {isExpertMode && <TreatmentCalculator />}
     </div>

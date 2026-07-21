@@ -1,20 +1,17 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Page, Visit } from '../src/types';
-import { LayoutDashboard, Sprout, Camera, Wrench, BookOpen, User, Square, WifiOff, Search } from 'lucide-react';
+import { Page } from '../src/types';
+import { LayoutDashboard, Sprout, Camera, Wrench, BookOpen, User, WifiOff, Search } from 'lucide-react';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 
 interface Props {
   activePage: Page;
   onNavigate: (page: Page) => void;
-  activeVisit?: Visit | null;
-  onStopWork?: () => void;
-  isAdmin: boolean;
   profile: any;
   subscriptionTier: 'free' | 'pro' | 'enterprise' | 'lifetime';
 }
 
-const MobileDock: React.FC<Props> = ({ activePage, onNavigate, activeVisit, onStopWork, profile }) => {
+const MobileDock: React.FC<Props> = ({ activePage, onNavigate, profile }) => {
   const { t } = useTranslation();
   const isOnline = useOnlineStatus();
 
@@ -80,19 +77,6 @@ const MobileDock: React.FC<Props> = ({ activePage, onNavigate, activeVisit, onSt
             </button>
           )
         })}
-
-        {/* INJECT STOP BUTTON AT THE END IF ACTIVE */}
-        {activeVisit && (
-          <button
-            onClick={() => onStopWork?.()}
-            className="relative flex items-center justify-center transition-all duration-500 ease-out py-1 ml-1"
-          >
-            <div className="absolute inset-0 bg-red-500/20 rounded-full animate-ping opacity-75"></div>
-            <div className="flex flex-row items-center px-2.5 py-2 rounded-full bg-red-600 text-white shadow-lg shadow-red-600/30 relative z-10">
-              <Square size={16} fill="currentColor" strokeWidth={2.5} />
-            </div>
-          </button>
-        )}
 
       </div>
     </div>
