@@ -1,17 +1,15 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { db, collection, query, where, onSnapshot, doc, limit, addDoc } from '../../services/firebase';
-import { Client, Visit, Property, ServiceType, UserProfile, PotentialClient, GardenTask } from '../types';
+import { Client, Visit, Property, ServiceType, UserProfile, GardenTask } from '../types';
 
 interface DataContextType {
   clients: Client[];
   visits: Visit[];
   properties: Property[];
-  leads: PotentialClient[];
   serviceTypes: ServiceType[];
   organization: any;
   loading: boolean;
-  activeVisit: Visit | null;
   employees: UserProfile[];
   products: any[];
   gardenTasks: GardenTask[];
@@ -26,13 +24,11 @@ export const DataProvider: React.FC<{ children: ReactNode; organizationId: strin
   const [clients, setClients] = useState<Client[]>([]);
   const [visits, setVisits] = useState<Visit[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
-  const [leads, setLeads] = useState<PotentialClient[]>([]);
   const [employees, setEmployees] = useState<UserProfile[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [gardenTasks, setGardenTasks] = useState<GardenTask[]>([]);
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
   const [organization, setOrganization] = useState<any>(null);
-  const [activeVisit, setActiveVisit] = useState<Visit | null>(null);
   const [globalSystemConfig, setGlobalSystemConfig] = useState<any>({});
   const [loading, setLoading] = useState(true);
   const [isExpertMode, setIsExpertMode] = useState(() => {
@@ -66,23 +62,16 @@ export const DataProvider: React.FC<{ children: ReactNode; organizationId: strin
     });
 
     const unsubVisits = onSnapshot(query(
-      collection(db, 'visits'), 
+      collection(db, 'visits'),
       where('organizationId', '==', organizationId)
     ), (snap) => {
       const items = snap.docs.map(d => ({ id: d.id, ...d.data() } as Visit));
       setVisits(items);
-      const active = items.find(v => v.status === 'Activ');
-      setActiveVisit(active || null);
     });
 
     const unsubProps = onSnapshot(query(collection(db, 'properties'), where('organizationId', '==', organizationId)), (snap) => {
       const items = snap.docs.map(d => ({ id: d.id, ...d.data() } as Property));
       setProperties(items);
-    });
-
-    const unsubLeads = onSnapshot(query(collection(db, 'leads'), where('organizationId', '==', organizationId)), (snap) => {
-      const items = snap.docs.map(d => ({ id: d.id, ...d.data() } as PotentialClient));
-      setLeads(items);
     });
 
     const employeesQuery = query(collection(db, 'users'), where('organizationId', '==', organizationId));
@@ -135,7 +124,6 @@ export const DataProvider: React.FC<{ children: ReactNode; organizationId: strin
       unsubClients();
       unsubVisits();
       unsubProps();
-      unsubLeads();
       unsubEmployees();
       unsubServices();
       unsubOrg();
@@ -146,7 +134,7 @@ export const DataProvider: React.FC<{ children: ReactNode; organizationId: strin
   }, [organizationId]);
 
   return (
-    <DataContext.Provider value={{ clients, visits, properties, leads, serviceTypes, organization, loading, activeVisit, employees, products, gardenTasks, globalSystemConfig, isExpertMode, setIsExpertMode }}>
+    <DataContext.Provider value={{ clients, visits, properties, serviceTypes, organization, loading, employees, products, gardenTasks, globalSystemConfig, isExpertMode, setIsExpertMode }}>
       {children}
     </DataContext.Provider>
   );
