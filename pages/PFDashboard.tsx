@@ -176,18 +176,18 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
         try {
           // Force extreme mock weather for demonstration if requested, otherwise use real weather
           const mockForecast = {
-             temperatureMax: 35, 
+             temperatureMax: 35,
              precipitationAmount: 15,
              precipitationProbability: 80
           };
-          
+
           const { updatedTasks, logs } = await runAutopilot(
-            upcomingTasks, 
-            mockForecast, 
-            organizationId, 
+            upcomingTasks,
+            mockForecast,
+            organizationId,
             userProfile?.uid || ''
           );
-          
+
           if (logs.length > 0) {
             toast.success(`Autopilot activ: Am optimizat ${logs.length} sarcini în funcție de vreme!`, { icon: '✨', duration: 6000 });
           }
@@ -197,7 +197,7 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
           setIsAutopilotWorking(false);
         }
       };
-      
+
       triggerAutopilot();
     }
   }, [isAutopilotEnabled, upcomingTasks.length, weatherInfo?.current]);
@@ -210,7 +210,7 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
         nextDue,
         history: [...(task.history || []), { date: new Date().toISOString() }]
       });
-      
+
       // Gamification: Add XP
       if (userProfile?.uid) {
         const currentExp = userProfile.exp || 0;
@@ -237,7 +237,7 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
   };
 
   const isRainingToday = weatherInfo?.current && (
-    weatherInfo.current.precipitationProbability >= 70 || 
+    weatherInfo.current.precipitationProbability >= 70 ||
     (weatherInfo.current.iconCode >= 500 && weatherInfo.current.iconCode < 600) ||
     (weatherInfo.current.iconCode >= 4000 && weatherInfo.current.iconCode < 5000)
   );
@@ -245,16 +245,16 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
   // ET0 Logic: Hydration Stress Warning
   const hydrationAlerts = useMemo(() => {
     if (!weatherInfo?.forecast || weatherInfo.forecast.length < 3 || !myGarden?.zones) return [];
-    
+
     let highTempDays = 0;
     let lowRainDays = 0;
-    
+
     // Analyze next 3 days
     for (let i = 0; i < 3; i++) {
       if (weatherInfo.forecast[i].temp > 28) highTempDays++;
       if (weatherInfo.forecast[i].precipitationProbability < 30) lowRainDays++;
     }
-    
+
     const alerts: string[] = [];
     if (highTempDays >= 3 && lowRainDays >= 3) {
       myGarden.zones.forEach((zone: any) => {
@@ -268,93 +268,233 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
 
   const gardenAddress = (organization?.localitate ? organization.localitate + ', ' : '') + (organization?.address || organization?.localitate || '');
 
+  // Is the homeowner's only property currently in the seeding/germination
+  // window? This is a time-critical override (wrong watering schedule kills
+  // new seed), so it takes priority over the regular seasonal tip whenever
+  // active — the two are never shown at once.
+  const isSeedingMode = useMemo(() => {
+    const prop = properties[0];
+    if (!prop?.seedingModeUntil) return false;
+    const until = prop.seedingModeUntil.toDate ? prop.seedingModeUntil.toDate() : new Date(prop.seedingModeUntil);
+    return isAfter(until, new Date());
+  }, [properties]);
+
   return (
-    <div className="max-w-5xl mx-auto space-y-8 pb-24">
-      {/* ── 2030 AMBIENT WEATHER HEADER ── */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
+    <div className="max-w-5xl mx-auto space-y-6 pb-24">
+      {/* ── COMPACT HEADER: greeting + date + expert toggle ── */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="relative overflow-hidden rounded-3xl backdrop-blur-xl border border-white/10 shadow-2xl p-6 md:p-8"
+        transition={{ duration: 0.5 }}
+        className="relative overflow-hidden rounded-2xl border border-white/10 shadow-sm p-4 md:p-5"
       >
-        {/* Dynamic Mesh Gradient Background based on weather */}
         <div className={`absolute inset-0 opacity-40 mix-blend-multiply dark:mix-blend-screen transition-colors duration-1000 ${
-          isRainingToday 
-            ? 'bg-gradient-to-br from-slate-200 via-cyan-100 to-blue-200 dark:from-slate-900 dark:via-cyan-900 dark:to-blue-900' 
+          isRainingToday
+            ? 'bg-gradient-to-br from-slate-200 via-cyan-100 to-blue-200 dark:from-slate-900 dark:via-cyan-900 dark:to-blue-900'
             : 'bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-emerald-500/5 dark:from-amber-500/20 dark:via-orange-500/10 dark:to-emerald-500/10'
         }`} />
-        
-        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-5">
-            <motion.div 
-              whileHover={{ scale: 1.05, rotate: 5 }}
-              className="w-16 h-16 rounded-2xl bg-bg-main/50 dark:bg-white/5 backdrop-blur-md border border-border-color dark:border-white/10 flex items-center justify-center shadow-sm dark:shadow-[0_0_30px_rgba(16,185,129,0.3)]"
-            >
-              <Sprout className="w-8 h-8 text-emerald-500 dark:text-emerald-400 drop-shadow-sm dark:drop-shadow-md" strokeWidth={2} />
-            </motion.div>
-            <div>
-              <motion.h1 
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 }}
-                className="text-3xl md:text-4xl font-black text-main tracking-tight"
-              >
-                {greeting}
-              </motion.h1>
-              <p className="text-text-secondary text-xs md:text-sm font-black uppercase tracking-[0.2em] mt-1 flex items-center gap-2">
-                <Calendar size={14} className="text-emerald-500" />
-                {format(now, 'EEEE, dd MMMM yyyy', { locale })}
+
+        <div className="relative z-10 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-xl bg-bg-main/50 dark:bg-white/5 backdrop-blur-md border border-border-color dark:border-white/10 flex items-center justify-center shrink-0">
+              <Sprout className="w-5 h-5 text-emerald-500 dark:text-emerald-400" strokeWidth={2} />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-lg md:text-xl font-black text-main tracking-tight truncate">{greeting}</h1>
+              <p className="text-text-secondary text-[10px] md:text-xs font-black uppercase tracking-[0.15em] flex items-center gap-1.5">
+                <Calendar size={11} className="text-emerald-500 shrink-0" />
+                {format(now, 'EEEE, dd MMMM', { locale })}
+                {myGarden && <span className="hidden sm:inline"> · {myGarden.name}</span>}
               </p>
             </div>
           </div>
 
-          {/* Location Badge & Expert Toggle */}
-          <div className="flex items-center gap-3 shrink-0">
-            {myGarden && (
-              <motion.div 
-                whileHover={{ scale: 1.05 }}
-                className="flex items-center gap-2 bg-bg-main/50 dark:bg-white/5 backdrop-blur-lg border border-border-color dark:border-white/10 px-4 py-3 rounded-2xl shadow-sm dark:shadow-lg shrink-0"
-              >
-                <div className="flex flex-col items-end">
-                  <span className="text-[9px] font-black text-text-secondary uppercase tracking-widest">{t('Active Garden')}</span>
-                  <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 drop-shadow-sm">
-                    <MapPin size={12} />
-                    {myGarden.name}
-                  </span>
-                </div>
-              </motion.div>
-            )}
-
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              onClick={() => setIsExpertMode(!isExpertMode)}
-              className={`flex items-center gap-2 px-4 py-3 rounded-2xl border transition-all shadow-sm dark:shadow-lg backdrop-blur-lg ${
-                isExpertMode 
-                  ? 'bg-amber-100 border-amber-200 text-amber-700 dark:bg-amber-500/20 dark:border-amber-500/30 dark:text-amber-400 dark:shadow-[0_0_15px_rgba(245,158,11,0.2)]' 
-                  : 'bg-bg-main/50 border-border-color text-text-secondary hover:text-main dark:bg-white/5 dark:border-white/10 dark:text-white/50 dark:hover:text-white/80'
-              }`}
-            >
-              <div className="flex flex-col items-end">
-                <span className="text-[9px] font-black uppercase tracking-widest leading-none">Mod</span>
-                <span className="text-xs font-black drop-shadow-sm">{isExpertMode ? 'Expert' : 'Simplu'}</span>
-              </div>
-            </motion.button>
-          </div>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            onClick={() => setIsExpertMode(!isExpertMode)}
+            className={`flex flex-col items-end gap-0 px-3 py-2 rounded-xl border transition-all shrink-0 ${
+              isExpertMode
+                ? 'bg-amber-100 border-amber-200 text-amber-700 dark:bg-amber-500/20 dark:border-amber-500/30 dark:text-amber-400'
+                : 'bg-bg-main/50 border-border-color text-text-secondary hover:text-main dark:bg-white/5 dark:border-white/10 dark:text-white/50'
+            }`}
+          >
+            <span className="text-[8px] font-black uppercase tracking-widest leading-none">Mod</span>
+            <span className="text-[11px] font-black leading-none mt-0.5">{isExpertMode ? 'Expert' : 'Simplu'}</span>
+          </motion.button>
         </div>
       </motion.div>
 
-      {/* ── GARDEN VITALITY RING ── */}
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.4, type: "spring" }}
-        className="flex justify-center"
+      {/* ── AZI: hero card, sarcinile zilei — primul lucru vizibil pe ecran ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
       >
-        <GardenVitalityRing 
-          level={userProfile?.level || 1} 
-          exp={userProfile?.exp || 0} 
-          healthStatus={overdueTasks.length > 0 ? 'Atenție' : 'Excelent'} 
-        />
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-xs font-black uppercase tracking-[0.2em] text-text-secondary flex items-center gap-2">
+            <div className={`w-2 h-2 rounded-full ${upcomingTasks.length > 0 ? 'bg-accent-color animate-pulse' : 'bg-emerald-500'}`} />
+            {t('Tasks & Reminders')}
+          </h2>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 mr-2">
+              <span className="text-[10px] font-bold text-text-secondary uppercase tracking-wider hidden sm:block">✨ Autopilot {isAutopilotEnabled ? 'Activ' : 'Oprit'}</span>
+              <button
+                onClick={() => setIsAutopilotEnabled(!isAutopilotEnabled)}
+                className={`relative w-9 h-5 rounded-full transition-colors duration-300 ${isAutopilotEnabled ? 'bg-emerald-500' : 'bg-border-color'}`}
+              >
+                <div className={`absolute top-0.5 left-0.5 bg-white w-4 h-4 rounded-full transition-transform duration-300 ${isAutopilotEnabled ? 'translate-x-4 shadow-sm' : ''}`} />
+              </button>
+            </div>
+            <button
+              onClick={() => onNavigate(Page.CareCalendar)}
+              className="text-[10px] font-black text-accent-color uppercase tracking-wider flex items-center gap-1 hover:gap-2 transition-all"
+            >
+              {t('View all')} <ChevronRight size={12} />
+            </button>
+          </div>
+        </div>
+
+        {upcomingTasks.length === 0 && overdueTasks.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-bg-card/50 backdrop-blur-md border border-border-color rounded-2xl p-8 text-center"
+          >
+            {isRainingToday ? (
+              <>
+                <motion.div
+                  animate={{ y: [0, -10, 0] }}
+                  transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                  className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-4"
+                >
+                  <CloudRain size={28} className="text-blue-500 drop-shadow-md" />
+                </motion.div>
+                <p className="text-sm font-black text-main mb-1">Astăzi plouă 🌧️</p>
+                <p className="text-xs text-text-secondary font-medium">Sarcinile de udare sunt suspendate automat. Solul primește destulă apă!</p>
+              </>
+            ) : (
+              <>
+                <motion.div
+                  animate={{ rotate: [0, 360] }}
+                  transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                  className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-4"
+                >
+                  <CheckCircle2 size={28} className="text-emerald-500 drop-shadow-md" />
+                </motion.div>
+                <p className="text-sm font-black text-main mb-1">{t('All caught up!')} 🌿</p>
+                <p className="text-xs text-text-secondary font-medium">{t('No pending tasks. Your garden is happy!')}</p>
+              </>
+            )}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => onNavigate(Page.CareCalendar)}
+              className="mt-4 flex items-center gap-2 px-4 py-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-xl text-[11px] font-black uppercase tracking-wider mx-auto hover:bg-emerald-500 hover:text-white transition-all shadow-lg"
+            >
+              <Plus size={12} /> {t('Add Task')}
+            </motion.button>
+          </motion.div>
+        ) : (
+          <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-3">
+            <AnimatePresence mode="popLayout">
+              {/* Overdue first */}
+              {overdueTasks.slice(0, 2).map(task => {
+                const Icon = categoryIcons[task.category] || Plus;
+                const due = task.nextDue?.toDate ? task.nextDue.toDate() : new Date(task.nextDue);
+                return (
+                  <motion.div
+                    key={task.id}
+                    variants={staggerItem}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    whileHover={{ y: -4, scale: 1.01 }}
+                    className="flex items-center gap-4 bg-red-500/5 backdrop-blur-md border border-red-500/20 rounded-2xl p-4 group hover:shadow-[0_8px_30px_rgba(239,68,68,0.15)] transition-all cursor-pointer"
+                  >
+                    <div className="w-11 h-11 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0">
+                      <Icon size={20} className="text-red-500 drop-shadow" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-black text-main truncate group-hover:text-red-500 transition-colors">{task.title}</p>
+                      <p className="text-[10px] font-bold text-red-500 uppercase tracking-wider">
+                        ⚠ {t('Overdue')}: {format(due, 'dd MMM', { locale })}
+                      </p>
+                    </div>
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => handleCompleteTask(task)}
+                      className="w-9 h-9 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all shrink-0"
+                    >
+                      <CheckCircle2 size={16} />
+                    </motion.button>
+                  </motion.div>
+                );
+              })}
+              {/* Upcoming */}
+              {upcomingTasks.map((task, index) => {
+                const Icon = categoryIcons[task.category] || Plus;
+                const colorClass = categoryColors[task.category] || categoryColors.other;
+                const due = task.nextDue?.toDate ? task.nextDue.toDate() : new Date(task.nextDue);
+                const todayTask = isToday(due);
+                return (
+                  <motion.div
+                    key={task.id}
+                    variants={staggerItem}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    whileHover={{ y: -4, scale: 1.01 }}
+                    className={`flex items-center gap-4 rounded-2xl p-4 border backdrop-blur-sm cursor-pointer group transition-colors ${
+                      todayTask
+                        ? 'bg-emerald-500/5 border-emerald-500/30 hover:shadow-[0_8px_30px_rgba(16,185,129,0.15)]'
+                        : 'bg-white/5 dark:bg-black/20 border-white/10 hover:border-emerald-500/30 hover:shadow-[0_8px_30px_rgba(255,255,255,0.05)]'
+                    }`}
+                  >
+                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 border ${colorClass} group-hover:bg-emerald-500 group-hover:text-white transition-colors`}>
+                      <Icon size={20} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-black text-main truncate group-hover:text-emerald-500 transition-colors">{task.title}</p>
+                      <p className={`text-[10px] font-bold uppercase tracking-wider ${todayTask ? 'text-emerald-500' : 'text-text-secondary/60'}`}>
+                        {todayTask ? `📅 ${t('Today')}!` : format(due, 'dd MMM', { locale })}
+                        {task.notes ? ` · ${task.notes}` : ''}
+                      </p>
+                    </div>
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => handleCompleteTask(task)}
+                      className="w-9 h-9 rounded-xl bg-bg-card/50 text-text-secondary flex items-center justify-center hover:bg-emerald-500 hover:text-white hover:shadow-[0_0_15px_rgba(16,185,129,0.5)] transition-all shrink-0"
+                    >
+                      <CheckCircle2 size={16} />
+                    </motion.button>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </motion.div>
+        )}
+
+        {/* Time-critical seeding-mode override — never shown alongside the
+            regular seasonal tip below, since it supersedes it while active. */}
+        {isSeedingMode && (
+          <div className="mt-4 bg-red-500/10 border-2 border-red-500/30 rounded-2xl p-5 relative overflow-hidden animate-pulse shadow-lg shadow-red-500/5">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/10 rounded-bl-full blur-2xl pointer-events-none" />
+            <div className="flex items-center gap-2 mb-3">
+              <Sprout size={14} className="text-red-500" />
+              <span className="text-[10px] font-black text-red-500 uppercase tracking-[0.2em]">
+                {t('Protocol Însămânțare')}
+              </span>
+            </div>
+            <h3 className="text-sm font-black text-red-600 dark:text-red-400 mb-2 leading-snug">Mod Germinare Activ!</h3>
+            <p className="text-[11px] text-red-500 font-bold leading-relaxed mb-4">
+              Evită uscarea embrionului! Irigă "Puțin și Foarte Des": de 3-4 ori pe zi (ex: 09:00, 13:00, 16:00), timp de 2-4 minute.
+            </p>
+            <button
+              onClick={() => onNavigate(Page.CareCalendar)}
+              className="flex items-center gap-1.5 text-[10px] font-black text-red-600 uppercase tracking-wider hover:gap-2.5 transition-all"
+            >
+              {t('Vezi Detalii Calendar')} <ArrowRight size={11} />
+            </button>
+          </div>
+        )}
       </motion.div>
 
       {/* ── FOCUSUL LUNII ── */}
@@ -362,7 +502,7 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.55, type: 'spring' }}
+          transition={{ delay: 0.15, type: 'spring' }}
           className="relative overflow-hidden rounded-3xl border border-white/20 shadow-xl"
         >
           {/* Gradient Background */}
@@ -421,7 +561,7 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
                       key={task.id}
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.6 + idx * 0.08 }}
+                      transition={{ delay: 0.2 + idx * 0.08 }}
                       className={`flex items-center gap-3 px-4 py-3 rounded-2xl border ${colorClass} backdrop-blur-sm`}
                     >
                       <span className="text-base shrink-0">{emoji}</span>
@@ -441,158 +581,15 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
       {/* ── MAIN GRID ── */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
 
-        {/* LEFT: Tasks (3 cols) */}
+        {/* LEFT (3 cols): weather + irrigation */}
         <div className="lg:col-span-3 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xs font-black uppercase tracking-[0.2em] text-text-secondary flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${upcomingTasks.length > 0 ? 'bg-accent-color animate-pulse' : 'bg-emerald-500'}`} />
-              {t('Tasks & Reminders')}
-            </h2>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 mr-2">
-                <span className="text-[10px] font-bold text-text-secondary uppercase tracking-wider hidden sm:block">✨ Autopilot {isAutopilotEnabled ? 'Activ' : 'Oprit'}</span>
-                <button 
-                  onClick={() => setIsAutopilotEnabled(!isAutopilotEnabled)}
-                  className={`relative w-9 h-5 rounded-full transition-colors duration-300 ${isAutopilotEnabled ? 'bg-emerald-500' : 'bg-border-color'}`}
-                >
-                  <div className={`absolute top-0.5 left-0.5 bg-white w-4 h-4 rounded-full transition-transform duration-300 ${isAutopilotEnabled ? 'translate-x-4 shadow-sm' : ''}`} />
-                </button>
-              </div>
-              <button
-                onClick={() => onNavigate(Page.CareCalendar)}
-                className="text-[10px] font-black text-accent-color uppercase tracking-wider flex items-center gap-1 hover:gap-2 transition-all"
-              >
-                {t('View all')} <ChevronRight size={12} />
-              </button>
-            </div>
-          </div>
-
-          {upcomingTasks.length === 0 && overdueTasks.length === 0 ? (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-bg-card/50 backdrop-blur-md border border-border-color rounded-2xl p-8 text-center mb-4"
-            >
-              {isRainingToday ? (
-                <>
-                  <motion.div 
-                    animate={{ y: [0, -10, 0] }}
-                    transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-                    className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-4"
-                  >
-                    <CloudRain size={28} className="text-blue-500 drop-shadow-md" />
-                  </motion.div>
-                  <p className="text-sm font-black text-main mb-1">Astăzi plouă 🌧️</p>
-                  <p className="text-xs text-text-secondary font-medium">Sarcinile de udare sunt suspendate automat. Solul primește destulă apă!</p>
-                </>
-              ) : (
-                <>
-                  <motion.div 
-                    animate={{ rotate: [0, 360] }}
-                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                    className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-4"
-                  >
-                    <CheckCircle2 size={28} className="text-emerald-500 drop-shadow-md" />
-                  </motion.div>
-                  <p className="text-sm font-black text-main mb-1">{t('All caught up!')} 🌿</p>
-                  <p className="text-xs text-text-secondary font-medium">{t('No pending tasks. Your garden is happy!')}</p>
-                </>
-              )}
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => onNavigate(Page.CareCalendar)}
-                className="mt-4 flex items-center gap-2 px-4 py-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-xl text-[11px] font-black uppercase tracking-wider mx-auto hover:bg-emerald-500 hover:text-white transition-all shadow-lg"
-              >
-                <Plus size={12} /> {t('Add Task')}
-              </motion.button>
-            </motion.div>
-          ) : (
-            <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-3">
-              <AnimatePresence mode="popLayout">
-                {/* Overdue first */}
-                {overdueTasks.slice(0, 2).map(task => {
-                  const Icon = categoryIcons[task.category] || Plus;
-                  const due = task.nextDue?.toDate ? task.nextDue.toDate() : new Date(task.nextDue);
-                  return (
-                    <motion.div 
-                      key={task.id}
-                      variants={staggerItem}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                      whileHover={{ y: -4, scale: 1.01 }}
-                      className="flex items-center gap-4 bg-red-500/5 backdrop-blur-md border border-red-500/20 rounded-2xl p-4 group hover:shadow-[0_8px_30px_rgba(239,68,68,0.15)] transition-all cursor-pointer"
-                    >
-                      <div className="w-11 h-11 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0">
-                        <Icon size={20} className="text-red-500 drop-shadow" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-black text-main truncate group-hover:text-red-500 transition-colors">{task.title}</p>
-                        <p className="text-[10px] font-bold text-red-500 uppercase tracking-wider">
-                          ⚠ {t('Overdue')}: {format(due, 'dd MMM', { locale })}
-                        </p>
-                      </div>
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => handleCompleteTask(task)}
-                        className="w-9 h-9 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all shrink-0"
-                      >
-                        <CheckCircle2 size={16} />
-                      </motion.button>
-                    </motion.div>
-                  );
-                })}
-                {/* Upcoming */}
-                {upcomingTasks.map((task, index) => {
-                  const Icon = categoryIcons[task.category] || Plus;
-                  const colorClass = categoryColors[task.category] || categoryColors.other;
-                  const due = task.nextDue?.toDate ? task.nextDue.toDate() : new Date(task.nextDue);
-                  const todayTask = isToday(due);
-                  return (
-                    <motion.div 
-                      key={task.id} 
-                      variants={staggerItem}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                      whileHover={{ y: -4, scale: 1.01 }}
-                      className={`flex items-center gap-4 rounded-2xl p-4 border backdrop-blur-sm cursor-pointer group transition-colors ${
-                        todayTask 
-                          ? 'bg-emerald-500/5 border-emerald-500/30 hover:shadow-[0_8px_30px_rgba(16,185,129,0.15)]' 
-                          : 'bg-white/5 dark:bg-black/20 border-white/10 hover:border-emerald-500/30 hover:shadow-[0_8px_30px_rgba(255,255,255,0.05)]'
-                      }`}
-                    >
-                      <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 border ${colorClass} group-hover:bg-emerald-500 group-hover:text-white transition-colors`}>
-                        <Icon size={20} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-black text-main truncate group-hover:text-emerald-500 transition-colors">{task.title}</p>
-                        <p className={`text-[10px] font-bold uppercase tracking-wider ${todayTask ? 'text-emerald-500' : 'text-text-secondary/60'}`}>
-                          {todayTask ? `📅 ${t('Today')}!` : format(due, 'dd MMM', { locale })}
-                          {task.notes ? ` · ${task.notes}` : ''}
-                        </p>
-                      </div>
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => handleCompleteTask(task)}
-                        className="w-9 h-9 rounded-xl bg-bg-card/50 text-text-secondary flex items-center justify-center hover:bg-emerald-500 hover:text-white hover:shadow-[0_0_15px_rgba(16,185,129,0.5)] transition-all shrink-0"
-                      >
-                        <CheckCircle2 size={16} />
-                      </motion.button>
-                    </motion.div>
-                  );
-                })}
-              </AnimatePresence>
-            </motion.div>
-          )}
-
-          {/* ── WEATHER 7-DAY FORECAST (Inside Tasks Box) ── */}
-          <div className="bg-bg-card border border-border-color rounded-2xl p-5 shadow-sm mt-4">
+          <div className="bg-bg-card border border-border-color rounded-2xl p-5 shadow-sm">
             <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-text-secondary mb-4 flex items-center gap-2">
               <Sun size={14} className="text-yellow-500" />
               {t('7-Day Weather Forecast') || 'Prognoză Vreme 7 Zile'}
             </h3>
             <Weather address={gardenAddress || 'Craiova, Romania'} showFullForecast={true} onWeatherData={setWeatherInfo} />
-            
+
             {/* ET0 Hydration Alerts */}
             {isExpertMode && hydrationAlerts.length > 0 && (
               <div className="mt-4 space-y-2">
@@ -606,87 +603,31 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
             )}
           </div>
 
-          {/* ── IRRIGATION WIDGET ── */}
-          {isExpertMode && (
-            <div className="mt-4">
-              <IrrigationWidget />
-            </div>
-          )}
+          {isExpertMode && <IrrigationWidget />}
         </div>
 
-        {/* RIGHT: Journal + Seasonal tip + AI Lens (2 cols) */}
+        {/* RIGHT (2 cols): vitality ring + AI Lens + Journal + Zones */}
         <div className="lg:col-span-2 space-y-4">
-          
+
+          {/* Garden Vitality — motivational, secondary, not the first thing on screen */}
+          <div className="bg-bg-card border border-border-color rounded-2xl shadow-sm flex justify-center">
+            <GardenVitalityRing
+              level={userProfile?.level || 1}
+              exp={userProfile?.exp || 0}
+              healthStatus={overdueTasks.length > 0 ? 'Atenție' : 'Excelent'}
+            />
+          </div>
+
           {/* AI LENS S.O.S. Dark Glass */}
           {userProfile?.uid && (
-            <AILensScanner 
-              organizationId={organizationId} 
-              userId={userProfile.uid} 
-              userName={userProfile.displayName || ''} 
+            <AILensScanner
+              organizationId={organizationId}
+              userId={userProfile.uid}
+              userName={userProfile.displayName || ''}
               onNavigate={onNavigate}
               asCard={true}
             />
           )}
-
-          {/* Seasonal Guide Card / Seeding Mode Override */}
-          {(() => {
-            const prop = properties[0];
-            const isSeedingMode = prop?.seedingModeUntil ? isAfter(new Date(prop.seedingModeUntil.toDate ? prop.seedingModeUntil.toDate() : prop.seedingModeUntil), new Date()) : false;
-
-            if (isSeedingMode) {
-              return (
-                <div className="bg-red-500/10 border-2 border-red-500/30 rounded-2xl p-5 relative overflow-hidden animate-pulse shadow-lg shadow-red-500/5">
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/10 rounded-bl-full blur-2xl pointer-events-none" />
-                  <div className="flex items-center gap-2 mb-3">
-                    <Sprout size={14} className="text-red-500" />
-                    <span className="text-[10px] font-black text-red-500 uppercase tracking-[0.2em]">
-                      {t('Protocol Însămânțare')}
-                    </span>
-                  </div>
-                  <h3 className="text-sm font-black text-red-600 dark:text-red-400 mb-2 leading-snug">Mod Germinare Activ!</h3>
-                  <p className="text-[11px] text-red-500 font-bold leading-relaxed mb-4">
-                    Evită uscarea embrionului! Irigă "Puțin și Foarte Des": de 3-4 ori pe zi (ex: 09:00, 13:00, 16:00), timp de 2-4 minute.
-                  </p>
-                  <button
-                    onClick={() => onNavigate(Page.CareCalendar)}
-                    className="flex items-center gap-1.5 text-[10px] font-black text-red-600 uppercase tracking-wider hover:gap-2.5 transition-all"
-                  >
-                    {t('Vezi Detalii Calendar')} <ArrowRight size={11} />
-                  </button>
-                </div>
-              );
-            }
-
-            if (seasonalTip) {
-              return (
-                <div className="bg-gradient-to-br from-emerald-500/10 to-teal-500/5 border border-emerald-500/20 rounded-2xl p-5 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-bl-full blur-2xl pointer-events-none" />
-                  <div className="flex items-center gap-2 mb-3">
-                    <Star size={14} className="text-amber-500 fill-amber-500" />
-                    <span className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em]">
-                      {t('Seasonal Tip')} · {format(now, 'MMMM', { locale })}
-                    </span>
-                  </div>
-                  <h3 className="text-sm font-black text-main mb-3 leading-snug">{seasonalTip.title}</h3>
-                  <motion.ul variants={staggerContainer} initial="hidden" animate="visible" className="space-y-2">
-                    {seasonalTip.tasks.map((task: any, i: number) => (
-                      <motion.li variants={staggerItem} key={i} className="flex items-start gap-2 text-[11px] text-text-secondary font-medium leading-relaxed">
-                        <div className="w-1 h-1 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
-                        {task.title}
-                      </motion.li>
-                    ))}
-                  </motion.ul>
-                  <button
-                    onClick={() => onNavigate(Page.CareCalendar)}
-                    className="mt-4 flex items-center gap-1.5 text-[10px] font-black text-emerald-600 uppercase tracking-wider hover:gap-2.5 transition-all"
-                  >
-                    {t('Full Guide')} <ArrowRight size={11} />
-                  </button>
-                </div>
-              );
-            }
-            return null;
-          })()}
 
           {/* Smart Troubleshooter */}
           <SmartTroubleshooter />
