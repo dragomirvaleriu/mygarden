@@ -11,8 +11,12 @@ import {
   Eye,
   EyeOff,
   ShieldCheck,
-  ChevronRight
+  ChevronRight,
+  Wrench,
+  Sprout,
+  Search
 } from 'lucide-react';
+import { Card } from '../components/ui/primitives';
 import {
   auth,
   db,
@@ -122,6 +126,31 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
           {TIER_LABEL[subscriptionTier]}
         </span>
       </div>
+
+      {/* Quick Links — Tools/GardenSetup/Explore live here instead of as
+          separate tabs, now that navigation is unified to 5 tabs. */}
+      <Card padding="none" className="overflow-hidden divide-y divide-border-color">
+        {[
+          { page: Page.Tools, icon: Wrench, label: 'Trusa de Scule', desc: 'Calculatoare, jurnal de tratamente și unelte pentru gazon' },
+          { page: Page.GardenSetup, icon: Sprout, label: 'Configurare Curte', desc: 'Suprafață, tip de sol, zone și echipamente' },
+          { page: Page.Explore, icon: Search, label: 'Explorează', desc: 'Descoperă conținut și idei noi' },
+        ].map(({ page, icon: Icon, label, desc }) => (
+          <button
+            key={page}
+            onClick={() => onNavigate(page)}
+            className="w-full flex items-center gap-4 p-5 hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-left"
+          >
+            <div className="w-11 h-11 rounded-full bg-accent-color/10 text-accent-color flex items-center justify-center shrink-0">
+              <Icon size={20} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-black text-main">{label}</p>
+              <p className="text-xs text-text-secondary font-medium mt-0.5">{desc}</p>
+            </div>
+            <ChevronRight size={18} className="text-text-secondary shrink-0" />
+          </button>
+        ))}
+      </Card>
 
       {/* Subscription */}
       {subscriptionTier === 'free' && (

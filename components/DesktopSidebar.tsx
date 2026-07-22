@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Page, UserProfile } from '../src/types';
 import { auth, logout, db, doc, updateDoc } from '../services/firebase';
-import { Sun, Moon, LogOut, Briefcase, Users, Calendar, Warehouse, Settings, Wrench, LayoutDashboard, Square, Map, BarChart, Wifi, WifiOff, ShieldCheck, CreditCard, Zap, Shield, User, Sprout, Camera, Signal, Image as ImageIcon, BookOpen, Clock, CheckCircle2, ArrowUpCircle, Search } from 'lucide-react';
+import { Sun, Moon, LogOut, Calendar, LayoutDashboard, ShieldCheck, Shield, User, Camera, BookOpen } from 'lucide-react';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import { useTranslation } from 'react-i18next';
 import { AdBanner } from '../src/components/AdBanner';
-import { useData } from '../src/context/DataContext';
 import { APP_NAME } from '../src/config/appVariant';
 
 interface Props {
@@ -37,7 +36,6 @@ const DesktopSidebar: React.FC<Props> = ({
   const { t, i18n } = useTranslation();
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const langMenuRef = React.useRef<HTMLDivElement>(null);
-  const { isExpertMode } = useData();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -49,27 +47,16 @@ const DesktopSidebar: React.FC<Props> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Same 5 tabs on every screen size (see MobileDock for the mobile
+  // counterpart — keep both lists in sync). Tools/GardenSetup/Explore live
+  // under "Eu" (AccountSettings' Quick Links) instead of being separate tabs.
   const navItems: { id: Page; label: string; icon: any; hasNotification?: boolean }[] = [
-    { id: Page.Dashboard, label: t('Dashboard'), icon: LayoutDashboard },
+    { id: Page.Dashboard, label: t('Acasă'), icon: LayoutDashboard },
+    { id: Page.CareCalendar, label: t('Calendar'), icon: Calendar },
+    { id: Page.Academy, label: t('Academie'), icon: BookOpen },
+    { id: Page.GardenJournal, label: t('Jurnal'), icon: Camera },
+    { id: Page.Administration, label: t('Eu'), icon: User },
   ];
-
-  if (isExpertMode) {
-    navItems.push(
-      { id: Page.Tools, label: 'Trusa de Scule', icon: Wrench },
-      { id: Page.Explore, label: 'Explorează', icon: Search },
-      { id: Page.Gallery, label: 'Jurnalul Grădinii', icon: Camera },
-      { id: Page.Academy, label: 'Calendar & Academie', icon: BookOpen },
-      { id: Page.GardenSetup, label: 'Configurare Curte', icon: Sprout },
-      { id: Page.Administration, label: 'Profilul Tău', icon: User }
-    );
-  } else {
-    navItems.push(
-      { id: Page.Tools, label: 'Sarcinile Mele', icon: CheckCircle2 },
-      { id: Page.Explore, label: 'Explorează', icon: Search },
-      { id: Page.Academy, label: 'Ghiduri & Sfaturi', icon: BookOpen },
-      { id: Page.Administration, label: 'Setări Cont', icon: User }
-    );
-  }
 
   return (
     <div className="relative h-full bg-bg-card border-r border-border-color p-4 flex flex-col">

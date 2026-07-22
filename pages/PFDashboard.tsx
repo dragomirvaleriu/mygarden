@@ -8,7 +8,6 @@ import { IrrigationWidget } from '../components/iot/IrrigationWidget';
 import { TreatmentCalculator } from '../components/TreatmentCalculator';
 import { AILensScanner } from '../components/vision/AILensScanner';
 import { GardenVitalityRing } from '../components/gamification/GardenVitalityRing';
-import { FloatingDock } from '../components/layout/FloatingDock';
 import { SmartTroubleshooter } from '../components/SmartTroubleshooter';
 import { Card, SectionHeader } from '../components/ui/primitives';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -797,9 +796,6 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
         </div>
       </div>
 
-      {/* ── FLOATING DOCK ── */}
-      <FloatingDock onNavigate={onNavigate} activePage={Page.Dashboard} />
-      
       {/* TEMP DEV BUTTON — only ever rendered in the local dev build (import.meta.env.DEV),
           never in a production bundle, so homeowners can't see or trigger it. */}
       {import.meta.env.DEV && (

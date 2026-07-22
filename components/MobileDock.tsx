@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Page } from '../src/types';
-import { LayoutDashboard, Sprout, Camera, Wrench, BookOpen, User, WifiOff, Search } from 'lucide-react';
+import { LayoutDashboard, Calendar, Camera, BookOpen, User, WifiOff } from 'lucide-react';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 
 interface Props {
@@ -11,28 +11,27 @@ interface Props {
   subscriptionTier: 'free' | 'pro' | 'enterprise' | 'lifetime';
 }
 
+// The 5 tabs every screen size shares (see DesktopSidebar for the desktop
+// counterpart — keep both lists in sync). Tools/GardenSetup/Explore live
+// under "Eu" (AccountSettings' Quick Links) instead of being separate tabs.
 const MobileDock: React.FC<Props> = ({ activePage, onNavigate, profile }) => {
   const { t } = useTranslation();
   const isOnline = useOnlineStatus();
 
   const items: { id: Page; icon: any }[] = [
     { id: Page.Dashboard, icon: LayoutDashboard },
-    { id: Page.Tools, icon: Wrench },
-    { id: Page.Explore, icon: Search },
-    { id: Page.Gallery, icon: Camera },
+    { id: Page.CareCalendar, icon: Calendar },
     { id: Page.Academy, icon: BookOpen },
-    { id: Page.GardenSetup, icon: Sprout },
+    { id: Page.GardenJournal, icon: Camera },
     { id: Page.Administration, icon: User },
   ];
 
   const getLabel = (id: string) => {
     if (id === Page.Dashboard) return t('Acasă');
-    if (id === Page.Administration) return t('Setări');
-    if (id === Page.GardenSetup) return t('Curte');
-    if (id === Page.Academy) return t('Ghiduri');
-    if (id === Page.Tools) return t('Scule');
-    if (id === Page.Explore) return t('Explorează');
-    if (id === Page.Gallery) return t('Galerie');
+    if (id === Page.CareCalendar) return t('Calendar');
+    if (id === Page.Academy) return t('Academie');
+    if (id === Page.GardenJournal) return t('Jurnal');
+    if (id === Page.Administration) return t('Eu');
     return '';
   };
 
