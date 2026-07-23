@@ -30,7 +30,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.receiveTelemetry = exports.weatherAlert = exports.stripeWebhook = exports.createGiftCode = exports.redeemGiftCode = void 0;
+exports.updateUserSubscription = exports.createAd = exports.listAllUsers = exports.createGiftCodeForProduct = exports.receiveTelemetry = exports.weatherAlert = exports.stripeWebhook = exports.createCheckoutSession = exports.createGiftCode = exports.redeemGiftCode = void 0;
 const functions = __importStar(require("firebase-functions"));
 const admin = __importStar(require("firebase-admin"));
 const stripe_1 = __importDefault(require("stripe"));
@@ -42,6 +42,15 @@ const stripeSecret = ((_a = functions.config().stripe) === null || _a === void 0
 const stripe = new stripe_1.default(stripeSecret, {
     apiVersion: '2022-11-15',
 });
+async function getCallerOrgId(uid) {
+    var _a;
+    const userSnap = await db.collection('users').doc(uid).get();
+    const orgId = (_a = userSnap.data()) === null || _a === void 0 ? void 0 : _a.organizationId;
+    if (!orgId) {
+        throw new functions.https.HttpsError('failed-precondition', 'No organization found for this account.');
+    }
+    return orgId;
+}
 exports.redeemGiftCode = functions.https.onCall(async (data, context) => {
     if (!context.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be logged in.');
@@ -51,37 +60,36 @@ exports.redeemGiftCode = functions.https.onCall(async (data, context) => {
         throw new functions.https.HttpsError('invalid-argument', 'Code is required.');
     }
     const giftCodeRef = db.collection('gift_codes').doc(code.toUpperCase());
-    const snap = await giftCodeRef.get();
-    if (!snap.exists) {
-        throw new functions.https.HttpsError('not-found', 'Invalid gift code.');
-    }
-    const giftData = snap.data();
-    if (giftData === null || giftData === void 0 ? void 0 : giftData.used) {
-        throw new functions.https.HttpsError('failed-precondition', 'Code already used.');
-    }
-    const now = Date.now();
-    const durationDays = (giftData === null || giftData === void 0 ? void 0 : giftData.days) || 30;
-    const expiresAt = new Date(now + durationDays * 24 * 60 * 60 * 1000);
-    await db.collection('users').doc(context.auth.uid).update({
-        plan: 'pro',
-        planExpires: admin.firestore.Timestamp.fromDate(expiresAt),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
-    await giftCodeRef.update({
-        used: true,
-        usedBy: context.auth.uid,
-        usedAt: admin.firestore.FieldValue.serverTimestamp(),
+    const orgId = await getCallerOrgId(context.auth.uid);
+    const expiresAt = await db.runTransaction(async (tx) => {
+        const snap = await tx.get(giftCodeRef);
+        if (!snap.exists) {
+            throw new functions.https.HttpsError('not-found', 'Invalid gift code.');
+        }
+        const giftData = snap.data();
+        if (giftData === null || giftData === void 0 ? void 0 : giftData.used) {
+            throw new functions.https.HttpsError('failed-precondition', 'Code already used.');
+        }
+        const durationDays = (giftData === null || giftData === void 0 ? void 0 : giftData.days) || 30;
+        const expires = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000);
+        tx.update(db.collection('organizations').doc(orgId), {
+            subscriptionTier: 'pro',
+            planExpires: admin.firestore.Timestamp.fromDate(expires),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        tx.update(giftCodeRef, {
+            used: true,
+            usedBy: context.auth.uid,
+            usedByOrg: orgId,
+            usedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        return expires;
     });
     return { success: true, expiresAt };
 });
 exports.createGiftCode = functions.https.onCall(async (data, context) => {
-    if (!context.auth) {
-        throw new functions.https.HttpsError('unauthenticated', 'Admin must be logged in.');
-    }
-    const userSnap = await db.collection('users').doc(context.auth.uid).get();
-    const userData = userSnap.data();
-    if ((userData === null || userData === void 0 ? void 0 : userData.role) !== 'admin' || (userData === null || userData === void 0 ? void 0 : userData.plan) !== 'pro') {
-        throw new functions.https.HttpsError('permission-denied', 'Only Pro Admins can generate codes.');
+    if (!context.auth || context.auth.token.email !== 'dragomirvaleriu@gmail.com') {
+        throw new functions.https.HttpsError('permission-denied', 'Only the product owner can generate gift codes.');
     }
     const days = data.days || 30;
     const code = Math.random().toString(36).substring(2, 10).toUpperCase();
@@ -93,6 +101,31 @@ exports.createGiftCode = functions.https.onCall(async (data, context) => {
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
     return { success: true, code };
+});
+exports.createCheckoutSession = functions.https.onCall(async (data, context) => {
+    var _a, _b;
+    if (!context.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'User must be logged in.');
+    }
+    const priceId = (_a = functions.config().stripe) === null || _a === void 0 ? void 0 : _a.price_id;
+    if (!priceId || !((_b = functions.config().stripe) === null || _b === void 0 ? void 0 : _b.secret)) {
+        throw new functions.https.HttpsError('failed-precondition', 'Payments are not configured yet.');
+    }
+    const { successUrl, cancelUrl } = data;
+    if (!successUrl || !cancelUrl) {
+        throw new functions.https.HttpsError('invalid-argument', 'successUrl and cancelUrl are required.');
+    }
+    const orgId = await getCallerOrgId(context.auth.uid);
+    const session = await stripe.checkout.sessions.create({
+        mode: 'payment',
+        payment_method_types: ['card'],
+        line_items: [{ price: priceId, quantity: 1 }],
+        client_reference_id: orgId,
+        customer_email: context.auth.token.email,
+        success_url: successUrl,
+        cancel_url: cancelUrl,
+    });
+    return { url: session.url };
 });
 exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
     var _a;
@@ -108,12 +141,12 @@ exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
     }
     if (event.type === 'checkout.session.completed') {
         const session = event.data.object;
-        const userId = session.client_reference_id;
-        if (userId) {
+        const orgId = session.client_reference_id;
+        if (orgId) {
             const expiresAt = new Date();
             expiresAt.setFullYear(expiresAt.getFullYear() + 1);
-            await db.collection('users').doc(userId).update({
-                plan: 'pro',
+            await db.collection('organizations').doc(orgId).update({
+                subscriptionTier: 'pro',
                 planExpires: admin.firestore.Timestamp.fromDate(expiresAt),
                 updatedAt: admin.firestore.FieldValue.serverTimestamp(),
             });
@@ -229,5 +262,88 @@ exports.receiveTelemetry = functions.https.onCall(async (data, context) => {
         return { success: true, status: 'written', stateChanged, thresholdCrossed, timeLimitExceeded };
     }
     return { success: true, status: 'buffered', reason: 'No state change or threshold crossed, within 4 hour heartbeat buffer.' };
+});
+exports.createGiftCodeForProduct = functions.https.onCall(async (data, context) => {
+    if (!context.auth || context.auth.token.email !== 'dragomirvaleriu@gmail.com') {
+        throw new functions.https.HttpsError('permission-denied', 'Only superadmin can create gift codes.');
+    }
+    const { userId, product, days = 30 } = data;
+    if (!userId || !product) {
+        throw new functions.https.HttpsError('invalid-argument', 'userId and product are required.');
+    }
+    const code = Math.random().toString(36).substring(2, 10).toUpperCase();
+    try {
+        await db.collection('gift_codes').doc(code).set({
+            code,
+            product,
+            days,
+            used: false,
+            createdBy: context.auth.uid,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        return { success: true, code };
+    }
+    catch (err) {
+        throw new functions.https.HttpsError('internal', 'Failed to create gift code: ' + err.message);
+    }
+});
+exports.listAllUsers = functions.https.onCall(async (data, context) => {
+    if (!context.auth || context.auth.token.email !== 'dragomirvaleriu@gmail.com') {
+        throw new functions.https.HttpsError('permission-denied', 'Only superadmin can list users.');
+    }
+    try {
+        const usersSnap = await db.collection('users').get();
+        const users = usersSnap.docs.map(doc => (Object.assign({ uid: doc.id }, doc.data())));
+        return { success: true, users, count: users.length };
+    }
+    catch (err) {
+        throw new functions.https.HttpsError('internal', 'Failed to list users: ' + err.message);
+    }
+});
+exports.createAd = functions.https.onCall(async (data, context) => {
+    if (!context.auth || context.auth.token.email !== 'dragomirvaleriu@gmail.com') {
+        throw new functions.https.HttpsError('permission-denied', 'Only superadmin can create ads.');
+    }
+    const { title, imageUrl, link, company, discountPercent } = data;
+    if (!title || !imageUrl || !link || !company) {
+        throw new functions.https.HttpsError('invalid-argument', 'title, imageUrl, link, and company are required.');
+    }
+    try {
+        const docRef = await db.collection('superadmin').doc('data').collection('ads').add({
+            title,
+            imageUrl,
+            link,
+            company,
+            discountPercent: discountPercent || 0,
+            isActive: true,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            createdBy: context.auth.uid,
+        });
+        return { success: true, adId: docRef.id };
+    }
+    catch (err) {
+        throw new functions.https.HttpsError('internal', 'Failed to create ad: ' + err.message);
+    }
+});
+exports.updateUserSubscription = functions.https.onCall(async (data, context) => {
+    if (!context.auth || context.auth.token.email !== 'dragomirvaleriu@gmail.com') {
+        throw new functions.https.HttpsError('permission-denied', 'Only superadmin can update subscriptions.');
+    }
+    const { userId, product, expiresAt } = data;
+    if (!userId || !product) {
+        throw new functions.https.HttpsError('invalid-argument', 'userId and product are required.');
+    }
+    try {
+        const expirationDate = expiresAt || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+        await db.collection('users').doc(userId).update({
+            subscriptionProduct: product,
+            subscriptionExpiresAt: admin.firestore.Timestamp.fromDate(new Date(expirationDate)),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        return { success: true };
+    }
+    catch (err) {
+        throw new functions.https.HttpsError('internal', 'Failed to update subscription: ' + err.message);
+    }
 });
 //# sourceMappingURL=index.js.map

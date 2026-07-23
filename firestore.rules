@@ -335,5 +335,10 @@ service cloud.firestore {
       allow read: if isSignedIn();
       allow write: if isSuperAdmin();
     }
+
+    // SuperAdmin collections
+    match /superadmin/{document=**} {
+      allow read, write: if isSuperAdmin();
+    }
   }
 }

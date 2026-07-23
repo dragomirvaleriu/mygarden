@@ -44,6 +44,7 @@ const PFTools = React.lazy(() => import('../pages/PFTools'));
 const GardenSetup = React.lazy(() => import('../pages/GardenSetup').then(m => ({ default: m.GardenSetup })));
 const AccountSettings = React.lazy(() => import('../pages/AccountSettings'));
 const Explore = React.lazy(() => import('../pages/Explore'));
+const SuperAdmin = React.lazy(() => import('../pages/SuperAdmin'));
 
 const App: React.FC = () => {
   const { t } = useTranslation();
@@ -227,6 +228,32 @@ const App: React.FC = () => {
     return () => { unsubOrg(); unsubSystem(); };
   }, [profile?.organizationId]);
 
+  // Purchase success handler: check for ?purchaseSuccess= param and update org subscription
+  useEffect(() => {
+    if (!profile?.organizationId || !user?.uid) return;
+
+    const params = new URLSearchParams(window.location.hash.split('?')[1]);
+    const purchaseSuccess = params.get('purchaseSuccess');
+
+    if (purchaseSuccess) {
+      import('react-hot-toast').then(({ default: toast }) => {
+        const expiresAt = new Date();
+        expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+
+        updateDoc(doc(db, 'organizations', profile.organizationId), {
+          subscriptionProduct: purchaseSuccess,
+          planExpires: expiresAt,
+        }).then(() => {
+          toast.success(`✨ Cumpărare finalizată! Acces ${purchaseSuccess === 'adFree' ? 'fără reclame' : purchaseSuccess === 'academyPro' ? 'Academy PRO' : 'complet'} activat!`, { duration: 6000 });
+          // Remove param from URL
+          window.location.hash = window.location.hash.split('?')[0];
+        }).catch(err => {
+          toast.error('Eroare la activare abonament: ' + err.message);
+        });
+      });
+    }
+  }, [profile?.organizationId, user?.uid]);
+
   // Maintenance auto-refresh timer: re-render once the maintenance window ends.
   const [, setTick] = useState(0);
   useEffect(() => {
@@ -395,6 +422,7 @@ const App: React.FC = () => {
             case Page.Gallery: return <GardenJournal organizationId={profile.organizationId} onNavigate={navigateTo} userId={profile.uid} isPF={true} />;
             case Page.Academy: return <Academy subscriptionTier={subscriptionTier} onNavigateToUpgrade={() => navigateTo(Page.Administration)} />;
             case Page.Explore: return <Explore organizationId={profile.organizationId} />;
+            case Page.SuperAdmin: return <SuperAdmin userProfile={profile} />;
 
             default: return <PFDashboard onNavigate={navigateTo} organizationId={profile.organizationId} userProfile={profile} accountType='PF' />;
           }

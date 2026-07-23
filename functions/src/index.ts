@@ -106,30 +106,36 @@ export const createGiftCode = functions.https.onCall(async (data, context) => {
 
 /**
  * Create a Stripe Checkout session for the caller's organization to
- * purchase My Garden PRO. One-time payment (not a recurring subscription —
- * matches the "no hidden auto-renewal, pay once, 365 days" copy in the
- * Academy paywall), so `mode: 'payment'`. successUrl/cancelUrl are passed
- * from the client (it knows window.location.origin); everything else that
- * determines the price is server-side config, not client input.
+ * purchase one of 3 products. One-time payment (not a recurring subscription —
+ * matches the "no hidden auto-renewal, pay once, 365 days" copy).
  *
- * Requires `stripe.price_id` to be set via:
- *   firebase functions:config:set stripe.secret="sk_live_..." stripe.price_id="price_..." stripe.webhook_secret="whsec_..."
- * Until that's configured this throws a clear "not configured" error
- * instead of silently using a placeholder key.
+ * Requires Stripe price IDs to be set via:
+ *   firebase functions:config:set \
+ *     stripe.secret="sk_live_..." \
+ *     stripe.price_id_adfree="price_..." \
+ *     stripe.price_id_academypro="price_..." \
+ *     stripe.price_id_bundle="price_..." \
+ *     stripe.webhook_secret="whsec_..."
  */
 export const createCheckoutSession = functions.https.onCall(async (data, context) => {
     if (!context.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be logged in.');
     }
 
-    const priceId = functions.config().stripe?.price_id;
-    if (!priceId || !functions.config().stripe?.secret) {
-        throw new functions.https.HttpsError('failed-precondition', 'Payments are not configured yet.');
+    const { successUrl, cancelUrl, product } = data;
+    if (!successUrl || !cancelUrl || !product) {
+        throw new functions.https.HttpsError('invalid-argument', 'successUrl, cancelUrl, and product are required.');
     }
 
-    const { successUrl, cancelUrl } = data;
-    if (!successUrl || !cancelUrl) {
-        throw new functions.https.HttpsError('invalid-argument', 'successUrl and cancelUrl are required.');
+    const priceIdMap: Record<string, string | undefined> = {
+        adFree: functions.config().stripe?.price_id_adfree,
+        academyPro: functions.config().stripe?.price_id_academypro,
+        bundle: functions.config().stripe?.price_id_bundle,
+    };
+
+    const priceId = priceIdMap[product];
+    if (!priceId || !functions.config().stripe?.secret) {
+        throw new functions.https.HttpsError('failed-precondition', 'Payments are not configured yet.');
     }
 
     const orgId = await getCallerOrgId(context.auth.uid);
@@ -142,6 +148,7 @@ export const createCheckoutSession = functions.https.onCall(async (data, context
         customer_email: context.auth.token.email,
         success_url: successUrl,
         cancel_url: cancelUrl,
+        metadata: { product },
     });
 
     return { url: session.url };
@@ -165,21 +172,25 @@ export const stripeWebhook = functions.https.onRequest(async (req, res) => {
 
     if (event.type === 'checkout.session.completed') {
         const session = event.data.object as any;
-        // Set by createCheckoutSession as the organization's ID, not a user's —
-        // usePlan() resolves PRO status from organizations/{orgId}, so writing
-        // anywhere else leaves a genuinely-paid customer looking like Free.
         const orgId = session.client_reference_id;
+        const product = session.metadata?.product || 'bundle';
 
         if (orgId) {
-            // Upgrade for 1 year (one-time payment, no recurring subscription)
             const expiresAt = new Date();
             expiresAt.setFullYear(expiresAt.getFullYear() + 1);
 
-            await db.collection('organizations').doc(orgId).update({
-                subscriptionTier: 'pro',
+            const updateData: Record<string, any> = {
+                subscriptionProduct: product,
                 planExpires: admin.firestore.Timestamp.fromDate(expiresAt),
                 updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-            });
+            };
+
+            // Also set subscriptionTier='pro' for backwards compatibility with usePlan()
+            if (product === 'academyPro' || product === 'bundle') {
+                updateData.subscriptionTier = 'pro';
+            }
+
+            await db.collection('organizations').doc(orgId).update(updateData);
         }
     }
 
@@ -348,4 +359,119 @@ export const receiveTelemetry = functions.https.onCall(async (data, context) => 
     }
 
     return { success: true, status: 'buffered', reason: 'No state change or threshold crossed, within 4 hour heartbeat buffer.' };
+});
+
+/**
+ * SuperAdmin: Create a gift code for a specific product
+ */
+export const createGiftCodeForProduct = functions.https.onCall(async (data, context) => {
+    // Verify superadmin
+    if (!context.auth || context.auth.token.email !== 'dragomirvaleriu@gmail.com') {
+        throw new functions.https.HttpsError('permission-denied', 'Only superadmin can create gift codes.');
+    }
+
+    const { userId, product, days = 30 } = data;
+    if (!userId || !product) {
+        throw new functions.https.HttpsError('invalid-argument', 'userId and product are required.');
+    }
+
+    const code = Math.random().toString(36).substring(2, 10).toUpperCase();
+
+    try {
+        await db.collection('gift_codes').doc(code).set({
+            code,
+            product,
+            days,
+            used: false,
+            createdBy: context.auth.uid,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        return { success: true, code };
+    } catch (err: any) {
+        throw new functions.https.HttpsError('internal', 'Failed to create gift code: ' + err.message);
+    }
+});
+
+/**
+ * SuperAdmin: List all users (paginated)
+ */
+export const listAllUsers = functions.https.onCall(async (data, context) => {
+    // Verify superadmin
+    if (!context.auth || context.auth.token.email !== 'dragomirvaleriu@gmail.com') {
+        throw new functions.https.HttpsError('permission-denied', 'Only superadmin can list users.');
+    }
+
+    try {
+        const usersSnap = await db.collection('users').get();
+        const users = usersSnap.docs.map(doc => ({
+            uid: doc.id,
+            ...doc.data()
+        }));
+
+        return { success: true, users, count: users.length };
+    } catch (err: any) {
+        throw new functions.https.HttpsError('internal', 'Failed to list users: ' + err.message);
+    }
+});
+
+/**
+ * SuperAdmin: Create/update an advertisement
+ */
+export const createAd = functions.https.onCall(async (data, context) => {
+    // Verify superadmin
+    if (!context.auth || context.auth.token.email !== 'dragomirvaleriu@gmail.com') {
+        throw new functions.https.HttpsError('permission-denied', 'Only superadmin can create ads.');
+    }
+
+    const { title, imageUrl, link, company, discountPercent } = data;
+    if (!title || !imageUrl || !link || !company) {
+        throw new functions.https.HttpsError('invalid-argument', 'title, imageUrl, link, and company are required.');
+    }
+
+    try {
+        const docRef = await db.collection('superadmin').doc('data').collection('ads').add({
+            title,
+            imageUrl,
+            link,
+            company,
+            discountPercent: discountPercent || 0,
+            isActive: true,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            createdBy: context.auth.uid,
+        });
+
+        return { success: true, adId: docRef.id };
+    } catch (err: any) {
+        throw new functions.https.HttpsError('internal', 'Failed to create ad: ' + err.message);
+    }
+});
+
+/**
+ * SuperAdmin: Update user subscription
+ */
+export const updateUserSubscription = functions.https.onCall(async (data, context) => {
+    // Verify superadmin
+    if (!context.auth || context.auth.token.email !== 'dragomirvaleriu@gmail.com') {
+        throw new functions.https.HttpsError('permission-denied', 'Only superadmin can update subscriptions.');
+    }
+
+    const { userId, product, expiresAt } = data;
+    if (!userId || !product) {
+        throw new functions.https.HttpsError('invalid-argument', 'userId and product are required.');
+    }
+
+    try {
+        const expirationDate = expiresAt || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+        await db.collection('users').doc(userId).update({
+            subscriptionProduct: product,
+            subscriptionExpiresAt: admin.firestore.Timestamp.fromDate(new Date(expirationDate)),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        return { success: true };
+    } catch (err: any) {
+        throw new functions.https.HttpsError('internal', 'Failed to update subscription: ' + err.message);
+    }
 });

@@ -57,6 +57,7 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
   const [isSavingLanguage, setIsSavingLanguage] = useState(false);
   const [giftCode, setGiftCode] = useState('');
   const [isRedeeming, setIsRedeeming] = useState(false);
+  const [isPurchasing, setIsPurchasing] = useState(false);
 
   const handleSaveName = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,6 +126,25 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
     await logout();
   };
 
+  const handlePurchaseProduct = async (product: 'adFree' | 'academyPro' | 'bundle') => {
+    setIsPurchasing(true);
+    try {
+      const checkout = httpsCallable(functions, 'createCheckoutSession');
+      const result: any = await checkout({
+        successUrl: `${window.location.origin}?purchaseSuccess=${product}`,
+        cancelUrl: window.location.origin,
+        product,
+      });
+      if (result.data.url) {
+        window.location.href = result.data.url;
+      }
+    } catch (err: any) {
+      toast.error('Eroare la inițierea cumpărăturii: ' + (err?.message || 'Unknown error'));
+    } finally {
+      setIsPurchasing(false);
+    }
+  };
+
   const handleRedeemGiftCode = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!giftCode.trim() || isRedeeming) return;
@@ -167,9 +187,16 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
             <p className="font-black text-main truncate">{displayName || 'Utilizator'}</p>
             <p className="text-sm text-text-secondary font-medium truncate">{userProfile.email}</p>
           </div>
-          <span className="px-2.5 py-1 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-[10px] font-black rounded-full uppercase tracking-widest shrink-0">
-            {TIER_LABEL[subscriptionTier]}
-          </span>
+          <div className="flex flex-col items-end gap-1">
+            <span className="px-2.5 py-1 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-[10px] font-black rounded-full uppercase tracking-widest shrink-0">
+              {TIER_LABEL[subscriptionTier]}
+            </span>
+            {userProfile.subscriptionProduct && userProfile.subscriptionExpiresAt && (
+              <span className="text-[9px] text-text-secondary font-medium">
+                {new Date(userProfile.subscriptionExpiresAt).toLocaleDateString()}
+              </span>
+            )}
+          </div>
         </div>
 
         <form onSubmit={handleSaveName} className="stihl-card rounded-lg p-5 bg-bg-card border border-border-color space-y-3">
@@ -237,6 +264,71 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
           </div>
           <ChevronRight size={20} className="text-text-secondary shrink-0" />
         </button>
+      )}
+
+      {/* Subscription Products */}
+      {subscriptionTier === 'free' && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 text-text-secondary">
+            <Sparkles size={14} className="text-accent-color" />
+            <span className="text-[11px] font-bold uppercase tracking-wider">Pachete Premium</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {/* Ad-Free */}
+            <div className="stihl-card rounded-lg p-5 bg-bg-card border border-border-color flex flex-col">
+              <h3 className="font-black text-main mb-1">Ad-Free</h3>
+              <p className="text-2xl font-black text-accent-color mb-3">$2</p>
+              <ul className="text-xs text-text-secondary space-y-2 mb-4 flex-1">
+                <li>✓ Fără reclame</li>
+                <li>✓ Suport prioritar</li>
+              </ul>
+              <button
+                onClick={() => handlePurchaseProduct('adFree')}
+                disabled={isPurchasing}
+                className="w-full stihl-button py-2.5 rounded-md font-bold uppercase tracking-wider text-xs text-white shadow-md flex items-center justify-center gap-2 disabled:opacity-60"
+              >
+                {isPurchasing ? <Loader2 size={14} className="animate-spin" /> : 'Cumpără'}
+              </button>
+            </div>
+
+            {/* Academy Pro */}
+            <div className="stihl-card rounded-lg p-5 bg-bg-card border border-border-color flex flex-col ring-2 ring-accent-color ring-opacity-50">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-black text-main">Academy Pro</h3>
+                <span className="text-[8px] font-black bg-accent-color text-white px-2 py-1 rounded">POPULAR</span>
+              </div>
+              <p className="text-2xl font-black text-accent-color mb-3">$2</p>
+              <ul className="text-xs text-text-secondary space-y-2 mb-4 flex-1">
+                <li>✓ Cursuri complete</li>
+                <li>✓ Acces la Academy PRO</li>
+              </ul>
+              <button
+                onClick={() => handlePurchaseProduct('academyPro')}
+                disabled={isPurchasing}
+                className="w-full stihl-button py-2.5 rounded-md font-bold uppercase tracking-wider text-xs text-white shadow-md flex items-center justify-center gap-2 disabled:opacity-60"
+              >
+                {isPurchasing ? <Loader2 size={14} className="animate-spin" /> : 'Cumpără'}
+              </button>
+            </div>
+
+            {/* Bundle */}
+            <div className="stihl-card rounded-lg p-5 bg-gradient-to-br from-emerald-50 dark:from-emerald-900/20 to-teal-50 dark:to-teal-900/20 border border-emerald-500/30 flex flex-col">
+              <h3 className="font-black text-main mb-1">Bundle</h3>
+              <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mb-3">$3</p>
+              <ul className="text-xs text-text-secondary space-y-2 mb-4 flex-1">
+                <li>✓ Fără reclame</li>
+                <li>✓ Academy PRO complet</li>
+              </ul>
+              <button
+                onClick={() => handlePurchaseProduct('bundle')}
+                disabled={isPurchasing}
+                className="w-full stihl-button py-2.5 rounded-md font-bold uppercase tracking-wider text-xs text-white shadow-md flex items-center justify-center gap-2 disabled:opacity-60"
+              >
+                {isPurchasing ? <Loader2 size={14} className="animate-spin" /> : 'Cumpără'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Gift code redemption */}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Page, UserProfile } from '../src/types';
 import { auth, logout, db, doc, updateDoc } from '../services/firebase';
-import { Sun, Moon, LogOut, Calendar, LayoutDashboard, ShieldCheck, Shield, User, Camera, BookOpen } from 'lucide-react';
+import { Sun, Moon, LogOut, Calendar, LayoutDashboard, ShieldCheck, Shield, User, Camera, BookOpen, ShieldAlert } from 'lucide-react';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import { useTranslation } from 'react-i18next';
 import { AdBanner } from '../src/components/AdBanner';
@@ -57,6 +57,11 @@ const DesktopSidebar: React.FC<Props> = ({
     { id: Page.GardenJournal, label: t('Jurnal'), icon: Camera },
     { id: Page.Administration, label: t('Eu'), icon: User },
   ];
+
+  // Add SuperAdmin link for superadmin users
+  if (profile?.role === 'superadmin' || profile?.email === 'dragomirvaleriu@gmail.com') {
+    navItems.push({ id: Page.SuperAdmin, label: 'SuperAdmin', icon: ShieldAlert });
+  }
 
   return (
     <div className="relative h-full bg-bg-card border-r border-border-color p-4 flex flex-col">

@@ -1,0 +1,514 @@
+import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import {
+  Users,
+  Gift,
+  BarChart3,
+  Megaphone,
+  Loader2,
+  ChevronRight,
+  Search,
+  Copy,
+  CheckCircle,
+  AlertCircle,
+} from 'lucide-react';
+import { Card } from '../components/ui/primitives';
+import { db, functions, httpsCallable, doc, getDoc, collection, query, where, getDocs } from '../services/firebase';
+import toast from 'react-hot-toast';
+import { UserProfile, Advertisement } from '../src/types';
+
+interface Props {
+  userProfile: UserProfile;
+}
+
+interface UserData {
+  uid: string;
+  email: string;
+  displayName?: string;
+  subscriptionProduct?: string;
+  subscriptionExpiresAt?: any;
+  createdAt?: any;
+}
+
+interface GiftCodeData {
+  code: string;
+  product: string;
+  link: string;
+}
+
+const SuperAdmin: React.FC<Props> = ({ userProfile }) => {
+  const { t } = useTranslation();
+  const [activeTab, setActiveTab] = useState<'users' | 'gifting' | 'ads' | 'analytics'>('users');
+  const [users, setUsers] = useState<UserData[]>([]);
+  const [ads, setAds] = useState<Advertisement[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
+  const [giftProduct, setGiftProduct] = useState<'adFree' | 'academyPro' | 'bundle'>('adFree');
+  const [generatedCode, setGeneratedCode] = useState<GiftCodeData | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [analyticsData, setAnalyticsData] = useState({
+    totalUsers: 0,
+    adFreeCount: 0,
+    academyProCount: 0,
+    bundleCount: 0,
+    totalRevenue: 0,
+  });
+
+  // Verify superadmin access
+  useEffect(() => {
+    if (userProfile.role !== 'superadmin' && userProfile.email !== 'dragomirvaleriu@gmail.com') {
+      toast.error('Access denied: Superadmin only');
+      return;
+    }
+  }, [userProfile]);
+
+  // Load users
+  const loadUsers = async () => {
+    setLoading(true);
+    try {
+      const usersSnap = await getDocs(collection(db, 'users'));
+      const userData: UserData[] = [];
+      usersSnap.forEach((snap) => {
+        const data = snap.data();
+        userData.push({
+          uid: snap.id,
+          email: data.email,
+          displayName: data.displayName,
+          subscriptionProduct: data.subscriptionProduct,
+          subscriptionExpiresAt: data.subscriptionExpiresAt,
+          createdAt: data.createdAt,
+        });
+      });
+      setUsers(userData);
+      updateAnalytics(userData);
+    } catch (err: any) {
+      toast.error('Failed to load users: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load ads
+  const loadAds = async () => {
+    setLoading(true);
+    try {
+      const adsSnap = await getDocs(collection(db, 'superadmin/data/ads'));
+      const adsList: Advertisement[] = [];
+      adsSnap.forEach((snap) => {
+        adsList.push({
+          id: snap.id,
+          ...snap.data(),
+        } as Advertisement);
+      });
+      setAds(adsList);
+    } catch (err: any) {
+      toast.error('Failed to load ads: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Update analytics
+  const updateAnalytics = (userData: UserData[]) => {
+    const adFree = userData.filter(u => u.subscriptionProduct === 'adFree').length;
+    const academyPro = userData.filter(u => u.subscriptionProduct === 'academyPro').length;
+    const bundle = userData.filter(u => u.subscriptionProduct === 'bundle').length;
+
+    setAnalyticsData({
+      totalUsers: userData.length,
+      adFreeCount: adFree,
+      academyProCount: academyPro,
+      bundleCount: bundle,
+      totalRevenue: (adFree * 2) + (academyPro * 2) + (bundle * 3),
+    });
+  };
+
+  // Generate gift code
+  const handleGenerateGiftCode = async () => {
+    if (!selectedUser) {
+      toast.error('Select a user first');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const createGiftCode = httpsCallable(functions, 'createGiftCodeForProduct');
+      const result: any = await createGiftCode({
+        userId: selectedUser.uid,
+        product: giftProduct,
+        days: 30,
+      });
+
+      if (result.data.success) {
+        const link = `${window.location.origin}?giftCode=${result.data.code}`;
+        setGeneratedCode({
+          code: result.data.code,
+          product: giftProduct,
+          link,
+        });
+        toast.success('Gift code generated!');
+      }
+    } catch (err: any) {
+      toast.error('Failed to generate gift code: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Copy to clipboard
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success('Copied to clipboard');
+  };
+
+  // Filter users
+  const filteredUsers = users.filter(u =>
+    u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    u.displayName?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4 md:p-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent mb-2">
+            SuperAdmin Panel
+          </h1>
+          <p className="text-slate-600 dark:text-slate-400">Manage users, gift codes, ads, and revenue</p>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
+          {[
+            { id: 'users', label: 'Users', icon: Users },
+            { id: 'gifting', label: 'Gift Codes', icon: Gift },
+            { id: 'ads', label: 'Ads', icon: Megaphone },
+            { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+          ].map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              onClick={() => {
+                setActiveTab(id as any);
+                if (id === 'users') loadUsers();
+                if (id === 'ads') loadAds();
+              }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition ${
+                activeTab === id
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600'
+              }`}
+            >
+              <Icon size={18} />
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Users Tab */}
+        {activeTab === 'users' && (
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">User Management</h2>
+              <button
+                onClick={loadUsers}
+                className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition flex items-center gap-2"
+              >
+                {loading ? <Loader2 size={18} className="animate-spin" /> : <Users size={18} />}
+                Refresh
+              </button>
+            </div>
+
+            {/* Search */}
+            <div className="mb-6 relative">
+              <Search className="absolute left-3 top-3 text-slate-400" size={20} />
+              <input
+                type="text"
+                placeholder="Search by email or name..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+              />
+            </div>
+
+            {/* Users Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-slate-300 dark:border-slate-600">
+                    <th className="text-left py-3 px-4 font-semibold text-slate-700 dark:text-slate-300">Email</th>
+                    <th className="text-left py-3 px-4 font-semibold text-slate-700 dark:text-slate-300">Display Name</th>
+                    <th className="text-left py-3 px-4 font-semibold text-slate-700 dark:text-slate-300">Subscription</th>
+                    <th className="text-left py-3 px-4 font-semibold text-slate-700 dark:text-slate-300">Expires</th>
+                    <th className="text-left py-3 px-4 font-semibold text-slate-700 dark:text-slate-300">Created</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredUsers.map((user) => (
+                    <tr
+                      key={user.uid}
+                      onClick={() => setSelectedUser(user)}
+                      className={`border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition ${
+                        selectedUser?.uid === user.uid ? 'bg-emerald-50 dark:bg-emerald-900/20' : ''
+                      }`}
+                    >
+                      <td className="py-3 px-4 text-slate-900 dark:text-white">{user.email}</td>
+                      <td className="py-3 px-4 text-slate-600 dark:text-slate-400">{user.displayName || '-'}</td>
+                      <td className="py-3 px-4">
+                        <span className="px-2 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300 rounded text-sm font-medium">
+                          {user.subscriptionProduct || 'Free'}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
+                        {user.subscriptionExpiresAt
+                          ? new Date(user.subscriptionExpiresAt).toLocaleDateString()
+                          : '-'}
+                      </td>
+                      <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
+                        {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '-'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        )}
+
+        {/* Gift Codes Tab */}
+        {activeTab === 'gifting' && (
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Generator */}
+            <Card className="p-6">
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Generate Gift Code</h2>
+
+              {/* Selected User */}
+              <div className="mb-6 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">Selected User</p>
+                <p className="font-semibold text-slate-900 dark:text-white">
+                  {selectedUser?.email || 'No user selected'}
+                </p>
+              </div>
+
+              {/* User List */}
+              <div className="mb-6">
+                <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Select User</p>
+                <div className="max-h-48 overflow-y-auto border border-slate-300 dark:border-slate-600 rounded-lg">
+                  {users.map((user) => (
+                    <button
+                      key={user.uid}
+                      onClick={() => setSelectedUser(user)}
+                      className={`w-full text-left px-4 py-2 border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition ${
+                        selectedUser?.uid === user.uid ? 'bg-emerald-50 dark:bg-emerald-900/20' : ''
+                      }`}
+                    >
+                      <p className="font-medium text-slate-900 dark:text-white">{user.email}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{user.displayName}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Product Selection */}
+              <div className="mb-6">
+                <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Product</p>
+                <select
+                  value={giftProduct}
+                  onChange={(e) => setGiftProduct(e.target.value as any)}
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                >
+                  <option value="adFree">Ad-Free ($2)</option>
+                  <option value="academyPro">Academy Pro ($2)</option>
+                  <option value="bundle">Bundle ($3)</option>
+                </select>
+              </div>
+
+              {/* Generate Button */}
+              <button
+                onClick={handleGenerateGiftCode}
+                disabled={loading || !selectedUser}
+                className="w-full px-4 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:bg-slate-400 transition font-medium flex items-center justify-center gap-2"
+              >
+                {loading ? <Loader2 size={18} className="animate-spin" /> : <Gift size={18} />}
+                Generate Code
+              </button>
+            </Card>
+
+            {/* Generated Code Display */}
+            {generatedCode && (
+              <Card className="p-6 bg-gradient-to-br from-emerald-50 dark:from-emerald-900/20 to-teal-50 dark:to-teal-900/20">
+                <div className="flex items-center gap-2 mb-6">
+                  <CheckCircle className="text-emerald-600 dark:text-emerald-400" size={24} />
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white">Code Generated</h3>
+                </div>
+
+                <div className="space-y-4">
+                  {/* Code Display */}
+                  <div className="p-4 bg-white dark:bg-slate-800 rounded-lg border-2 border-emerald-600 dark:border-emerald-400">
+                    <p className="text-xs text-slate-600 dark:text-slate-400 mb-1">Gift Code</p>
+                    <div className="flex items-center gap-2">
+                      <code className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                        {generatedCode.code}
+                      </code>
+                      <button
+                        onClick={() => copyToClipboard(generatedCode.code)}
+                        className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition"
+                      >
+                        <Copy size={18} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Product Info */}
+                  <div className="p-3 bg-white dark:bg-slate-800 rounded">
+                    <p className="text-xs text-slate-600 dark:text-slate-400">Product</p>
+                    <p className="font-semibold text-slate-900 dark:text-white">{generatedCode.product}</p>
+                  </div>
+
+                  {/* Share Link */}
+                  <div className="p-3 bg-white dark:bg-slate-800 rounded">
+                    <p className="text-xs text-slate-600 dark:text-slate-400 mb-1">Share Link</p>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        readOnly
+                        value={generatedCode.link}
+                        className="flex-1 px-2 py-1 text-xs bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded"
+                      />
+                      <button
+                        onClick={() => copyToClipboard(generatedCode.link)}
+                        className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition"
+                      >
+                        <Copy size={18} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            )}
+          </div>
+        )}
+
+        {/* Ads Tab */}
+        {activeTab === 'ads' && (
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Manage Ads</h2>
+              <button
+                onClick={loadAds}
+                className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition flex items-center gap-2"
+              >
+                {loading ? <Loader2 size={18} className="animate-spin" /> : <Megaphone size={18} />}
+                Refresh
+              </button>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              {ads.map((ad) => (
+                <div key={ad.id} className="border border-slate-300 dark:border-slate-600 rounded-lg overflow-hidden">
+                  <img src={ad.imageUrl} alt={ad.title} className="w-full h-40 object-cover" />
+                  <div className="p-4">
+                    <h3 className="font-semibold text-slate-900 dark:text-white">{ad.title}</h3>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">{ad.company}</p>
+                    {ad.discountPercent && (
+                      <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400 mb-2">
+                        {ad.discountPercent}% discount
+                      </p>
+                    )}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => window.open(ad.link, '_blank')}
+                        className="flex-1 px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white rounded text-sm hover:bg-slate-200 dark:hover:bg-slate-600 transition"
+                      >
+                        View
+                      </button>
+                      <button className="flex-1 px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded text-sm hover:bg-red-200 dark:hover:bg-red-900/50 transition">
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {ads.length === 0 && (
+              <div className="text-center py-12">
+                <Megaphone className="mx-auto mb-4 text-slate-400" size={48} />
+                <p className="text-slate-600 dark:text-slate-400">No ads yet</p>
+              </div>
+            )}
+          </Card>
+        )}
+
+        {/* Analytics Tab */}
+        {activeTab === 'analytics' && (
+          <div>
+            <button
+              onClick={() => {
+                loadUsers();
+                toast.success('Analytics updated');
+              }}
+              className="mb-6 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition flex items-center gap-2"
+            >
+              {loading ? <Loader2 size={18} className="animate-spin" /> : <BarChart3 size={18} />}
+              Refresh Data
+            </button>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Total Users */}
+              <Card className="p-6">
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">Total Users</p>
+                <p className="text-4xl font-bold text-emerald-600 dark:text-emerald-400">
+                  {analyticsData.totalUsers}
+                </p>
+              </Card>
+
+              {/* Ad-Free */}
+              <Card className="p-6">
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">Ad-Free Subscribers</p>
+                <p className="text-4xl font-bold text-blue-600 dark:text-blue-400">
+                  {analyticsData.adFreeCount}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                  ${analyticsData.adFreeCount * 2} revenue
+                </p>
+              </Card>
+
+              {/* Academy Pro */}
+              <Card className="p-6">
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">Academy Pro</p>
+                <p className="text-4xl font-bold text-purple-600 dark:text-purple-400">
+                  {analyticsData.academyProCount}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                  ${analyticsData.academyProCount * 2} revenue
+                </p>
+              </Card>
+
+              {/* Bundle */}
+              <Card className="p-6">
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">Bundle Subscribers</p>
+                <p className="text-4xl font-bold text-orange-600 dark:text-orange-400">
+                  {analyticsData.bundleCount}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                  ${analyticsData.bundleCount * 3} revenue
+                </p>
+              </Card>
+
+              {/* Total Revenue */}
+              <Card className="p-6 md:col-span-2 lg:col-span-1 bg-gradient-to-br from-emerald-50 dark:from-emerald-900/20 to-teal-50 dark:to-teal-900/20">
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">Total Revenue</p>
+                <p className="text-4xl font-bold text-emerald-600 dark:text-emerald-400">
+                  ${analyticsData.totalRevenue}
+                </p>
+              </Card>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default SuperAdmin;

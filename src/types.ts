@@ -28,6 +28,8 @@ export interface Organization {
   billingCycle?: 'monthly' | 'yearly';
   stripeCustomerId?: string;
   stripeSubscriptionId?: string;
+  subscriptionProduct?: 'adFree' | 'academyPro' | 'bundle';
+  subscriptionExpiresAt?: any; // timestamp
   
   // Legal & Financial
   cui?: string;
@@ -46,13 +48,21 @@ export interface Organization {
   status?: 'active' | 'inactive' | 'suspended' | 'cancelled';
 }
 
+export interface SubscriptionProduct {
+  id: string;
+  name: string;
+  price: number;
+  features: string[];
+  description?: string;
+}
+
 export interface UserProfile {
   uid: string;
   email: string;
   displayName?: string;
   phoneNumber?: string;
   organizationId?: string;
-  role: 'admin' | 'employee' | 'superadmin';
+  role: 'user' | 'admin' | 'employee' | 'superadmin';
   theme: 'light' | 'dark';
   language?: string;
   employeeCode?: string; // Added employee code
@@ -73,6 +83,8 @@ export interface UserProfile {
   teamManagementActiveTab?: 'members' | 'chat' | 'timesheets';
   exp?: number;
   level?: number;
+  subscriptionProduct?: 'adFree' | 'academyPro' | 'bundle';
+  subscriptionExpiresAt?: any; // timestamp
 }
 
 export interface Invitation {
@@ -409,4 +421,30 @@ export interface UserPlant {
   emoji: string;
   type: 'interior' | 'exterior';
   addedAt: any; // timestamp
+}
+
+export interface Advertisement {
+  id: string;
+  title: string;
+  imageUrl: string;
+  link: string;
+  company: string;
+  discountPercent?: number;
+  isActive: boolean;
+  createdAt: any;
+  createdBy: string;
+  expiresAt?: any;
+}
+
+export interface GiftCode {
+  id: string;
+  code: string;
+  product: 'adFree' | 'academyPro' | 'bundle';
+  days: number;
+  used: boolean;
+  usedBy?: string;
+  usedByEmail?: string;
+  usedAt?: any;
+  createdBy: string;
+  createdAt: any;
 }

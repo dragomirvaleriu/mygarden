@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
 import {
   X,
   ChevronRight,
@@ -91,8 +92,13 @@ const OnboardingWizard: React.FC<Props> = ({ organizationId, onComplete }) => {
   ];
 
   return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
-      <div className="bg-bg-card border border-border-color rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden animate-in zoom-in duration-300">
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        className="bg-bg-card border border-border-color rounded-2xl sm:rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden"
+      >
 
         {/* Progress Bar */}
         <div className="flex h-1.5 w-full bg-border-color/20">
@@ -104,7 +110,7 @@ const OnboardingWizard: React.FC<Props> = ({ organizationId, onComplete }) => {
             ))}
         </div>
 
-        <div className="p-8 md:p-12">
+        <div className="p-4 sm:p-8 md:p-12">
             {/* Header */}
             <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-4">
@@ -256,7 +262,7 @@ const OnboardingWizard: React.FC<Props> = ({ organizationId, onComplete }) => {
                 )}
             </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

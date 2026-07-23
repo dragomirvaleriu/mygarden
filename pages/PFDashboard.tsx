@@ -10,6 +10,7 @@ import { AILensScanner } from '../components/vision/AILensScanner';
 import { GardenVitalityRing } from '../components/gamification/GardenVitalityRing';
 import { SmartTroubleshooter } from '../components/SmartTroubleshooter';
 import OnboardingWizard from '../components/OnboardingWizard';
+import AdBanner from '../components/AdBanner';
 import { Card, SectionHeader } from '../components/ui/primitives';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -337,7 +338,15 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
               <Sprout className="w-5 h-5 text-emerald-500 dark:text-emerald-400" strokeWidth={2} />
             </div>
             <div className="min-w-0">
-              <h1 className="text-lg md:text-xl font-black text-main tracking-tight truncate">{greeting}</h1>
+              <motion.h1
+                key={liveDisplayName}
+                initial={{ opacity: 0, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="text-lg md:text-xl font-black text-main tracking-tight truncate"
+              >
+                {greeting}
+              </motion.h1>
               <p className="text-text-secondary text-[10px] md:text-xs font-black uppercase tracking-[0.15em] flex items-center gap-1.5">
                 <Calendar size={11} className="text-emerald-500 shrink-0" />
                 {format(now, 'EEEE, dd MMMM', { locale })}
@@ -542,17 +551,9 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
           transition={{ delay: 0.15, type: 'spring' }}
           className="relative overflow-hidden rounded-3xl border border-white/20 shadow-xl"
         >
-          {/* Gradient Background */}
-          <div className={`absolute inset-0 ${
-            [10, 11, 0, 1].includes(currentMonth)
-              ? 'bg-gradient-to-br from-slate-800 via-blue-900 to-slate-900'
-              : [2, 3, 4].includes(currentMonth)
-              ? 'bg-gradient-to-br from-emerald-800 via-green-700 to-teal-800'
-              : [5, 6, 7, 8].includes(currentMonth)
-              ? 'bg-gradient-to-br from-emerald-700 via-teal-600 to-cyan-700'
-              : 'bg-gradient-to-br from-teal-800 via-emerald-700 to-green-800'
-          }`} />
-          <div className="absolute inset-0 bg-black/30" />
+          {/* Gradient Background - Pale Green (light mode) / Dark Green (dark mode) */}
+          <div className={`absolute inset-0 bg-gradient-to-br from-emerald-200 via-teal-200 to-green-200 dark:from-emerald-900/50 dark:via-teal-900/40 dark:to-green-900/50`} />
+          <div className="absolute inset-0 bg-black/40 dark:bg-black/60" />
           <div className="absolute -right-16 -bottom-16 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
           <div className="absolute -left-8 -top-8 w-40 h-40 bg-white/5 rounded-full blur-2xl" />
 
@@ -771,6 +772,9 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
               </div>
             </div>
           )}
+
+          {/* Promotional Banner — shows ads for free tier, hidden for ad-free/bundle */}
+          <AdBanner userSubscriptionProduct={organization?.subscriptionProduct} />
         </div>
       </div>
 
