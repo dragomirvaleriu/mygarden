@@ -228,10 +228,15 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
   const currentLang = (userProfile.language || 'ro') as 'ro' | 'en';
 
   return (
-    <div className="max-w-2xl mx-auto space-y-5 pb-10">
-      <div>
-        <h1 className="text-2xl font-black text-main tracking-tight">Setări Cont</h1>
-        <p className="text-sm text-text-secondary font-medium mt-1">Contul tău, parola și preferințele.</p>
+    <div className="max-w-2xl mx-auto space-y-6 pb-10">
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-accent-color flex items-center justify-center text-white shadow-lg shadow-accent-color/30 shrink-0">
+          <User className="w-6 h-6 md:w-7 md:h-7" strokeWidth={2.5} />
+        </div>
+        <div className="min-w-0">
+          <h1 className="text-xl md:text-2xl font-black text-main tracking-tight leading-tight">Setări Cont</h1>
+          <p className="text-text-secondary text-xs md:text-sm font-medium mt-0.5">Contul tău, parola și preferințele.</p>
+        </div>
       </div>
 
       {/* Profile summary & name editor */}
