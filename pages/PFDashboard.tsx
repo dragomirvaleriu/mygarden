@@ -551,9 +551,9 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
           transition={{ delay: 0.15, type: 'spring' }}
           className="relative overflow-hidden rounded-3xl border border-white/20 shadow-xl"
         >
-          {/* Gradient Background - Pale Green (light mode) / Dark Green (dark mode) */}
-          <div className={`absolute inset-0 bg-gradient-to-br from-emerald-200 via-teal-200 to-green-200 dark:from-emerald-900/50 dark:via-teal-900/40 dark:to-green-900/50`} />
-          <div className="absolute inset-0 bg-black/40 dark:bg-black/60" />
+          {/* Gradient Background - Pale Mint (matches ADAUGĂ SARCINA button) */}
+          <div className={`absolute inset-0 bg-gradient-to-br from-emerald-100 via-cyan-100 to-teal-100 dark:from-emerald-900/50 dark:via-teal-900/40 dark:to-green-900/50`} />
+          <div className="absolute inset-0 bg-black/35 dark:bg-black/60" />
           <div className="absolute -right-16 -bottom-16 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
           <div className="absolute -left-8 -top-8 w-40 h-40 bg-white/5 rounded-full blur-2xl" />
 
