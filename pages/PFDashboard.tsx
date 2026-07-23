@@ -11,6 +11,7 @@ import { GardenVitalityRing } from '../components/gamification/GardenVitalityRin
 import { SmartTroubleshooter } from '../components/SmartTroubleshooter';
 import OnboardingWizard from '../components/OnboardingWizard';
 import AdBanner from '../components/AdBanner';
+import NotificationBell from '../components/NotificationBell';
 import { Card, SectionHeader } from '../components/ui/primitives';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -355,6 +356,10 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
             </div>
           </div>
 
+          <div className="flex items-center gap-2 shrink-0">
+          <div className="md:hidden">
+            <NotificationBell uid={userProfile?.uid} />
+          </div>
           <motion.button
             whileHover={{ scale: 1.05 }}
             onClick={() => setIsExpertMode(!isExpertMode)}
@@ -367,6 +372,7 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
             <span className="text-[8px] font-black uppercase tracking-widest leading-none">Mod</span>
             <span className="text-[11px] font-black leading-none mt-0.5">{isExpertMode ? 'Expert' : 'Simplu'}</span>
           </motion.button>
+          </div>
         </div>
       </motion.div>
 
@@ -549,13 +555,12 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15, type: 'spring' }}
-          className="relative overflow-hidden rounded-3xl border border-white/20 shadow-xl"
+          className="relative overflow-hidden rounded-3xl border border-emerald-500/20 shadow-xl"
         >
-          {/* Gradient Background - Pale Mint (matches ADAUGĂ SARCINA button) */}
-          <div className={`absolute inset-0 bg-gradient-to-br from-emerald-100 via-cyan-100 to-teal-100 dark:from-emerald-900/50 dark:via-teal-900/40 dark:to-green-900/50`} />
-          <div className="absolute inset-0 bg-black/35 dark:bg-black/60" />
-          <div className="absolute -right-16 -bottom-16 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
-          <div className="absolute -left-8 -top-8 w-40 h-40 bg-white/5 rounded-full blur-2xl" />
+          {/* Gradient Background — same pale-mint family as the ADAUGĂ SARCINA button (emerald-500), no dark overlay */}
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-emerald-100 to-teal-100 dark:from-emerald-950/60 dark:via-emerald-900/40 dark:to-teal-900/40" />
+          <div className="absolute -right-16 -bottom-16 w-64 h-64 bg-emerald-200/30 dark:bg-emerald-500/10 rounded-full blur-3xl" />
+          <div className="absolute -left-8 -top-8 w-40 h-40 bg-emerald-200/30 dark:bg-emerald-500/10 rounded-full blur-2xl" />
 
           <div className="relative z-10 p-6 md:p-8">
             <div className="flex flex-col md:flex-row md:items-center gap-6">
@@ -563,23 +568,23 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
               {/* Left: Title */}
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-[10px] font-black text-white/60 uppercase tracking-[0.2em]">
+                  <span className="text-[10px] font-black text-emerald-700/80 dark:text-emerald-300/70 uppercase tracking-[0.2em]">
                     {[5, 6, 7, 8].includes(currentMonth) ? '🌞 Sezon Cald' : [2, 3, 4].includes(currentMonth) ? '🌱 Primăvară' : '❄️ Sezon Rece'}
                   </span>
-                  <span className="text-white/30 text-[10px]">•</span>
-                  <span className="text-[10px] font-black text-white/60 uppercase tracking-[0.2em]">Focus Luna Aceasta</span>
+                  <span className="text-emerald-700/30 dark:text-emerald-300/30 text-[10px]">•</span>
+                  <span className="text-[10px] font-black text-emerald-700/80 dark:text-emerald-300/70 uppercase tracking-[0.2em]">Focus Luna Aceasta</span>
                 </div>
-                <h2 className="text-2xl md:text-3xl font-black text-white leading-tight tracking-tight mb-1">
+                <h2 className="text-2xl md:text-3xl font-black text-emerald-900 dark:text-emerald-50 leading-tight tracking-tight mb-1">
                   {seasonalTip.title}
                 </h2>
-                <p className="text-white/60 text-sm font-medium">
+                <p className="text-emerald-700/80 dark:text-emerald-200/70 text-sm font-medium">
                   {seasonalTip.tip?.split('.')[0]}.
                 </p>
               </div>
 
               {/* Right: Task Badges */}
               <div className="flex flex-col gap-2 md:min-w-[260px]">
-                <p className="text-[10px] font-black text-white/50 uppercase tracking-widest mb-1">Priorități Cheie</p>
+                <p className="text-[10px] font-black text-emerald-700/70 dark:text-emerald-300/60 uppercase tracking-widest mb-1">Priorități Cheie</p>
                 {seasonalTip.tasks.slice(0, 3).map((task: any, idx: number) => {
                   const catEmoji: Record<string, string> = {
                     mowing: '✂️', watering: '💧', fertilizing: '🌱', pruning: '🌿', treatment: '🪲', other: '📋',
@@ -591,12 +596,12 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.2 + idx * 0.08 }}
-                      className="flex items-center gap-3 px-4 py-3 rounded-2xl border bg-white/10 border-white/20 text-white backdrop-blur-sm"
+                      className="flex items-center gap-3 px-4 py-3 rounded-2xl border bg-white/60 dark:bg-emerald-900/30 border-emerald-500/20 text-emerald-900 dark:text-emerald-50 backdrop-blur-sm"
                     >
                       <span className="text-base shrink-0">{emoji}</span>
                       <span className="text-sm font-bold leading-tight flex-1">{task.title}</span>
                       {task.important && (
-                        <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 bg-white/20 rounded-md text-white shrink-0">Urgent</span>
+                        <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 bg-emerald-500/15 dark:bg-emerald-500/25 rounded-md text-emerald-800 dark:text-emerald-100 shrink-0">Urgent</span>
                       )}
                     </motion.div>
                   );

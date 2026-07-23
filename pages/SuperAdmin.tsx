@@ -13,7 +13,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { Card } from '../components/ui/primitives';
-import { db, functions, httpsCallable, doc, getDoc, collection, query, where, getDocs } from '../services/firebase';
+import { db, functions, httpsCallable, doc, getDoc, collection, query, where, getDocs, deleteDoc } from '../services/firebase';
 import toast from 'react-hot-toast';
 import { UserProfile, Advertisement } from '../src/types';
 
@@ -127,6 +127,7 @@ const SuperAdmin: React.FC<Props> = ({ userProfile }) => {
   const [users, setUsers] = useState<UserData[]>([]);
   const [ads, setAds] = useState<Advertisement[]>([]);
   const [loading, setLoading] = useState(false);
+  const [seeding, setSeeding] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   const [giftProduct, setGiftProduct] = useState<'adFree' | 'academyPro' | 'bundle'>('adFree');
   const [generatedCode, setGeneratedCode] = useState<GiftCodeData | null>(null);
@@ -251,11 +252,26 @@ const SuperAdmin: React.FC<Props> = ({ userProfile }) => {
     if (!confirm('Are you sure you want to delete this ad?')) return;
 
     try {
-      await db.collection('superadmin').doc('data').collection('ads').doc(adId).delete();
+      await deleteDoc(doc(db, 'superadmin', 'data', 'ads', adId));
       setAds(ads.filter(a => a.id !== adId));
       toast.success('Ad deleted successfully');
     } catch (err: any) {
       toast.error('Failed to delete ad: ' + err.message);
+    }
+  };
+
+  // Seed 5 default Romanian ads (one-time helper)
+  const handleSeedDefaultAds = async () => {
+    setSeeding(true);
+    try {
+      const seedFn = httpsCallable(functions, 'seedDefaultAds');
+      const result: any = await seedFn({});
+      toast.success(`${result.data.count} ads seeded successfully!`);
+      loadAds();
+    } catch (err: any) {
+      toast.error('Failed to seed ads: ' + (err?.message || 'Unknown error'));
+    } finally {
+      setSeeding(false);
     }
   };
 
@@ -520,7 +536,17 @@ const SuperAdmin: React.FC<Props> = ({ userProfile }) => {
           <div className="space-y-6">
             {/* Create Ad Form */}
             <Card className="p-6">
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Create New Ad</h2>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Create New Ad</h2>
+                <button
+                  onClick={handleSeedDefaultAds}
+                  disabled={seeding}
+                  className="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition flex items-center gap-2 text-sm disabled:opacity-50"
+                >
+                  {seeding ? <Loader2 size={16} className="animate-spin" /> : <Megaphone size={16} />}
+                  Seed 5 Romanian Ads
+                </button>
+              </div>
               <CreateAdForm onAdCreated={() => { loadAds(); setGeneratedCode(null); }} />
             </Card>
 

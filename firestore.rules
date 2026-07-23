@@ -337,8 +337,23 @@ service cloud.firestore {
     }
 
     // SuperAdmin collections
+    // Ads are read by every signed-in user (AdBanner.tsx), written only by
+    // superadmin. This must stay more specific than the catch-all below or
+    // every non-superadmin homeowner silently gets zero ads.
+    match /superadmin/{doc}/ads/{adId} {
+      allow read: if isSignedIn();
+      allow write: if isSuperAdmin();
+    }
     match /superadmin/{document=**} {
       allow read, write: if isSuperAdmin();
+    }
+
+    // Per-user notification feed. Only Cloud Functions (Admin SDK, bypasses
+    // rules) create notifications — a client should never be able to inject
+    // its own.
+    match /users/{userId}/notifications/{notifId} {
+      allow read, update, delete: if request.auth.uid == userId || isSuperAdmin();
+      allow create: if false;
     }
   }
 }

@@ -34,7 +34,6 @@ const GardenJournal = React.lazy(() => import('../pages/GardenJournal'));
 const PFDashboard = React.lazy(() => import('../pages/PFDashboard'));
 const Academy = React.lazy(() => import('../pages/Academy').then(m => ({ default: m.Academy })));
 
-import { AdBanner } from './components/AdBanner';
 import Login from '../pages/Login';
 import { APP_NAME } from './config/appVariant';
 
@@ -455,7 +454,6 @@ const App: React.FC = () => {
             selectedAccentColor={profile.accentColor || '#4A7C59'}
             onSelectAccentColor={selectAccentColor}
             profile={profile}
-            showSidebarAds={systemConfig.adsConfig?.sidebar ?? true}
           />
         </div>
         <main className="flex-1 md:ml-60 px-4 pt-[calc(max(env(safe-area-inset-top),16px))] pb-32 md:py-6 sm:px-6 md:px-6 min-w-0">
@@ -478,7 +476,6 @@ const App: React.FC = () => {
                 </button>
               </div>
             )}
-            {(systemConfig.adsConfig?.main ?? true) && <AdBanner />}
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentPage}

@@ -4,8 +4,8 @@ import { auth, logout, db, doc, updateDoc } from '../services/firebase';
 import { Sun, Moon, LogOut, Calendar, LayoutDashboard, ShieldCheck, Shield, User, Camera, BookOpen, ShieldAlert } from 'lucide-react';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import { useTranslation } from 'react-i18next';
-import { AdBanner } from '../src/components/AdBanner';
 import { APP_NAME } from '../src/config/appVariant';
+import NotificationBell from './NotificationBell';
 
 interface Props {
   activePage: Page;
@@ -17,7 +17,6 @@ interface Props {
   onSelectAccentColor: (color: string) => void;
   profile: UserProfile | null;
   subscriptionTier: 'free' | 'pro' | 'enterprise' | 'lifetime';
-  showSidebarAds?: boolean;
 }
 
 const DesktopSidebar: React.FC<Props> = ({
@@ -29,8 +28,7 @@ const DesktopSidebar: React.FC<Props> = ({
   selectedAccentColor,
   onSelectAccentColor,
   profile,
-  subscriptionTier,
-  showSidebarAds = true
+  subscriptionTier
 }) => {
   const isOnline = useOnlineStatus();
   const { t, i18n } = useTranslation();
@@ -52,10 +50,10 @@ const DesktopSidebar: React.FC<Props> = ({
   // under "Eu" (AccountSettings' Quick Links) instead of being separate tabs.
   const navItems: { id: Page; label: string; icon: any; hasNotification?: boolean }[] = [
     { id: Page.Dashboard, label: t('Acasă'), icon: LayoutDashboard },
+    { id: Page.GardenJournal, label: t('Jurnal'), icon: Camera },
     { id: Page.CareCalendar, label: t('Calendar'), icon: Calendar },
     { id: Page.Academy, label: t('Academie'), icon: BookOpen },
-    { id: Page.GardenJournal, label: t('Jurnal'), icon: Camera },
-    { id: Page.Administration, label: t('Eu'), icon: User },
+    { id: Page.Administration, label: t('Contul meu'), icon: User },
   ];
 
   // Add SuperAdmin link for superadmin users
@@ -142,8 +140,6 @@ const DesktopSidebar: React.FC<Props> = ({
           )
         })}
       </nav>
-
-      {showSidebarAds && <AdBanner subscriptionTier={subscriptionTier} variant="compact" />}
 
       <div className="mt-auto pt-4 border-t border-border-color">
         <div className="flex items-center gap-2 px-2 pb-2">
@@ -254,6 +250,7 @@ const DesktopSidebar: React.FC<Props> = ({
               )}
             </div>
           </div>
+          <NotificationBell uid={profile?.uid} />
         </div>
 
         <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-500/10 transition-all text-sm font-bold">

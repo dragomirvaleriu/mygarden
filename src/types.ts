@@ -85,6 +85,20 @@ export interface UserProfile {
   level?: number;
   subscriptionProduct?: 'adFree' | 'academyPro' | 'bundle';
   subscriptionExpiresAt?: any; // timestamp
+  referralCode?: string; // own shareable code, server-generated
+  referredBy?: string; // referral code captured at signup, if any
+  referralBonusApplied?: boolean; // guards against double-granting on repeat purchases
+  referralCount?: number; // server-incremented count of successful referrals
+}
+
+export interface AppNotification {
+  id: string;
+  type: 'purchase' | 'giftcode' | 'referral';
+  title: string;
+  message: string;
+  actionPage?: Page;
+  read: boolean;
+  createdAt: any;
 }
 
 export interface Invitation {

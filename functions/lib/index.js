@@ -30,14 +30,31 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateUserSubscription = exports.createAd = exports.listAllUsers = exports.createGiftCodeForProduct = exports.receiveTelemetry = exports.weatherAlert = exports.stripeWebhook = exports.createCheckoutSession = exports.createGiftCode = exports.redeemGiftCode = void 0;
+exports.trackAdClick = exports.trackAdImpression = exports.seedDefaultAds = exports.updateUserSubscription = exports.createAd = exports.listAllUsers = exports.createGiftCodeForProduct = exports.receiveTelemetry = exports.weatherAlert = exports.stripeWebhook = exports.createCheckoutSession = exports.createGiftCode = exports.redeemGiftCode = exports.generateReferralCode = void 0;
 const functions = __importStar(require("firebase-functions"));
 const admin = __importStar(require("firebase-admin"));
 const stripe_1 = __importDefault(require("stripe"));
 __exportStar(require("./financials"), exports);
 __exportStar(require("./billing"), exports);
+var referrals_1 = require("./referrals");
+Object.defineProperty(exports, "generateReferralCode", { enumerable: true, get: function () { return referrals_1.generateReferralCode; } });
+const referrals_2 = require("./referrals");
 admin.initializeApp();
 const db = admin.firestore();
+async function createNotification(uid, type, title, message) {
+    try {
+        await db.collection('users').doc(uid).collection('notifications').add({
+            type,
+            title,
+            message,
+            read: false,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+    }
+    catch (err) {
+        console.error('createNotification failed (non-fatal):', err);
+    }
+}
 const stripeSecret = ((_a = functions.config().stripe) === null || _a === void 0 ? void 0 : _a.secret) || 'sk_test_placeholder';
 const stripe = new stripe_1.default(stripeSecret, {
     apiVersion: '2022-11-15',
@@ -85,6 +102,7 @@ exports.redeemGiftCode = functions.https.onCall(async (data, context) => {
         });
         return expires;
     });
+    await createNotification(context.auth.uid, 'giftcode', '🎁 Cod cadou activat!', 'Codul tău cadou a fost activat cu succes. Bucură-te de acces PRO!');
     return { success: true, expiresAt };
 });
 exports.createGiftCode = functions.https.onCall(async (data, context) => {
@@ -103,17 +121,22 @@ exports.createGiftCode = functions.https.onCall(async (data, context) => {
     return { success: true, code };
 });
 exports.createCheckoutSession = functions.https.onCall(async (data, context) => {
-    var _a, _b;
+    var _a, _b, _c, _d;
     if (!context.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be logged in.');
     }
-    const priceId = (_a = functions.config().stripe) === null || _a === void 0 ? void 0 : _a.price_id;
-    if (!priceId || !((_b = functions.config().stripe) === null || _b === void 0 ? void 0 : _b.secret)) {
-        throw new functions.https.HttpsError('failed-precondition', 'Payments are not configured yet.');
+    const { successUrl, cancelUrl, product } = data;
+    if (!successUrl || !cancelUrl || !product) {
+        throw new functions.https.HttpsError('invalid-argument', 'successUrl, cancelUrl, and product are required.');
     }
-    const { successUrl, cancelUrl } = data;
-    if (!successUrl || !cancelUrl) {
-        throw new functions.https.HttpsError('invalid-argument', 'successUrl and cancelUrl are required.');
+    const priceIdMap = {
+        adFree: (_a = functions.config().stripe) === null || _a === void 0 ? void 0 : _a.price_id_adfree,
+        academyPro: (_b = functions.config().stripe) === null || _b === void 0 ? void 0 : _b.price_id_academypro,
+        bundle: (_c = functions.config().stripe) === null || _c === void 0 ? void 0 : _c.price_id_bundle,
+    };
+    const priceId = priceIdMap[product];
+    if (!priceId || !((_d = functions.config().stripe) === null || _d === void 0 ? void 0 : _d.secret)) {
+        throw new functions.https.HttpsError('failed-precondition', 'Payments are not configured yet.');
     }
     const orgId = await getCallerOrgId(context.auth.uid);
     const session = await stripe.checkout.sessions.create({
@@ -124,11 +147,12 @@ exports.createCheckoutSession = functions.https.onCall(async (data, context) => 
         customer_email: context.auth.token.email,
         success_url: successUrl,
         cancel_url: cancelUrl,
+        metadata: { product, uid: context.auth.uid },
     });
     return { url: session.url };
 });
 exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
-    var _a;
+    var _a, _b, _c;
     const sig = req.headers['stripe-signature'];
     const endpointSecret = (_a = functions.config().stripe) === null || _a === void 0 ? void 0 : _a.webhook_secret;
     let event;
@@ -142,14 +166,25 @@ exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
     if (event.type === 'checkout.session.completed') {
         const session = event.data.object;
         const orgId = session.client_reference_id;
+        const product = ((_b = session.metadata) === null || _b === void 0 ? void 0 : _b.product) || 'bundle';
+        const buyerUid = (_c = session.metadata) === null || _c === void 0 ? void 0 : _c.uid;
         if (orgId) {
             const expiresAt = new Date();
             expiresAt.setFullYear(expiresAt.getFullYear() + 1);
-            await db.collection('organizations').doc(orgId).update({
-                subscriptionTier: 'pro',
+            const updateData = {
+                subscriptionProduct: product,
                 planExpires: admin.firestore.Timestamp.fromDate(expiresAt),
                 updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-            });
+            };
+            if (product === 'academyPro' || product === 'bundle') {
+                updateData.subscriptionTier = 'pro';
+            }
+            await db.collection('organizations').doc(orgId).update(updateData);
+            if (buyerUid) {
+                const productLabel = product === 'adFree' ? 'Fără Reclame' : product === 'academyPro' ? 'Academy PRO' : 'Acces Complet';
+                await createNotification(buyerUid, 'purchase', '🎉 Achiziție reușită!', `Acces "${productLabel}" activat pe contul tău. Mulțumim!`);
+                await (0, referrals_2.applyReferralBonus)(buyerUid, orgId);
+            }
         }
     }
     res.json({ received: true });
@@ -344,6 +379,103 @@ exports.updateUserSubscription = functions.https.onCall(async (data, context) =>
     }
     catch (err) {
         throw new functions.https.HttpsError('internal', 'Failed to update subscription: ' + err.message);
+    }
+});
+exports.seedDefaultAds = functions.https.onCall(async (data, context) => {
+    if (!context.auth || context.auth.token.email !== 'dragomirvaleriu@gmail.com') {
+        throw new functions.https.HttpsError('permission-denied', 'Only superadmin can seed ads.');
+    }
+    const defaultAds = [
+        {
+            title: 'Semințe Premium pentru Gazon',
+            company: 'GradinaPerfecta.ro',
+            link: 'https://gradinaperfecta.ro?utm_source=mygarden&promo=GARDEN20',
+            imageUrl: 'https://images.unsplash.com/photo-1464207687429-7505649dae38?w=400&q=80',
+            discountPercent: 20,
+            category: 'seeds'
+        },
+        {
+            title: 'Îngrășământ Organic - 30% OFF',
+            company: 'BioDelta.ro',
+            link: 'https://biodelta.ro?utm_campaign=mygarden30',
+            imageUrl: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&q=80',
+            discountPercent: 30,
+            category: 'fertilizer'
+        },
+        {
+            title: 'Unelte de Grădină Professional',
+            company: 'ProTools.ro',
+            link: 'https://amazon.ro/s?k=gardening+tools&tag=mygarden-20',
+            imageUrl: 'https://images.unsplash.com/photo-1578654881325-8f95ea3cffe7?w=400&q=80',
+            discountPercent: 15,
+            category: 'tools',
+            isAmazonAffiliate: true
+        },
+        {
+            title: 'Sistem Irigare Inteligent',
+            company: 'AquaSmart.ro',
+            link: 'https://aquasmart.ro/sisteme-irigare?ref=mygarden',
+            imageUrl: 'https://images.unsplash.com/photo-1584622281867-8fc18f4be5f4?w=400&q=80',
+            discountPercent: 25,
+            category: 'irrigation'
+        },
+        {
+            title: 'Tratamente Ecologice - Fără Chimicale',
+            company: 'NaturalCare.ro',
+            link: 'https://naturalcare.ro/tratamente?promo=mygarden10',
+            imageUrl: 'https://images.unsplash.com/photo-1574482620811-1aa16ffe3c82?w=400&q=80',
+            discountPercent: 10,
+            category: 'treatments'
+        }
+    ];
+    try {
+        const adsRef = db.collection('superadmin').doc('data').collection('ads');
+        const batch = db.batch();
+        for (const ad of defaultAds) {
+            const docRef = adsRef.doc();
+            batch.set(docRef, Object.assign(Object.assign({}, ad), { isActive: true, impressions: 0, clicks: 0, createdAt: admin.firestore.FieldValue.serverTimestamp(), createdBy: context.auth.uid }));
+        }
+        await batch.commit();
+        return { success: true, count: defaultAds.length };
+    }
+    catch (err) {
+        throw new functions.https.HttpsError('internal', 'Failed to seed ads: ' + err.message);
+    }
+});
+exports.trackAdImpression = functions.https.onCall(async (data, context) => {
+    const { adId } = data;
+    if (!adId) {
+        throw new functions.https.HttpsError('invalid-argument', 'adId is required.');
+    }
+    try {
+        const adRef = db.collection('superadmin').doc('data').collection('ads').doc(adId);
+        await adRef.update({
+            impressions: admin.firestore.FieldValue.increment(1),
+            lastImpressionAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        return { success: true };
+    }
+    catch (err) {
+        console.error('Failed to track ad impression:', err);
+        return { success: false };
+    }
+});
+exports.trackAdClick = functions.https.onCall(async (data, context) => {
+    const { adId } = data;
+    if (!adId) {
+        throw new functions.https.HttpsError('invalid-argument', 'adId is required.');
+    }
+    try {
+        const adRef = db.collection('superadmin').doc('data').collection('ads').doc(adId);
+        await adRef.update({
+            clicks: admin.firestore.FieldValue.increment(1),
+            lastClickAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        return { success: true };
+    }
+    catch (err) {
+        console.error('Failed to track ad click:', err);
+        return { success: false };
     }
 });
 //# sourceMappingURL=index.js.map

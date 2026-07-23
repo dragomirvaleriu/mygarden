@@ -4,9 +4,35 @@ import Stripe from 'stripe';
 
 export * from './financials';
 export * from './billing';
+export { generateReferralCode } from './referrals';
+import { applyReferralBonus } from './referrals';
 
 admin.initializeApp();
 const db = admin.firestore();
+
+/**
+ * Write a notification doc to a user's feed. Called only from server-side
+ * flows (webhook, gift redemption) — clients can never create their own
+ * (see firestore.rules), so this is the sole path notifications take.
+ */
+async function createNotification(
+    uid: string,
+    type: 'purchase' | 'giftcode' | 'referral',
+    title: string,
+    message: string
+): Promise<void> {
+    try {
+        await db.collection('users').doc(uid).collection('notifications').add({
+            type,
+            title,
+            message,
+            read: false,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+    } catch (err) {
+        console.error('createNotification failed (non-fatal):', err);
+    }
+}
 
 // Initialize Stripe (User will need to set this config via firebase functions:config:set stripe.secret=...)
 const stripeSecret = functions.config().stripe?.secret || 'sk_test_placeholder';
@@ -74,6 +100,13 @@ export const redeemGiftCode = functions.https.onCall(async (data, context) => {
 
         return expires;
     });
+
+    await createNotification(
+        context.auth.uid,
+        'giftcode',
+        '🎁 Cod cadou activat!',
+        'Codul tău cadou a fost activat cu succes. Bucură-te de acces PRO!'
+    );
 
     return { success: true, expiresAt };
 });
@@ -148,7 +181,7 @@ export const createCheckoutSession = functions.https.onCall(async (data, context
         customer_email: context.auth.token.email,
         success_url: successUrl,
         cancel_url: cancelUrl,
-        metadata: { product },
+        metadata: { product, uid: context.auth.uid },
     });
 
     return { url: session.url };
@@ -174,6 +207,7 @@ export const stripeWebhook = functions.https.onRequest(async (req, res) => {
         const session = event.data.object as any;
         const orgId = session.client_reference_id;
         const product = session.metadata?.product || 'bundle';
+        const buyerUid = session.metadata?.uid;
 
         if (orgId) {
             const expiresAt = new Date();
@@ -191,6 +225,17 @@ export const stripeWebhook = functions.https.onRequest(async (req, res) => {
             }
 
             await db.collection('organizations').doc(orgId).update(updateData);
+
+            if (buyerUid) {
+                const productLabel = product === 'adFree' ? 'Fără Reclame' : product === 'academyPro' ? 'Academy PRO' : 'Acces Complet';
+                await createNotification(
+                    buyerUid,
+                    'purchase',
+                    '🎉 Achiziție reușită!',
+                    `Acces "${productLabel}" activat pe contul tău. Mulțumim!`
+                );
+                await applyReferralBonus(buyerUid, orgId);
+            }
         }
     }
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Page, UserProfile } from '../src/types';
 import {
@@ -15,7 +15,9 @@ import {
   Wrench,
   Sprout,
   Search,
-  Gift
+  Gift,
+  Copy,
+  Share2
 } from 'lucide-react';
 import { Card } from '../components/ui/primitives';
 import {
@@ -58,6 +60,27 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
   const [giftCode, setGiftCode] = useState('');
   const [isRedeeming, setIsRedeeming] = useState(false);
   const [isPurchasing, setIsPurchasing] = useState(false);
+  const [referralCode, setReferralCode] = useState(userProfile.referralCode || '');
+
+  useEffect(() => {
+    if (referralCode) return;
+    const fetchReferralCode = async () => {
+      try {
+        const generate = httpsCallable(functions, 'generateReferralCode');
+        const result: any = await generate({});
+        setReferralCode(result.data.code);
+      } catch (err) {
+        // Non-critical — the Share & Earn card just won't populate this session.
+      }
+    };
+    fetchReferralCode();
+  }, [referralCode]);
+
+  const handleCopyReferralLink = () => {
+    const link = `${window.location.origin}/?ref=${referralCode}`;
+    navigator.clipboard.writeText(link);
+    toast.success('Link copiat!');
+  };
 
   const handleSaveName = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -389,6 +412,38 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
             </button>
           </div>
         </form>
+      )}
+
+      {/* Referral program */}
+      {referralCode && (
+        <div className="stihl-card rounded-lg p-5 bg-bg-card border border-border-color space-y-3">
+          <div className="flex items-center gap-2 text-text-secondary">
+            <Share2 size={14} className="text-accent-color" />
+            <span className="text-[11px] font-bold uppercase tracking-wider">Recomandă și Câștigă</span>
+          </div>
+          <p className="text-xs text-text-secondary font-medium">
+            Trimite link-ul tău unui prieten. Când face prima achiziție, primiți amândoi +7 zile PRO gratuit.
+          </p>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              readOnly
+              value={`${window.location.origin}/?ref=${referralCode}`}
+              className="flex-1 min-w-0 bg-bg-main border border-border-color rounded-md px-3 py-2.5 text-xs font-medium outline-none"
+            />
+            <button
+              onClick={handleCopyReferralLink}
+              className="shrink-0 stihl-button px-4 py-2.5 rounded-md font-bold uppercase tracking-wider text-xs text-white shadow-md flex items-center justify-center gap-2"
+            >
+              <Copy size={14} />
+            </button>
+          </div>
+          {(userProfile.referralCount || 0) > 0 && (
+            <p className="text-[11px] font-bold text-accent-color">
+              🎉 {userProfile.referralCount} {userProfile.referralCount === 1 ? 'persoană s-a alăturat' : 'persoane s-au alăturat'} prin linkul tău
+            </p>
+          )}
+        </div>
       )}
 
       {/* Language */}

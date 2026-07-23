@@ -63,6 +63,9 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
   
   const emailRef = useRef<HTMLInputElement>(null);
   const passRef = useRef<HTMLInputElement>(null);
+  // Captured once on mount, before any hash-routing navigation could strip
+  // the query string — used to attribute a new signup to whoever shared the link.
+  const referredByRef = useRef<string | null>(new URLSearchParams(window.location.search).get('ref'));
 
   const attemptServerRecovery = async (firebaseUser: { getIdToken: () => Promise<string> }) => {
     try {
@@ -266,9 +269,10 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
         organizationId: orgId,
         role: (inviteData?.role as any) || 'admin',
         theme: 'dark',
-        accountType: accountType
+        accountType: accountType,
+        ...(referredByRef.current ? { referredBy: referredByRef.current } : {})
       };
-      
+
       await setDoc(doc(db, 'users', uid), profile);
 
       // Mark invitation as accepted
