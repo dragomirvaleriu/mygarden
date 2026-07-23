@@ -73,8 +73,8 @@ const DesktopSidebar: React.FC<Props> = ({
       />
       <div className="mb-6 flex flex-col items-center px-2 mt-2 gap-1.5 w-full">
         {/* Row 1: logo + title side by side */}
-        <div className="flex items-center justify-center gap-2.5 w-full">
-          <div className="shrink-0" style={{ width: '2.4rem', height: '2.4rem' }}>
+        <div className="flex items-center justify-center gap-2 w-full">
+          <div className="shrink-0" style={{ width: '3.4rem', height: '3.4rem' }}>
             <img
               src="/logo.png"
               alt={`${APP_NAME} Logo`}
@@ -82,13 +82,14 @@ const DesktopSidebar: React.FC<Props> = ({
             />
           </div>
           <h1
-            className="leading-none whitespace-nowrap"
+            className="leading-none whitespace-nowrap flex items-center"
             style={{
               fontFamily: "'Fraunces', serif",
               fontSize: '2rem',
               fontWeight: 700,
               letterSpacing: '-0.5px',
-              lineHeight: 1
+              lineHeight: 1,
+              height: '3.4rem'
             }}
           >
             <span style={{ color: 'var(--accent-color)' }}>my</span>
