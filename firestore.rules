@@ -139,11 +139,25 @@ service cloud.firestore {
     }
 
     // Organizații
+    // Entitlement fields (licenseType/subscriptionTier/plan/isLifetime/
+    // trialExpiresAt/planExpires) are what usePlan() reads to decide if an
+    // org is PRO — they must only ever be set by the Admin SDK (Cloud
+    // Functions, after a verified Stripe webhook or gift-code redemption),
+    // never by a client write. An org-admin `allow update` with no field
+    // restriction let any user (every homeowner is admin of their own
+    // single-member org) grant themselves PRO for free via the client SDK.
+    function entitlementFields() {
+      return ['licenseType', 'subscriptionTier', 'plan', 'isLifetime', 'trialExpiresAt', 'planExpires'];
+    }
+
     match /organizations/{orgId} {
       allow read: if isSuperAdmin() || isMemberOf(orgId) || (isSignedIn() && resource.data.adminUid == request.auth.uid);
-      allow update: if isSuperAdmin() || (isMemberOf(orgId) && isAdmin());
+      allow update: if isSuperAdmin() || (
+        isMemberOf(orgId) && isAdmin() &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(entitlementFields())
+      );
       allow delete: if isSuperAdmin();
-      allow create: if isSignedIn();
+      allow create: if isSignedIn() && !request.resource.data.keys().hasAny(entitlementFields());
     }
 
     // Invitații

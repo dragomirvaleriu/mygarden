@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   BookOpen, Lock, Crown, Zap, Star, Clock, ChevronRight,
   X, Sprout, AlertTriangle, CheckCircle2, ChevronDown, ChevronUp,
@@ -11,10 +11,9 @@ import {
   ARTICLES_RO, ARTICLES_EN, ACADEMY_CATEGORIES,
   ArticleMeta, getArticlesByLang, getFreeArticleCount, getTotalArticleCount
 } from '../src/data/academyContent';
-import { auth, db, doc, updateDoc } from '../services/firebase';
+import { auth, functions, httpsCallable } from '../services/firebase';
 import { usePlan } from '../src/hooks/usePlan';
 import toast from 'react-hot-toast';
-import OnboardingWizard from '../components/OnboardingWizard';
 import { SmartTroubleshooter } from '../components/SmartTroubleshooter';
 import AIAssistantModal from '../components/academy/AIAssistantModal';
 import { useData } from '../src/context/DataContext';
@@ -64,7 +63,7 @@ const BenefitRow: React.FC<{ text: string; subtext?: string }> = ({ text, subtex
 const PremiumUpgradeModal: React.FC<{
   triggerArticle: { title: string; emoji: string; categoryLabel: string; readTime: number; difficulty: string; coverGradient: string };
   onClose: () => void;
-  onUpgrade: () => void;
+  onUpgrade: () => Promise<void>;
 }> = ({ triggerArticle, onClose, onUpgrade }) => {
   const [loading, setLoading] = useState(false);
   const [visible, setVisible] = useState(false);
@@ -79,9 +78,14 @@ const PremiumUpgradeModal: React.FC<{
     return () => { document.body.style.overflow = ''; };
   }, []);
 
-  const handleUpgrade = () => {
+  const handleUpgrade = async () => {
+    if (loading) return;
     setLoading(true);
-    setTimeout(() => { setLoading(false); onUpgrade(); }, 700);
+    try {
+      await onUpgrade();
+    } finally {
+      setLoading(false);
+    }
   };
 
   const benefits = [
@@ -362,8 +366,7 @@ const ArticleReader: React.FC<{
 
 // ─── Main Academy Component ────────────────────────────
 export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptionTier = 'free', onNavigateToUpgrade }) => {
-  const [testUnlocked, setTestUnlocked] = useState(false);
-  const isPro = externalSubscriptionTier !== 'free' || testUnlocked;
+  const isPro = externalSubscriptionTier !== 'free';
   const { i18n } = useTranslation();
   const { organization } = useData();
   const lang = i18n.language?.startsWith('en') ? 'en' : 'ro';
@@ -373,7 +376,6 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
   const [openArticle, setOpenArticle] = useState<ArticleMeta | null>(null);
   const [articleContent, setArticleContent] = useState('');
   const [loadingArticleId, setLoadingArticleId] = useState<string | null>(null);
-  const [showWizard, setShowWizard] = useState(false);
   const [showTroubleshooter, setShowTroubleshooter] = useState(false);
   const [showAIAssistant, setShowAIAssistant] = useState(false);
 
@@ -439,6 +441,20 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
       setLoadingArticleId(null);
     }
   };
+
+  // Deep-link handoff from SmartTroubleshooter's "Vezi Ghidul Complet" button.
+  // sessionStorage (not a hash query param) because App.tsx's hashchange
+  // handler requires an exact Page match and would bounce '#academy?article=x'
+  // straight back to the Dashboard.
+  useEffect(() => {
+    let slug: string | null = null;
+    try { slug = sessionStorage.getItem('academy_open_slug'); } catch {}
+    if (!slug) return;
+    try { sessionStorage.removeItem('academy_open_slug'); } catch {}
+    const article = articles.find(a => a.slug === slug);
+    if (article) handleArticleClick(article);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const progressPct = totalCount > 0 ? Math.round((readCount / totalCount) * 100) : 0;
 
@@ -689,13 +705,6 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
       </div>
 
       {/* ── Modals ── */}
-      {showWizard && (
-        <OnboardingWizard
-          organizationId={organization?.id || ''}
-          onComplete={() => setShowWizard(false)}
-        />
-      )}
-
       {showAIAssistant && (
         <AIAssistantModal onClose={() => setShowAIAssistant(false)} />
       )}
@@ -729,18 +738,27 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
             coverGradient: paywallArticle.coverGradient,
           }}
           onClose={() => setPaywallArticle(null)}
-          onUpgrade={async () => { 
+          onUpgrade={async () => {
             try {
-              if (organization?.id) {
-                await updateDoc(doc(db, 'organizations', organization.id), { licenseType: 'pro' });
-                toast.success("Plată simulată! Contul tău este acum PRO.");
-              }
-            } catch (err) {
+              const createCheckoutSession = httpsCallable(functions, 'createCheckoutSession');
+              const base = `${window.location.origin}${window.location.pathname}`;
+              const result: any = await createCheckoutSession({
+                successUrl: `${base}#academy?upgraded=1`,
+                cancelUrl: `${base}#academy`,
+              });
+              const url = result?.data?.url;
+              if (!url) throw new Error('No checkout URL returned.');
+              window.location.href = url;
+            } catch (err: any) {
               console.error(err);
-              setTestUnlocked(true);
+              const message: string = err?.message || '';
+              if (message.includes('not configured')) {
+                toast.error('Plățile online nu sunt încă active. Contactează-ne pentru un cod de acces.');
+              } else {
+                toast.error('Nu am putut iniția plata. Încearcă din nou.');
+              }
+              setPaywallArticle(null);
             }
-            setPaywallArticle(null); 
-            // onNavigateToUpgrade?.(); // Disabled during testing phase
           }}
         />
       )}

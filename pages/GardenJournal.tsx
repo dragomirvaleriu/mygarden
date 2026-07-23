@@ -2,13 +2,14 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { db, collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp, storage, ref, uploadBytes, getDownloadURL, auth, updateDoc, doc, getDoc, deleteDoc } from '../services/firebase';
 import { ClientHistory, Page } from '../src/types';
-import { Camera, Calendar, MapPin, User, ChevronRight, Image as ImageIcon, Filter, Clock, Play, X, ChevronLeft, Pause, Plus, Search, LayoutGrid, LayoutList, Maximize2, Droplets, Scissors, Sprout, Bug, PlusCircle, Check, ScanLine, MoreVertical, Edit2, Trash2 } from 'lucide-react';
+import { Camera, Calendar, MapPin, User, ChevronRight, Image as ImageIcon, Filter, Clock, Play, X, ChevronLeft, Pause, Plus, Search, LayoutGrid, LayoutList, Maximize2, Droplets, Scissors, Sprout, Bug, PlusCircle, Check, ScanLine, MoreVertical, Edit2, Trash2, Columns2 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ro } from 'date-fns/locale';
 import { useFirestoreQuery } from '../hooks/useFirestoreQuery';
 import { parseSafeDate } from '../utils/date';
 import { useData } from '../src/context/DataContext';
 import { compressImage } from '../utils/image';
+import { BeforeAfterSlider } from '../components/BeforeAfterSlider';
 import toast from 'react-hot-toast';
 
 interface Props {
@@ -180,6 +181,10 @@ const GardenJournal: React.FC<Props> = ({ organizationId, onNavigate, userId, is
   const [showTimelapse, setShowTimelapse] = useState(false);
   const [timelapseIndex, setTimelapseIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
+
+  const [showCompare, setShowCompare] = useState(false);
+  const [compareBeforeIdx, setCompareBeforeIdx] = useState(0);
+  const [compareAfterIdx, setCompareAfterIdx] = useState(0);
 
   // Auto-play effect for timelapse
   useEffect(() => {
@@ -404,6 +409,21 @@ const GardenJournal: React.FC<Props> = ({ organizationId, onNavigate, userId, is
             >
               <Play size={14} fill="currentColor" />
               <span className="hidden sm:inline">{t('Play Time-lapse')}</span>
+            </button>
+          )}
+
+          {/* Before/After Compare Button */}
+          {timelapsePhotos.length > 1 && (
+            <button
+              onClick={() => {
+                setCompareBeforeIdx(0);
+                setCompareAfterIdx(timelapsePhotos.length - 1);
+                setShowCompare(true);
+              }}
+              className="flex items-center gap-2 px-4 py-2.5 bg-bg-card text-violet-500 border border-border-color hover:border-violet-500/30 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-sm"
+            >
+              <Columns2 size={14} />
+              <span className="hidden sm:inline">Compară Progres</span>
             </button>
           )}
 
@@ -802,6 +822,61 @@ const GardenJournal: React.FC<Props> = ({ organizationId, onNavigate, userId, is
                 <><Play size={16} fill="currentColor" /> {t('Play')}</>
               )}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Before/After Compare Modal */}
+      {showCompare && timelapsePhotos.length > 1 && (
+        <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center animate-in fade-in duration-500 p-4 sm:p-8">
+          <div className="absolute top-0 inset-x-0 p-6 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent z-10">
+            <h2 className="text-white text-xl font-black uppercase tracking-tighter flex items-center gap-2">
+              <Columns2 className="text-accent-color" />
+              Compară Progresul
+            </h2>
+            <button
+              onClick={() => setShowCompare(false)}
+              className="p-3 bg-white/10 text-white rounded-full hover:bg-white/20 hover:rotate-90 transition-all"
+            >
+              <X size={24} />
+            </button>
+          </div>
+
+          <div className="w-full max-w-2xl mt-16">
+            <BeforeAfterSlider
+              beforeUrl={timelapsePhotos[compareBeforeIdx].url}
+              afterUrl={timelapsePhotos[compareAfterIdx].url}
+              beforeLabel={format(timelapsePhotos[compareBeforeIdx].date, 'dd MMM yyyy')}
+              afterLabel={format(timelapsePhotos[compareAfterIdx].date, 'dd MMM yyyy')}
+            />
+
+            <div className="grid grid-cols-2 gap-4 mt-6">
+              <div>
+                <label className="block text-[10px] font-black text-white/50 uppercase tracking-widest mb-2">Înainte</label>
+                <select
+                  value={compareBeforeIdx}
+                  onChange={(e) => setCompareBeforeIdx(Number(e.target.value))}
+                  className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2.5 text-sm font-bold text-white outline-none focus:border-accent-color [&>option]:text-black"
+                >
+                  {timelapsePhotos.map((p, idx) => (
+                    <option key={idx} value={idx}>{format(p.date, 'dd MMM yyyy')} · {p.propertyName}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-white/50 uppercase tracking-widest mb-2">Acum</label>
+                <select
+                  value={compareAfterIdx}
+                  onChange={(e) => setCompareAfterIdx(Number(e.target.value))}
+                  className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2.5 text-sm font-bold text-white outline-none focus:border-accent-color [&>option]:text-black"
+                >
+                  {timelapsePhotos.map((p, idx) => (
+                    <option key={idx} value={idx}>{format(p.date, 'dd MMM yyyy')} · {p.propertyName}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <p className="text-center text-white/40 text-xs font-medium mt-4">Trage linia pentru a compara cele două fotografii.</p>
           </div>
         </div>
       )}

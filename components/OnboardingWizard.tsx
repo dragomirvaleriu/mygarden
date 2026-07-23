@@ -1,18 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { 
-  X, 
-  ChevronRight, 
-  ChevronLeft, 
-  Building2, 
-  Wrench, 
-  Users, 
-  Zap, 
+import {
+  X,
+  ChevronRight,
+  ChevronLeft,
+  Sprout,
+  HelpCircle,
+  Zap,
   CheckCircle2,
   Plus,
-  Star
+  Star,
+  ThermometerSun,
+  Leaf,
+  Waves,
+  Bug
 } from 'lucide-react';
-import { db, collection, addDoc, updateDoc, doc, getDocs, query, where } from '../services/firebase';
+import { db, updateDoc, doc } from '../services/firebase';
 import { toast } from 'react-hot-toast';
 
 interface Props {
@@ -20,43 +23,33 @@ interface Props {
   onComplete: () => void;
 }
 
+const CONCERN_OPTIONS: { value: string; label: string; subtext: string; icon: React.ReactNode }[] = [
+  { value: 'dry_patches', label: 'Pete Uscate sau Galbene', subtext: 'Zone în care iarba moare sau se îngălbenește.', icon: <ThermometerSun size={20} className="text-amber-500" /> },
+  { value: 'weeds_moss', label: 'Buruieni sau Mușchi', subtext: 'Plante nedorite care sufocă gazonul.', icon: <Leaf size={20} className="text-green-500" /> },
+  { value: 'growth_color', label: 'Culoare Palidă / Creștere Lentă', subtext: 'Gazonul este verde deschis sau crește greu.', icon: <Sprout size={20} className="text-emerald-400" /> },
+  { value: 'soil_water', label: 'Sol Compact / Bălți', subtext: 'Apa stagnează după irigare sau ploaie.', icon: <Waves size={20} className="text-blue-500" /> },
+  { value: 'pests', label: 'Dăunători', subtext: 'Cârtițe, mușuroaie, viermi sau insecte.', icon: <Bug size={20} className="text-red-500" /> },
+];
+
+const CONCERN_LABELS: Record<string, string> = Object.fromEntries(CONCERN_OPTIONS.map(o => [o.value, o.label]));
+
 const OnboardingWizard: React.FC<Props> = ({ organizationId, onComplete }) => {
   const { t } = useTranslation();
   const [step, setStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
-  
-  // Step 2: Services
-  const [services, setServices] = useState([
-    { name: 'Tuns Gazon', unit: 'mp', isDefault: true, isActive: true },
-    { name: 'Aplicare ingrasamant solid', unit: 'mp', isDefault: true, isActive: true },
-  ]);
-
-  const handleAddDefaultServices = async () => {
-    setIsProcessing(true);
-    try {
-      const batch = services.filter(s => s.isDefault).map(s => 
-        addDoc(collection(db, 'service_types'), {
-          organizationId,
-          ...s,
-          createdAt: new Date()
-        })
-      );
-      await Promise.all(batch);
-      setStep(3);
-    } catch (error) {
-      toast.error(t('Error saving services'));
-    } finally {
-      setIsProcessing(false);
-    }
-  };
+  const [primaryConcern, setPrimaryConcern] = useState<string | null>(null);
 
   const finishOnboarding = async () => {
     setIsProcessing(true);
     try {
       await updateDoc(doc(db, 'organizations', organizationId), {
         onboardingCompleted: true,
-        onboardingCompletedAt: new Date()
+        onboardingCompletedAt: new Date(),
+        ...(primaryConcern ? { primaryLawnConcern: primaryConcern } : {})
       });
+      if (primaryConcern) {
+        toast.success(`Am notat: ${CONCERN_LABELS[primaryConcern]}. Găsești diagnosticul complet în cardul "Doctorul Grădinii" de pe Acasă.`, { duration: 6000 });
+      }
       onComplete();
     } catch (error) {
       toast.error(t('Error finishing onboarding'));
@@ -68,26 +61,20 @@ const OnboardingWizard: React.FC<Props> = ({ organizationId, onComplete }) => {
   const steps = [
     {
       id: 1,
-      title: t('Welcome to Scapeflow'),
-      description: t('Lets get your organization ready in 3 simple steps.'),
-      icon: <Building2 className="text-accent-color" size={32} />
+      title: 'Bine ai venit la My Garden!',
+      description: 'Hai să pornim treaba în 2 pași simpli.',
+      icon: <Sprout className="text-accent-color" size={32} />
     },
     {
       id: 2,
-      title: t('Setup Services'),
-      description: t('What services do you offer? We added some defaults for you.'),
-      icon: <Wrench className="text-blue-500" size={32} />
+      title: 'Ce problemă principală ai?',
+      description: 'Așa îți arătăm din prima zi conținutul potrivit pentru tine.',
+      icon: <HelpCircle className="text-red-500" size={32} />
     },
     {
       id: 3,
-      title: t('Invite Your Team'),
-      description: t('Work better together by inviting your colleagues.'),
-      icon: <Users className="text-green-500" size={32} />
-    },
-    {
-      id: 4,
-      title: t('Power of Pro'),
-      description: t('Unlock the full potential of your landscape business.'),
+      title: 'My Garden PRO',
+      description: 'Deblochează ghidurile avansate și calculatoarele precise.',
       icon: <Zap className="text-amber-500" size={32} />
     }
   ];
@@ -95,12 +82,12 @@ const OnboardingWizard: React.FC<Props> = ({ organizationId, onComplete }) => {
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
       <div className="bg-bg-card border border-border-color rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden animate-in zoom-in duration-300">
-        
+
         {/* Progress Bar */}
         <div className="flex h-1.5 w-full bg-border-color/20">
-            {[1, 2, 3, 4].map((s) => (
-                <div 
-                    key={s} 
+            {[1, 2, 3].map((s) => (
+                <div
+                    key={s}
                     className={`flex-1 transition-all duration-500 ${s <= step ? 'bg-accent-color' : ''}`}
                 />
             ))}
@@ -115,7 +102,7 @@ const OnboardingWizard: React.FC<Props> = ({ organizationId, onComplete }) => {
                     </div>
                     <div>
                         <p className="text-[11px] font-black text-accent-color uppercase tracking-[0.2em] mb-1">
-                            {t('Step')} {step} {t('of')} 4
+                            {t('Step')} {step} {t('of')} 3
                         </p>
                         <h2 className="text-2xl font-black text-main tracking-tight">{steps[step-1].title}</h2>
                     </div>
@@ -130,116 +117,95 @@ const OnboardingWizard: React.FC<Props> = ({ organizationId, onComplete }) => {
                 {step === 1 && (
                     <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
                         <p className="text-lg text-text-secondary font-medium leading-relaxed">
-                            {t('Scapeflow onboarding intro')}
+                            {steps[0].description}
                         </p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="p-4 bg-bg-main rounded-2xl border border-border-color">
                                 <h4 className="font-bold text-main mb-2 flex items-center gap-2">
                                     <CheckCircle2 size={16} className="text-green-500" />
-                                    {t('Manage Clients')}
+                                    Ce ai de făcut azi
                                 </h4>
-                                <p className="text-xs text-text-secondary leading-relaxed">{t('Keep all your client data in one place.')}</p>
+                                <p className="text-xs text-text-secondary leading-relaxed">Calendar inteligent, cu memento-uri pentru udare, tuns și fertilizare, adaptate la vreme.</p>
                             </div>
                             <div className="p-4 bg-bg-main rounded-2xl border border-border-color">
                                 <h4 className="font-bold text-main mb-2 flex items-center gap-2">
                                     <CheckCircle2 size={16} className="text-green-500" />
-                                    {t('Smart Scheduling')}
+                                    Diagnoză AI
                                 </h4>
-                                <p className="text-xs text-text-secondary leading-relaxed">{t('Optimize your routes and team time.')}</p>
+                                <p className="text-xs text-text-secondary leading-relaxed">Scanează o problemă cu Lentila AI sau răspunde la câteva întrebări în Doctorul Grădinii.</p>
                             </div>
                         </div>
                     </div>
                 )}
 
                 {step === 2 && (
-                    <div className="space-y-4 animate-in slide-in-from-right-4 duration-300">
-                        <p className="text-sm text-text-secondary font-medium mb-6">
-                            {t('Select the services you want to start with:')}
+                    <div className="space-y-3 animate-in slide-in-from-right-4 duration-300">
+                        <p className="text-sm text-text-secondary font-medium mb-4">
+                            {steps[1].description}
                         </p>
                         <div className="grid grid-cols-1 gap-2">
-                            {services.map((s, idx) => (
-                                <button 
-                                    key={idx}
-                                    onClick={() => {
-                                        const newS = [...services];
-                                        newS[idx].isDefault = !newS[idx].isDefault;
-                                        setServices(newS);
-                                    }}
-                                    className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${
-                                        s.isDefault 
-                                        ? 'bg-accent-color/5 border-accent-color shadow-sm' 
-                                        : 'bg-bg-main border-border-color opacity-60 hover:opacity-100'
+                            {CONCERN_OPTIONS.map((opt) => (
+                                <button
+                                    key={opt.value}
+                                    onClick={() => setPrimaryConcern(opt.value)}
+                                    className={`flex items-center gap-4 p-4 rounded-2xl border text-left transition-all ${
+                                        primaryConcern === opt.value
+                                        ? 'bg-accent-color/5 border-accent-color shadow-sm'
+                                        : 'bg-bg-main border-border-color hover:border-accent-color/40'
                                     }`}
                                 >
-                                    <div className="flex items-center gap-3">
-                                        <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${s.isDefault ? 'bg-accent-color border-accent-color' : 'border-border-color'}`}>
-                                            {s.isDefault && <CheckCircle2 size={14} className="text-white" />}
-                                        </div>
-                                        <div className="text-left">
-                                            <p className="text-sm font-bold text-main">{s.name}</p>
-                                            <p className="text-[11px] text-text-secondary font-bold uppercase">{t('Unit')}: {s.unit}</p>
-                                        </div>
+                                    <div className="w-11 h-11 rounded-xl bg-bg-card border border-border-color flex items-center justify-center shrink-0">
+                                        {opt.icon}
                                     </div>
-                                    <Wrench size={16} className={s.isDefault ? 'text-accent-color' : 'text-text-secondary'} />
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-bold text-main">{opt.label}</p>
+                                        <p className="text-[11px] text-text-secondary font-medium">{opt.subtext}</p>
+                                    </div>
+                                    {primaryConcern === opt.value && <CheckCircle2 size={18} className="text-accent-color shrink-0" />}
                                 </button>
                             ))}
+                            <button
+                                onClick={() => setPrimaryConcern(null)}
+                                className={`p-3 rounded-2xl border text-center text-xs font-bold uppercase tracking-widest transition-all ${
+                                    primaryConcern === null
+                                    ? 'bg-accent-color/5 border-accent-color text-accent-color'
+                                    : 'bg-bg-main border-border-color text-text-secondary hover:border-accent-color/40'
+                                }`}
+                            >
+                                Nu știu încă / Doar vreau sfaturi generale
+                            </button>
                         </div>
                     </div>
                 )}
 
                 {step === 3 && (
                     <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
-                        <p className="text-lg text-text-secondary font-medium leading-relaxed">
-                            {t('Onboarding team intro')}
-                        </p>
-                        <div className="p-6 bg-accent-color/5 rounded-3xl border border-dashed border-accent-color/30 flex flex-col items-center text-center">
-                            <div className="w-16 h-16 rounded-full bg-accent-color/10 flex items-center justify-center text-accent-color mb-4">
-                                <Users size={32} />
-                            </div>
-                            <h4 className="text-lg font-black text-main mb-2">{t('Collaborate in Real-Time')}</h4>
-                            <p className="text-sm text-text-secondary mb-6 max-w-sm">
-                                {t('You can add your team members from the Administration panel later.')}
-                            </p>
-                            <button 
-                                onClick={() => setStep(4)}
-                                className="px-6 py-3 bg-bg-main border border-border-color rounded-xl font-bold text-main hover:border-accent-color transition-all shadow-sm flex items-center gap-2"
-                            >
-                                <ChevronRight size={18} />
-                                {t('Got it, next')}
-                            </button>
-                        </div>
-                    </div>
-                )}
-
-                {step === 4 && (
-                    <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="p-6 bg-bg-main rounded-3xl border border-border-color relative overflow-hidden group">
                                 <div className="absolute -top-4 -right-4 opacity-5 group-hover:scale-110 transition-transform">
                                     <Star size={80} />
                                 </div>
-                                <h4 className="text-xs font-black text-text-secondary uppercase tracking-widest mb-4">{t('Free Plan')}</h4>
+                                <h4 className="text-xs font-black text-text-secondary uppercase tracking-widest mb-4">Free</h4>
                                 <ul className="space-y-3">
-                                    <li className="text-xs font-bold text-main flex items-center gap-2"><CheckCircle2 size={12} className="text-green-500" /> 20 {t('Clients')}</li>
-                                    <li className="text-xs font-bold text-main flex items-center gap-2"><CheckCircle2 size={12} className="text-green-500" /> 1 {t('Employee')}</li>
-                                    <li className="text-xs font-bold text-main flex items-center gap-2"><CheckCircle2 size={12} className="text-green-500" /> {t('Basic Reports')}</li>
+                                    <li className="text-xs font-bold text-main flex items-center gap-2"><CheckCircle2 size={12} className="text-green-500" /> Ghiduri de bază Academy</li>
+                                    <li className="text-xs font-bold text-main flex items-center gap-2"><CheckCircle2 size={12} className="text-green-500" /> Calendar & memento-uri</li>
+                                    <li className="text-xs font-bold text-main flex items-center gap-2"><CheckCircle2 size={12} className="text-green-500" /> Doctorul Grădinii</li>
                                 </ul>
                             </div>
                             <div className="p-6 bg-accent-color text-white rounded-3xl relative overflow-hidden shadow-xl shadow-accent-color/20">
                                 <div className="absolute -top-4 -right-4 opacity-20">
                                     <Zap size={80} />
                                 </div>
-                                <h4 className="text-xs font-black uppercase tracking-widest mb-4 opacity-80">{t('Pro Plan')}</h4>
+                                <h4 className="text-xs font-black uppercase tracking-widest mb-4 opacity-80">PRO</h4>
                                 <ul className="space-y-3">
-                                    <li className="text-xs font-bold flex items-center gap-2"><Plus size={12} /> {t('Unlimited Clients')}</li>
-                                    <li className="text-xs font-bold flex items-center gap-2"><Plus size={12} /> {t('Unlimited Team')}</li>
-                                    <li className="text-xs font-bold flex items-center gap-2"><Plus size={12} /> {t('Inventory Management')}</li>
-                                    <li className="text-xs font-bold flex items-center gap-2"><Plus size={12} /> {t('Advanced Analytics')}</li>
+                                    <li className="text-xs font-bold flex items-center gap-2"><Plus size={12} /> Peste 50 de ghiduri avansate</li>
+                                    <li className="text-xs font-bold flex items-center gap-2"><Plus size={12} /> Calculatoare precise de tratamente</li>
+                                    <li className="text-xs font-bold flex items-center gap-2"><Plus size={12} /> Fără reclame</li>
                                 </ul>
                             </div>
                         </div>
                         <p className="text-xs text-center text-text-secondary font-bold uppercase tracking-widest py-4">
-                            {t('Scapeflow is better with Pro')}
+                            Poți trece la PRO oricând din Academie
                         </p>
                     </div>
                 )}
@@ -247,7 +213,7 @@ const OnboardingWizard: React.FC<Props> = ({ organizationId, onComplete }) => {
 
             {/* Footer Actions */}
             <div className="flex items-center justify-between mt-12 pt-8 border-t border-border-color">
-                <button 
+                <button
                     onClick={() => step > 1 ? setStep(step - 1) : finishOnboarding()}
                     className="flex items-center gap-2 text-sm font-bold text-text-secondary hover:text-main transition-colors px-4 py-2"
                 >
@@ -255,26 +221,17 @@ const OnboardingWizard: React.FC<Props> = ({ organizationId, onComplete }) => {
                     {step === 1 ? t('Skip Tutorial') : t('Back')}
                 </button>
 
-                {step === 2 ? (
-                    <button 
-                        onClick={handleAddDefaultServices}
+                {step === 3 ? (
+                    <button
+                        onClick={finishOnboarding}
                         disabled={isProcessing}
                         className="px-8 py-4 bg-accent-color text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-accent-color/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3"
                     >
-                        {isProcessing ? t('Saving...') : t('Install Services')}
-                        <ChevronRight size={18} />
-                    </button>
-                ) : step === 4 ? (
-                    <button 
-                        onClick={finishOnboarding}
-                        disabled={isProcessing}
-                        className="px-8 py-4 bg-main text-white dark:bg-white dark:text-main rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3"
-                    >
-                        {t('Start Managing')}
+                        {isProcessing ? t('Saving...') : 'Începe'}
                         <CheckCircle2 size={18} />
                     </button>
                 ) : (
-                    <button 
+                    <button
                         onClick={() => setStep(step + 1)}
                         className="px-8 py-4 bg-accent-color text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-accent-color/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3"
                     >

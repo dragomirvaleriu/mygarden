@@ -9,6 +9,7 @@ import { TreatmentCalculator } from '../components/TreatmentCalculator';
 import { AILensScanner } from '../components/vision/AILensScanner';
 import { GardenVitalityRing } from '../components/gamification/GardenVitalityRing';
 import { SmartTroubleshooter } from '../components/SmartTroubleshooter';
+import OnboardingWizard from '../components/OnboardingWizard';
 import { Card, SectionHeader } from '../components/ui/primitives';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -68,6 +69,8 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
   const [isAutopilotEnabled, setIsAutopilotEnabled] = useState(true);
   const [isAutopilotWorking, setIsAutopilotWorking] = useState(false);
   const [weatherInfo, setWeatherInfo] = useState<any>(null);
+  const [showFullWeather, setShowFullWeather] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   // Live-load displayName from Firestore so greeting is always fresh
   useEffect(() => {
@@ -92,6 +95,15 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
     const timer = setInterval(() => setNow(new Date()), 60000); // update every minute
     return () => clearInterval(timer);
   }, []);
+
+  // One-time welcome wizard for accounts that haven't finished onboarding yet.
+  // Gated on `organization` being loaded (not just falsy) so it doesn't flash
+  // for existing users while their org doc is still fetching.
+  useEffect(() => {
+    if (organization && !organization.onboardingCompleted) {
+      setShowOnboarding(true);
+    }
+  }, [organization?.id, organization?.onboardingCompleted]);
 
   const currentMonth = now.getMonth();
   const hourOfDay = now.getHours();
@@ -144,6 +156,31 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
       const due = t.nextDue?.toDate ? t.nextDue.toDate() : new Date(t.nextDue);
       return isAfter(now, due) && !isToday(due);
     }), [gardenTasks, now]);
+
+  // Consecutive-day streak of actual task completions (not just XP), across
+  // every task's history[]. Today doesn't need a completion yet to keep the
+  // streak alive — it only breaks once a full day is skipped.
+  const currentStreak = useMemo(() => {
+    const completedDays = new Set<string>();
+    gardenTasks.forEach(task => {
+      (task.history || []).forEach(entry => {
+        const d = entry.date?.toDate ? entry.date.toDate() : new Date(entry.date);
+        if (!isNaN(d.getTime())) completedDays.add(format(d, 'yyyy-MM-dd'));
+      });
+    });
+    if (completedDays.size === 0) return 0;
+
+    let streak = 0;
+    let cursor = now;
+    if (!completedDays.has(format(cursor, 'yyyy-MM-dd'))) {
+      cursor = addDays(cursor, -1);
+    }
+    while (completedDays.has(format(cursor, 'yyyy-MM-dd'))) {
+      streak++;
+      cursor = addDays(cursor, -1);
+    }
+    return streak;
+  }, [gardenTasks, now]);
 
   // Load last 3 journal entries
   useEffect(() => {
@@ -543,18 +580,9 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
               <div className="flex flex-col gap-2 md:min-w-[260px]">
                 <p className="text-[10px] font-black text-white/50 uppercase tracking-widest mb-1">Priorități Cheie</p>
                 {seasonalTip.tasks.slice(0, 3).map((task: any, idx: number) => {
-                  const catColors: Record<string, string> = {
-                    mowing:      'bg-green-500/20 border-green-400/30 text-green-200',
-                    watering:    'bg-blue-500/20 border-blue-400/30 text-blue-200',
-                    fertilizing: 'bg-violet-500/20 border-violet-400/30 text-violet-200',
-                    pruning:     'bg-amber-500/20 border-amber-400/30 text-amber-200',
-                    treatment:   'bg-red-500/20 border-red-400/30 text-red-200',
-                    other:       'bg-white/10 border-white/20 text-white/80',
-                  };
                   const catEmoji: Record<string, string> = {
                     mowing: '✂️', watering: '💧', fertilizing: '🌱', pruning: '🌿', treatment: '🪲', other: '📋',
                   };
-                  const colorClass = catColors[task.category] || catColors.other;
                   const emoji = catEmoji[task.category] || '📋';
                   return (
                     <motion.div
@@ -562,7 +590,7 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.2 + idx * 0.08 }}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-2xl border ${colorClass} backdrop-blur-sm`}
+                      className="flex items-center gap-3 px-4 py-3 rounded-2xl border bg-white/10 border-white/20 text-white backdrop-blur-sm"
                     >
                       <span className="text-base shrink-0">{emoji}</span>
                       <span className="text-sm font-bold leading-tight flex-1">{task.title}</span>
@@ -581,14 +609,40 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
       {/* ── MAIN GRID ── */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
 
-        {/* LEFT (3 cols): weather + irrigation */}
+        {/* LEFT (3 cols): "ce problemă am?" — the core beginner diagnostic tools, given the most room */}
         <div className="lg:col-span-3 space-y-4">
+          <SmartTroubleshooter onNavigate={onNavigate} />
+
+          {/* AI LENS */}
+          {userProfile?.uid && (
+            <AILensScanner
+              organizationId={organizationId}
+              userId={userProfile.uid}
+              userName={userProfile.displayName || ''}
+              onNavigate={onNavigate}
+              asCard={true}
+            />
+          )}
+        </div>
+
+        {/* RIGHT (2 cols): weather (compact) + irrigation + vitality + Journal + Zones */}
+        <div className="lg:col-span-2 space-y-4">
+
           <div className="bg-bg-card border border-border-color rounded-2xl p-5 shadow-sm">
-            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-text-secondary mb-4 flex items-center gap-2">
-              <Sun size={14} className="text-yellow-500" />
-              {t('7-Day Weather Forecast') || 'Prognoză Vreme 7 Zile'}
-            </h3>
-            <Weather address={gardenAddress || 'Craiova, Romania'} showFullForecast={true} onWeatherData={setWeatherInfo} />
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-text-secondary flex items-center gap-2">
+                <Sun size={14} className="text-yellow-500" />
+                {t('Weather') || 'Vremea'}
+              </h3>
+              <button
+                onClick={() => setShowFullWeather(v => !v)}
+                className="text-[10px] font-black text-accent-color uppercase tracking-wider flex items-center gap-1 hover:gap-2 transition-all"
+              >
+                {showFullWeather ? 'Restrânge' : 'Prognoză 7 Zile'}
+                <ChevronRight size={12} className={`transition-transform ${showFullWeather ? '-rotate-90' : 'rotate-90'}`} />
+              </button>
+            </div>
+            <Weather address={gardenAddress || 'Craiova, Romania'} showFullForecast={showFullWeather} onWeatherData={setWeatherInfo} />
 
             {/* ET0 Hydration Alerts */}
             {isExpertMode && hydrationAlerts.length > 0 && (
@@ -604,33 +658,16 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
           </div>
 
           {isExpertMode && <IrrigationWidget />}
-        </div>
 
-        {/* RIGHT (2 cols): vitality ring + AI Lens + Journal + Zones */}
-        <div className="lg:col-span-2 space-y-4">
-
-          {/* Garden Vitality — motivational, secondary, not the first thing on screen */}
+          {/* Garden Vitality — motivational, secondary */}
           <div className="bg-bg-card border border-border-color rounded-2xl shadow-sm flex justify-center">
             <GardenVitalityRing
               level={userProfile?.level || 1}
               exp={userProfile?.exp || 0}
               healthStatus={overdueTasks.length > 0 ? 'Atenție' : 'Excelent'}
+              streak={currentStreak}
             />
           </div>
-
-          {/* AI LENS S.O.S. Dark Glass */}
-          {userProfile?.uid && (
-            <AILensScanner
-              organizationId={organizationId}
-              userId={userProfile.uid}
-              userName={userProfile.displayName || ''}
-              onNavigate={onNavigate}
-              asCard={true}
-            />
-          )}
-
-          {/* Smart Troubleshooter */}
-          <SmartTroubleshooter />
 
           {/* Recent Journal */}
           <Card>
@@ -779,6 +816,10 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
       )}
 
       {isExpertMode && <TreatmentCalculator />}
+
+      {showOnboarding && organizationId && (
+        <OnboardingWizard organizationId={organizationId} onComplete={() => setShowOnboarding(false)} />
+      )}
     </div>
   );
 };

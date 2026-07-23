@@ -38,14 +38,18 @@ import {
   reauthenticateWithCredential,
   EmailAuthProvider
 } from "firebase/auth";
-import { 
-  getStorage, 
-  ref, 
-  uploadBytes, 
+import {
+  getStorage,
+  ref,
+  uploadBytes,
   getDownloadURL,
   deleteObject,
   listAll
 } from "firebase/storage";
+import {
+  getFunctions,
+  httpsCallable
+} from "firebase/functions";
 import { logger } from './logger';
 import firebaseConfig from '../firebase-applet-config.json';
 
@@ -68,6 +72,7 @@ const db = import.meta.env.DEV
 
 const auth = getAuth(app);
 const storage = getStorage(app);
+const functionsInstance = getFunctions(app);
 console.log("Firebase: Services initialized");
 
 export enum OperationType {
@@ -175,10 +180,12 @@ const setDoc = originalSetDoc;
 const deleteDoc = originalDeleteDoc;
 const writeBatch = originalWriteBatch;
 
-export { 
-  db, 
+export {
+  db,
   auth,
   storage,
+  functionsInstance as functions,
+  httpsCallable,
   logout,
   collection, 
   onSnapshot, 

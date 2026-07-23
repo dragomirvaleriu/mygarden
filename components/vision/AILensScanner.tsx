@@ -244,21 +244,20 @@ export const AILensScanner: React.FC<Props> = ({ organizationId, userId, userNam
   if (!isOpen) {
     if (asCard) {
       return (
-        <div 
+        <div
           onClick={() => setIsOpen(true)}
-          className="relative overflow-hidden cursor-pointer rounded-3xl bg-black/80 backdrop-blur-xl border border-white/10 p-6 flex items-start gap-4 hover:shadow-[0_0_30px_var(--accent-color)] transition-all duration-500 group"
-          style={{ boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.05)' }}
+          className="relative overflow-hidden cursor-pointer rounded-3xl bg-bg-card border border-border-color p-6 flex items-start gap-4 hover:border-accent-color/40 hover:shadow-[0_0_30px_-8px_var(--accent-color)] transition-all duration-500 group"
         >
-          <div className="absolute inset-0 pointer-events-none opacity-10 transition-opacity group-hover:opacity-20" style={{ background: 'linear-gradient(to bottom right, var(--accent-color), transparent)' }} />
-          <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-500">
+          <div className="absolute inset-0 pointer-events-none opacity-[0.06] transition-opacity group-hover:opacity-[0.12]" style={{ background: 'linear-gradient(to bottom right, var(--accent-color), transparent)' }} />
+          <div className="w-12 h-12 rounded-2xl bg-accent-color/10 border border-accent-color/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-500">
             <ScanLine size={24} className="text-accent-color animate-pulse drop-shadow-md" />
           </div>
           <div className="flex-1 min-w-0 z-10">
-            <h3 className="text-sm font-black text-white tracking-tight flex items-center gap-2">
+            <h3 className="text-sm font-black text-main tracking-tight flex items-center gap-2">
               Lentila AI <div className="w-1.5 h-1.5 rounded-full bg-accent-color animate-pulse" />
             </h3>
-            <p className="text-[10px] font-bold text-white/50 uppercase tracking-widest mt-1">S.O.S. Grădină</p>
-            <p className="text-xs text-zinc-400 font-medium mt-2 leading-relaxed">
+            <p className="text-[10px] font-bold text-text-secondary uppercase tracking-widest mt-1">S.O.S. Grădină</p>
+            <p className="text-xs text-text-secondary font-medium mt-2 leading-relaxed">
               Scanează o problemă. AI-ul diagnostichează instant.
             </p>
           </div>

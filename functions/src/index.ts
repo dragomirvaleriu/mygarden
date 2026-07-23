@@ -14,8 +14,22 @@ const stripe = new Stripe(stripeSecret, {
     apiVersion: '2022-11-15',
 });
 
+// usePlan() — the only thing the app actually reads to decide if someone is
+// PRO — resolves entirely from organizations/{orgId}, never from
+// users/{uid}. Every entitlement write (gift code redemption, Stripe
+// webhook) has to land on the caller's organization or it's invisible to
+// the rest of the app, no matter how "successful" the write looks.
+async function getCallerOrgId(uid: string): Promise<string> {
+    const userSnap = await db.collection('users').doc(uid).get();
+    const orgId = userSnap.data()?.organizationId;
+    if (!orgId) {
+        throw new functions.https.HttpsError('failed-precondition', 'No organization found for this account.');
+    }
+    return orgId;
+}
+
 /**
- * Redeem a gift code to upgrade user to Pro
+ * Redeem a gift code to upgrade the caller's organization to Pro.
  */
 export const redeemGiftCode = functions.https.onCall(async (data, context) => {
     if (!context.auth) {
@@ -28,51 +42,52 @@ export const redeemGiftCode = functions.https.onCall(async (data, context) => {
     }
 
     const giftCodeRef = db.collection('gift_codes').doc(code.toUpperCase());
-    const snap = await giftCodeRef.get();
+    const orgId = await getCallerOrgId(context.auth.uid);
 
-    if (!snap.exists) {
-        throw new functions.https.HttpsError('not-found', 'Invalid gift code.');
-    }
+    // Transaction: the used-check and the used-write must be atomic, or two
+    // concurrent redemptions of the same code could both read used=false
+    // and both succeed.
+    const expiresAt = await db.runTransaction(async (tx) => {
+        const snap = await tx.get(giftCodeRef);
+        if (!snap.exists) {
+            throw new functions.https.HttpsError('not-found', 'Invalid gift code.');
+        }
+        const giftData = snap.data();
+        if (giftData?.used) {
+            throw new functions.https.HttpsError('failed-precondition', 'Code already used.');
+        }
 
-    const giftData = snap.data();
-    if (giftData?.used) {
-        throw new functions.https.HttpsError('failed-precondition', 'Code already used.');
-    }
+        const durationDays = giftData?.days || 30;
+        const expires = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000);
 
-    const now = Date.now();
-    const durationDays = giftData?.days || 30;
-    const expiresAt = new Date(now + durationDays * 24 * 60 * 60 * 1000);
+        tx.update(db.collection('organizations').doc(orgId), {
+            subscriptionTier: 'pro',
+            planExpires: admin.firestore.Timestamp.fromDate(expires),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        tx.update(giftCodeRef, {
+            used: true,
+            usedBy: context.auth!.uid,
+            usedByOrg: orgId,
+            usedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
 
-    // Update user profile
-    await db.collection('users').doc(context.auth.uid).update({
-        plan: 'pro',
-        planExpires: admin.firestore.Timestamp.fromDate(expiresAt),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
-
-    // Mark code as used
-    await giftCodeRef.update({
-        used: true,
-        usedBy: context.auth.uid,
-        usedAt: admin.firestore.FieldValue.serverTimestamp(),
+        return expires;
     });
 
     return { success: true, expiresAt };
 });
 
 /**
- * Generate a gift code (Admin Pro only)
+ * Generate a gift code — restricted to the product owner (matches
+ * isSuperAdmin() in firestore.rules). This is a manual-sale tool (e.g.
+ * selling access over Instagram/WhatsApp before Stripe is live), not a
+ * customer-facing referral feature, so there's no legitimate case for a
+ * regular Pro user to mint codes for others.
  */
 export const createGiftCode = functions.https.onCall(async (data, context) => {
-    if (!context.auth) {
-        throw new functions.https.HttpsError('unauthenticated', 'Admin must be logged in.');
-    }
-
-    // Check if user is admin and pro
-    const userSnap = await db.collection('users').doc(context.auth.uid).get();
-    const userData = userSnap.data();
-    if (userData?.role !== 'admin' || userData?.plan !== 'pro') {
-        throw new functions.https.HttpsError('permission-denied', 'Only Pro Admins can generate codes.');
+    if (!context.auth || context.auth.token.email !== 'dragomirvaleriu@gmail.com') {
+        throw new functions.https.HttpsError('permission-denied', 'Only the product owner can generate gift codes.');
     }
 
     const days = data.days || 30;
@@ -87,6 +102,49 @@ export const createGiftCode = functions.https.onCall(async (data, context) => {
     });
 
     return { success: true, code };
+});
+
+/**
+ * Create a Stripe Checkout session for the caller's organization to
+ * purchase My Garden PRO. One-time payment (not a recurring subscription —
+ * matches the "no hidden auto-renewal, pay once, 365 days" copy in the
+ * Academy paywall), so `mode: 'payment'`. successUrl/cancelUrl are passed
+ * from the client (it knows window.location.origin); everything else that
+ * determines the price is server-side config, not client input.
+ *
+ * Requires `stripe.price_id` to be set via:
+ *   firebase functions:config:set stripe.secret="sk_live_..." stripe.price_id="price_..." stripe.webhook_secret="whsec_..."
+ * Until that's configured this throws a clear "not configured" error
+ * instead of silently using a placeholder key.
+ */
+export const createCheckoutSession = functions.https.onCall(async (data, context) => {
+    if (!context.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'User must be logged in.');
+    }
+
+    const priceId = functions.config().stripe?.price_id;
+    if (!priceId || !functions.config().stripe?.secret) {
+        throw new functions.https.HttpsError('failed-precondition', 'Payments are not configured yet.');
+    }
+
+    const { successUrl, cancelUrl } = data;
+    if (!successUrl || !cancelUrl) {
+        throw new functions.https.HttpsError('invalid-argument', 'successUrl and cancelUrl are required.');
+    }
+
+    const orgId = await getCallerOrgId(context.auth.uid);
+
+    const session = await stripe.checkout.sessions.create({
+        mode: 'payment',
+        payment_method_types: ['card'],
+        line_items: [{ price: priceId, quantity: 1 }],
+        client_reference_id: orgId,
+        customer_email: context.auth.token.email,
+        success_url: successUrl,
+        cancel_url: cancelUrl,
+    });
+
+    return { url: session.url };
 });
 
 /**
@@ -107,15 +165,18 @@ export const stripeWebhook = functions.https.onRequest(async (req, res) => {
 
     if (event.type === 'checkout.session.completed') {
         const session = event.data.object as any;
-        const userId = session.client_reference_id;
+        // Set by createCheckoutSession as the organization's ID, not a user's —
+        // usePlan() resolves PRO status from organizations/{orgId}, so writing
+        // anywhere else leaves a genuinely-paid customer looking like Free.
+        const orgId = session.client_reference_id;
 
-        if (userId) {
-            // Upgrade user for 1 year (or based on product)
+        if (orgId) {
+            // Upgrade for 1 year (one-time payment, no recurring subscription)
             const expiresAt = new Date();
             expiresAt.setFullYear(expiresAt.getFullYear() + 1);
 
-            await db.collection('users').doc(userId).update({
-                plan: 'pro',
+            await db.collection('organizations').doc(orgId).update({
+                subscriptionTier: 'pro',
                 planExpires: admin.firestore.Timestamp.fromDate(expiresAt),
                 updatedAt: admin.firestore.FieldValue.serverTimestamp(),
             });

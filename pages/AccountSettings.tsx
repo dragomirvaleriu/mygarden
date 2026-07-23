@@ -14,7 +14,8 @@ import {
   ChevronRight,
   Wrench,
   Sprout,
-  Search
+  Search,
+  Gift
 } from 'lucide-react';
 import { Card } from '../components/ui/primitives';
 import {
@@ -25,7 +26,9 @@ import {
   logout,
   updatePassword,
   reauthenticateWithCredential,
-  EmailAuthProvider
+  EmailAuthProvider,
+  functions,
+  httpsCallable
 } from '../services/firebase';
 import toast from 'react-hot-toast';
 
@@ -50,6 +53,8 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
   const [showPasswords, setShowPasswords] = useState(false);
   const [isSavingPassword, setIsSavingPassword] = useState(false);
   const [isSavingLanguage, setIsSavingLanguage] = useState(false);
+  const [giftCode, setGiftCode] = useState('');
+  const [isRedeeming, setIsRedeeming] = useState(false);
 
   const handleChangeLanguage = async (lang: 'ro' | 'en') => {
     if (lang === (userProfile.language || 'ro') || isSavingLanguage) return;
@@ -102,6 +107,29 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
 
   const handleLogout = async () => {
     await logout();
+  };
+
+  const handleRedeemGiftCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!giftCode.trim() || isRedeeming) return;
+    setIsRedeeming(true);
+    try {
+      const redeem = httpsCallable(functions, 'redeemGiftCode');
+      await redeem({ code: giftCode.trim() });
+      toast.success('Cod activat! Contul tău este acum PRO.');
+      setGiftCode('');
+    } catch (err: any) {
+      const message: string = err?.message || '';
+      if (message.includes('Invalid gift code')) {
+        toast.error('Cod invalid.');
+      } else if (message.includes('already used')) {
+        toast.error('Acest cod a fost deja folosit.');
+      } else {
+        toast.error(message || 'Nu am putut activa codul.');
+      }
+    } finally {
+      setIsRedeeming(false);
+    }
   };
 
   const currentLang = (userProfile.language || 'ro') as 'ro' | 'en';
@@ -167,6 +195,32 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
           </div>
           <ChevronRight size={20} className="text-text-secondary shrink-0" />
         </button>
+      )}
+
+      {/* Gift code redemption */}
+      {subscriptionTier === 'free' && (
+        <form onSubmit={handleRedeemGiftCode} className="stihl-card rounded-lg p-5 bg-bg-card border border-border-color space-y-3">
+          <div className="flex items-center gap-2 text-text-secondary">
+            <Gift size={14} className="text-accent-color" />
+            <span className="text-[11px] font-bold uppercase tracking-wider">Ai un Cod Cadou?</span>
+          </div>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="Ex: GARDEN2026"
+              value={giftCode}
+              onChange={(e) => setGiftCode(e.target.value.toUpperCase())}
+              className="flex-1 min-w-0 bg-bg-main border border-border-color rounded-md px-3 py-2.5 text-sm font-medium uppercase tracking-wider outline-none focus:border-accent-color"
+            />
+            <button
+              type="submit"
+              disabled={isRedeeming || !giftCode.trim()}
+              className="shrink-0 stihl-button px-5 py-2.5 rounded-md font-bold uppercase tracking-wider text-xs text-white shadow-md flex items-center justify-center gap-2 disabled:opacity-60"
+            >
+              {isRedeeming ? <Loader2 size={16} className="animate-spin" /> : 'Activează'}
+            </button>
+          </div>
+        </form>
       )}
 
       {/* Language */}

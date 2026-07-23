@@ -1,13 +1,15 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Flame } from 'lucide-react';
 
 interface Props {
   level: number;
   exp: number;
   healthStatus?: 'Excelent' | 'Bun' | 'Atenție';
+  streak?: number;
 }
 
-export const GardenVitalityRing: React.FC<Props> = ({ level, exp, healthStatus = 'Excelent' }) => {
+export const GardenVitalityRing: React.FC<Props> = ({ level, exp, healthStatus = 'Excelent', streak = 0 }) => {
   const radius = 60;
   const circumference = 2 * Math.PI * radius;
   // Calculate percentage of progress in current level. (Max exp arbitrarily set to 1000 for visual)
@@ -18,6 +20,19 @@ export const GardenVitalityRing: React.FC<Props> = ({ level, exp, healthStatus =
 
   return (
     <div className="relative flex items-center justify-center p-8">
+      {streak > 0 && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.6 }}
+          className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 bg-orange-500/10 border border-orange-500/20 rounded-full z-10"
+          title={`${streak} ${streak === 1 ? 'zi' : 'zile'} la rând cu activitate în grădină`}
+        >
+          <Flame size={12} className="text-orange-500" fill="currentColor" />
+          <span className="text-[11px] font-black text-orange-500">{streak}</span>
+        </motion.div>
+      )}
+
       {/* Background Glow */}
       <div 
         className="absolute w-32 h-32 rounded-full blur-2xl opacity-20"
