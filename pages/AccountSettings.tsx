@@ -47,6 +47,8 @@ const TIER_LABEL: Record<Props['subscriptionTier'], string> = {
 
 const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptionTier }) => {
   const { t, i18n } = useTranslation();
+  const [displayName, setDisplayName] = useState(userProfile.displayName || '');
+  const [isSavingName, setIsSavingName] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -55,6 +57,20 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
   const [isSavingLanguage, setIsSavingLanguage] = useState(false);
   const [giftCode, setGiftCode] = useState('');
   const [isRedeeming, setIsRedeeming] = useState(false);
+
+  const handleSaveName = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!displayName.trim() || isSavingName) return;
+    setIsSavingName(true);
+    try {
+      await updateDoc(doc(db, 'users', userProfile.uid), { displayName: displayName.trim() });
+      toast.success('Nume actualizat cu succes!');
+    } catch (err: any) {
+      toast.error(err.message || t('Error'));
+    } finally {
+      setIsSavingName(false);
+    }
+  };
 
   const handleChangeLanguage = async (lang: 'ro' | 'en') => {
     if (lang === (userProfile.language || 'ro') || isSavingLanguage) return;
@@ -141,18 +157,44 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
         <p className="text-sm text-text-secondary font-medium mt-1">Contul tău, parola și preferințele.</p>
       </div>
 
-      {/* Profile summary */}
-      <div className="stihl-card rounded-lg p-5 bg-bg-card border border-border-color flex items-center gap-4">
-        <div className="w-14 h-14 rounded-full bg-accent-color/10 text-accent-color flex items-center justify-center shrink-0">
-          <User size={26} />
+      {/* Profile summary & name editor */}
+      <div className="space-y-4">
+        <div className="stihl-card rounded-lg p-5 bg-bg-card border border-border-color flex items-center gap-4">
+          <div className="w-14 h-14 rounded-full bg-accent-color/10 text-accent-color flex items-center justify-center shrink-0">
+            <User size={26} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="font-black text-main truncate">{displayName || 'Utilizator'}</p>
+            <p className="text-sm text-text-secondary font-medium truncate">{userProfile.email}</p>
+          </div>
+          <span className="px-2.5 py-1 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-[10px] font-black rounded-full uppercase tracking-widest shrink-0">
+            {TIER_LABEL[subscriptionTier]}
+          </span>
         </div>
-        <div className="min-w-0 flex-1">
-          <p className="font-black text-main truncate">{userProfile.displayName || 'Utilizator'}</p>
-          <p className="text-sm text-text-secondary font-medium truncate">{userProfile.email}</p>
-        </div>
-        <span className="px-2.5 py-1 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-[10px] font-black rounded-full uppercase tracking-widest shrink-0">
-          {TIER_LABEL[subscriptionTier]}
-        </span>
+
+        <form onSubmit={handleSaveName} className="stihl-card rounded-lg p-5 bg-bg-card border border-border-color space-y-3">
+          <div className="flex items-center gap-2 text-text-secondary">
+            <User size={14} className="text-accent-color" />
+            <span className="text-[11px] font-bold uppercase tracking-wider">Cum te cheamă?</span>
+          </div>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="Numele tău (ex: Ion, Maria, etc.)"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              className="flex-1 min-w-0 bg-bg-main border border-border-color rounded-md px-3 py-2.5 text-sm font-medium outline-none focus:border-accent-color"
+            />
+            <button
+              type="submit"
+              disabled={isSavingName || !displayName.trim()}
+              className="shrink-0 stihl-button px-5 py-2.5 rounded-md font-bold uppercase tracking-wider text-xs text-white shadow-md flex items-center justify-center gap-2 disabled:opacity-60"
+            >
+              {isSavingName ? <Loader2 size={16} className="animate-spin" /> : 'Salvează'}
+            </button>
+          </div>
+          <p className="text-[10px] text-text-secondary font-medium">Acest nume va apărea în salutul personalizat de pe dashboard.</p>
+        </form>
       </div>
 
       {/* Quick Links — Tools/GardenSetup/Explore live here instead of as

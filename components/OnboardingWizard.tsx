@@ -37,11 +37,22 @@ const OnboardingWizard: React.FC<Props> = ({ organizationId, onComplete }) => {
   const { t } = useTranslation();
   const [step, setStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [displayName, setDisplayName] = useState('');
   const [primaryConcern, setPrimaryConcern] = useState<string | null>(null);
 
   const finishOnboarding = async () => {
     setIsProcessing(true);
     try {
+      const auth = (await import('../services/firebase')).auth;
+      const uid = auth.currentUser?.uid;
+
+      // Save displayName to user profile
+      if (uid && displayName.trim()) {
+        const { updateDoc: ud, doc: d } = await import('../services/firebase');
+        await ud(d(db, 'users', uid), { displayName: displayName.trim() });
+      }
+
+      // Save organization settings
       await updateDoc(doc(db, 'organizations', organizationId), {
         onboardingCompleted: true,
         onboardingCompletedAt: new Date(),
@@ -61,8 +72,8 @@ const OnboardingWizard: React.FC<Props> = ({ organizationId, onComplete }) => {
   const steps = [
     {
       id: 1,
-      title: 'Bine ai venit la My Garden!',
-      description: 'Hai să pornim treaba în 2 pași simpli.',
+      title: 'Cum te cheamă?',
+      description: 'Hai să pornim treaba în 3 pași simpli.',
       icon: <Sprout className="text-accent-color" size={32} />
     },
     {
@@ -117,23 +128,18 @@ const OnboardingWizard: React.FC<Props> = ({ organizationId, onComplete }) => {
                 {step === 1 && (
                     <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
                         <p className="text-lg text-text-secondary font-medium leading-relaxed">
-                            {steps[0].description}
+                            Spune-ne cum te cheamă ca să personalizez saluturile și dashboard-ul pentru tine.
                         </p>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="p-4 bg-bg-main rounded-2xl border border-border-color">
-                                <h4 className="font-bold text-main mb-2 flex items-center gap-2">
-                                    <CheckCircle2 size={16} className="text-green-500" />
-                                    Ce ai de făcut azi
-                                </h4>
-                                <p className="text-xs text-text-secondary leading-relaxed">Calendar inteligent, cu memento-uri pentru udare, tuns și fertilizare, adaptate la vreme.</p>
-                            </div>
-                            <div className="p-4 bg-bg-main rounded-2xl border border-border-color">
-                                <h4 className="font-bold text-main mb-2 flex items-center gap-2">
-                                    <CheckCircle2 size={16} className="text-green-500" />
-                                    Diagnoză AI
-                                </h4>
-                                <p className="text-xs text-text-secondary leading-relaxed">Scanează o problemă cu Lentila AI sau răspunde la câteva întrebări în Doctorul Grădinii.</p>
-                            </div>
+                        <div className="space-y-3">
+                            <input
+                                type="text"
+                                placeholder="Exemplu: Ion, Maria, etc."
+                                value={displayName}
+                                onChange={(e) => setDisplayName(e.target.value)}
+                                autoFocus
+                                className="w-full bg-bg-main border border-border-color rounded-xl px-4 py-3 text-sm font-medium outline-none focus:border-accent-color"
+                            />
+                            <p className="text-xs text-text-secondary font-medium">✨ Vei vedea "Bună seara, [Nume] 🌙" pe dashboard!</p>
                         </div>
                     </div>
                 )}
@@ -229,6 +235,15 @@ const OnboardingWizard: React.FC<Props> = ({ organizationId, onComplete }) => {
                     >
                         {isProcessing ? t('Saving...') : 'Începe'}
                         <CheckCircle2 size={18} />
+                    </button>
+                ) : step === 1 ? (
+                    <button
+                        onClick={() => setStep(step + 1)}
+                        disabled={!displayName.trim()}
+                        className="px-8 py-4 bg-accent-color text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-accent-color/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3 disabled:opacity-50"
+                    >
+                        {t('Continue')}
+                        <ChevronRight size={18} />
                     </button>
                 ) : (
                     <button

@@ -549,8 +549,8 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
               : [2, 3, 4].includes(currentMonth)
               ? 'bg-gradient-to-br from-emerald-800 via-green-700 to-teal-800'
               : [5, 6, 7, 8].includes(currentMonth)
-              ? 'bg-gradient-to-br from-amber-700 via-orange-600 to-red-700'
-              : 'bg-gradient-to-br from-orange-800 via-amber-700 to-yellow-700'
+              ? 'bg-gradient-to-br from-emerald-700 via-teal-600 to-cyan-700'
+              : 'bg-gradient-to-br from-teal-800 via-emerald-700 to-green-800'
           }`} />
           <div className="absolute inset-0 bg-black/30" />
           <div className="absolute -right-16 -bottom-16 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
