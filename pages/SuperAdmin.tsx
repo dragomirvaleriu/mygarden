@@ -28,6 +28,28 @@ interface UserData {
   subscriptionProduct?: string;
   subscriptionExpiresAt?: any;
   createdAt?: any;
+  organizationId?: string;
+  // The legacy free/pro/enterprise tier — this is what usePlan() actually
+  // reads (from organizations/{orgId}), not subscriptionProduct. A user can
+  // have a legacy 'enterprise' org and no subscriptionProduct at all, which
+  // is why those two fields can legitimately disagree.
+  orgSubscriptionTier?: string;
+  orgPlanExpires?: any;
+}
+
+// Mirrors usePlan()'s resolution: prefer the legacy org tier when it grants
+// more than the new product system does, since that's what the rest of the
+// app (sidebar badge, feature gates) actually treats the user as having.
+function getEffectivePlanLabel(user: UserData, superadminEmail: string): string {
+  if (user.email === superadminEmail) return 'Enterprise (dev)';
+  if (user.orgSubscriptionTier === 'enterprise') return 'Enterprise';
+  if (user.orgSubscriptionTier === 'lifetime') return 'Lifetime';
+  if (user.subscriptionProduct) {
+    const label = user.subscriptionProduct === 'adFree' ? 'Ad-Free' : user.subscriptionProduct === 'academyPro' ? 'Academy Pro' : 'Bundle';
+    return label;
+  }
+  if (user.orgSubscriptionTier === 'pro') return 'Pro (legacy)';
+  return 'Free';
 }
 
 interface GiftCodeData {
@@ -130,6 +152,7 @@ const SuperAdmin: React.FC<Props> = ({ userProfile }) => {
   const [seeding, setSeeding] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   const [giftProduct, setGiftProduct] = useState<'adFree' | 'academyPro' | 'bundle'>('adFree');
+  const [giftDays, setGiftDays] = useState(30);
   const [generatedCode, setGeneratedCode] = useState<GiftCodeData | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [analyticsData, setAnalyticsData] = useState({
@@ -137,6 +160,7 @@ const SuperAdmin: React.FC<Props> = ({ userProfile }) => {
     adFreeCount: 0,
     academyProCount: 0,
     bundleCount: 0,
+    legacyPaidCount: 0,
     totalRevenue: 0,
   });
 
@@ -147,6 +171,11 @@ const SuperAdmin: React.FC<Props> = ({ userProfile }) => {
       return;
     }
   }, [userProfile]);
+
+  // Auto-load users on mount so the panel isn't empty until someone clicks Refresh
+  useEffect(() => {
+    loadUsers();
+  }, []);
 
   // Load users
   const loadUsers = async () => {
@@ -163,8 +192,28 @@ const SuperAdmin: React.FC<Props> = ({ userProfile }) => {
           subscriptionProduct: data.subscriptionProduct,
           subscriptionExpiresAt: data.subscriptionExpiresAt,
           createdAt: data.createdAt,
+          organizationId: data.organizationId,
         });
       });
+
+      // Join each user to their org's legacy subscriptionTier — that field
+      // (not subscriptionProduct) is what usePlan() actually resolves the
+      // app-wide plan badge from, so it's the only way to show the real
+      // effective plan here instead of a partial/misleading one.
+      const orgIds = Array.from(new Set(userData.map(u => u.organizationId).filter(Boolean))) as string[];
+      const orgEntries = await Promise.all(
+        orgIds.map(async (orgId) => {
+          const orgSnap = await getDoc(doc(db, 'organizations', orgId));
+          return [orgId, orgSnap.exists() ? orgSnap.data() : null] as const;
+        })
+      );
+      const orgMap = new Map(orgEntries);
+      userData.forEach(u => {
+        const org = u.organizationId ? orgMap.get(u.organizationId) : null;
+        u.orgSubscriptionTier = org?.subscriptionTier;
+        u.orgPlanExpires = org?.planExpires;
+      });
+
       setUsers(userData);
       updateAnalytics(userData);
     } catch (err: any) {
@@ -199,34 +248,39 @@ const SuperAdmin: React.FC<Props> = ({ userProfile }) => {
     const adFree = userData.filter(u => u.subscriptionProduct === 'adFree').length;
     const academyPro = userData.filter(u => u.subscriptionProduct === 'academyPro').length;
     const bundle = userData.filter(u => u.subscriptionProduct === 'bundle').length;
+    // Legacy pro/enterprise orgs (pre-dating the 3-product system, or granted
+    // via trial/manual override) — counted separately since they're not
+    // revenue from the new products, but still real paid-tier users.
+    const legacyPaid = userData.filter(u =>
+      !u.subscriptionProduct &&
+      u.email !== userProfile.email &&
+      (u.orgSubscriptionTier === 'pro' || u.orgSubscriptionTier === 'enterprise' || u.orgSubscriptionTier === 'lifetime')
+    ).length;
 
     setAnalyticsData({
       totalUsers: userData.length,
       adFreeCount: adFree,
       academyProCount: academyPro,
       bundleCount: bundle,
+      legacyPaidCount: legacyPaid,
       totalRevenue: (adFree * 2) + (academyPro * 2) + (bundle * 3),
     });
   };
 
-  // Generate gift code
+  // Generate a universal gift code — not tied to any specific user. Whoever
+  // redeems it first (via the link or by typing the code into "Contul meu")
+  // gets the product.
   const handleGenerateGiftCode = async () => {
-    if (!selectedUser) {
-      toast.error('Select a user first');
-      return;
-    }
-
     setLoading(true);
     try {
-      const createGiftCode = httpsCallable(functions, 'createGiftCodeForProduct');
+      const createGiftCode = httpsCallable(functions, 'createGiftCode');
       const result: any = await createGiftCode({
-        userId: selectedUser.uid,
         product: giftProduct,
-        days: 30,
+        days: giftDays,
       });
 
       if (result.data.success) {
-        const link = `${window.location.origin}?giftCode=${result.data.code}`;
+        const link = `${window.location.origin}/#?giftCode=${result.data.code}`;
         setGeneratedCode({
           code: result.data.code,
           product: giftProduct,
@@ -335,13 +389,14 @@ const SuperAdmin: React.FC<Props> = ({ userProfile }) => {
 
             {/* Search */}
             <div className="mb-6 relative">
-              <Search className="absolute left-3 top-3 text-slate-400" size={20} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={20} />
               <input
                 type="text"
                 placeholder="Search by email or name..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                style={{ paddingLeft: '2.75rem' }}
+                className="w-full pr-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
               />
             </div>
 
@@ -370,12 +425,14 @@ const SuperAdmin: React.FC<Props> = ({ userProfile }) => {
                       <td className="py-3 px-4 text-slate-600 dark:text-slate-400">{user.displayName || '-'}</td>
                       <td className="py-3 px-4">
                         <span className="px-2 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300 rounded text-sm font-medium">
-                          {user.subscriptionProduct || 'Free'}
+                          {getEffectivePlanLabel(user, userProfile.email)}
                         </span>
                       </td>
                       <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
                         {user.subscriptionExpiresAt
                           ? new Date(user.subscriptionExpiresAt).toLocaleDateString()
+                          : user.orgPlanExpires?.toDate
+                          ? user.orgPlanExpires.toDate().toLocaleDateString()
                           : '-'}
                       </td>
                       <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
@@ -403,7 +460,7 @@ const SuperAdmin: React.FC<Props> = ({ userProfile }) => {
                   <p className="text-sm text-slate-600 dark:text-slate-400">{user.displayName || 'No name'}</p>
                   <div className="flex gap-2 mt-2 flex-wrap">
                     <span className="px-2 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300 rounded text-xs font-medium">
-                      {user.subscriptionProduct || 'Free'}
+                      {getEffectivePlanLabel(user, userProfile.email)}
                     </span>
                     {user.subscriptionExpiresAt && (
                       <span className="px-2 py-1 bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded text-xs">
@@ -422,37 +479,13 @@ const SuperAdmin: React.FC<Props> = ({ userProfile }) => {
           <div className="grid md:grid-cols-2 gap-6">
             {/* Generator */}
             <Card className="p-6">
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Generate Gift Code</h2>
-
-              {/* Selected User */}
-              <div className="mb-6 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
-                <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">Selected User</p>
-                <p className="font-semibold text-slate-900 dark:text-white">
-                  {selectedUser?.email || 'No user selected'}
-                </p>
-              </div>
-
-              {/* User List */}
-              <div className="mb-6">
-                <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Select User</p>
-                <div className="max-h-48 overflow-y-auto border border-slate-300 dark:border-slate-600 rounded-lg">
-                  {users.map((user) => (
-                    <button
-                      key={user.uid}
-                      onClick={() => setSelectedUser(user)}
-                      className={`w-full text-left px-4 py-2 border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition ${
-                        selectedUser?.uid === user.uid ? 'bg-emerald-50 dark:bg-emerald-900/20' : ''
-                      }`}
-                    >
-                      <p className="font-medium text-slate-900 dark:text-white">{user.email}</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">{user.displayName}</p>
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Generate Gift Code</h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
+                Codes are universal — not tied to any user. Whoever redeems the code or link first gets the product.
+              </p>
 
               {/* Product Selection */}
-              <div className="mb-6">
+              <div className="mb-4">
                 <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Product</p>
                 <select
                   value={giftProduct}
@@ -465,10 +498,22 @@ const SuperAdmin: React.FC<Props> = ({ userProfile }) => {
                 </select>
               </div>
 
+              {/* Duration */}
+              <div className="mb-6">
+                <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Duration (days)</p>
+                <input
+                  type="number"
+                  min={1}
+                  value={giftDays}
+                  onChange={(e) => setGiftDays(parseInt(e.target.value) || 30)}
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                />
+              </div>
+
               {/* Generate Button */}
               <button
                 onClick={handleGenerateGiftCode}
-                disabled={loading || !selectedUser}
+                disabled={loading}
                 className="w-full px-4 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:bg-slate-400 transition font-medium flex items-center justify-center gap-2"
               >
                 {loading ? <Loader2 size={18} className="animate-spin" /> : <Gift size={18} />}
@@ -679,6 +724,17 @@ const SuperAdmin: React.FC<Props> = ({ userProfile }) => {
                 </p>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
                   ${analyticsData.bundleCount * 3} revenue
+                </p>
+              </Card>
+
+              {/* Legacy Pro/Enterprise (pre-existing trials/manual grants, not new-product revenue) */}
+              <Card className="p-6">
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">Legacy Pro/Enterprise</p>
+                <p className="text-4xl font-bold text-slate-600 dark:text-slate-300">
+                  {analyticsData.legacyPaidCount}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                  Not counted in revenue below
                 </p>
               </Card>
 

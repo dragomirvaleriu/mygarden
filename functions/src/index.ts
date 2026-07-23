@@ -85,12 +85,25 @@ export const redeemGiftCode = functions.https.onCall(async (data, context) => {
 
         const durationDays = giftData?.days || 30;
         const expires = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000);
+        const product = giftData?.product as string | undefined;
 
-        tx.update(db.collection('organizations').doc(orgId), {
-            subscriptionTier: 'pro',
+        // Product-specific codes (adFree/academyPro/bundle) set subscriptionProduct,
+        // same as a real Stripe purchase. Legacy codes with no product keep the
+        // original blanket subscriptionTier='pro' grant for backward compatibility.
+        const orgUpdate: Record<string, any> = {
             planExpires: admin.firestore.Timestamp.fromDate(expires),
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
+        };
+        if (product) {
+            orgUpdate.subscriptionProduct = product;
+            if (product === 'academyPro' || product === 'bundle') {
+                orgUpdate.subscriptionTier = 'pro';
+            }
+        } else {
+            orgUpdate.subscriptionTier = 'pro';
+        }
+
+        tx.update(db.collection('organizations').doc(orgId), orgUpdate);
         tx.update(giftCodeRef, {
             used: true,
             usedBy: context.auth!.uid,
@@ -117,6 +130,11 @@ export const redeemGiftCode = functions.https.onCall(async (data, context) => {
  * selling access over Instagram/WhatsApp before Stripe is live), not a
  * customer-facing referral feature, so there's no legitimate case for a
  * regular Pro user to mint codes for others.
+ *
+ * Universal by design — a code is not tied to any specific user at creation
+ * time. redeemGiftCode grants it to whoever redeems it, first-come-first-served.
+ * Optional `product` ('adFree' | 'academyPro' | 'bundle') makes the code grant
+ * that specific product on redemption instead of the legacy blanket 'pro'.
  */
 export const createGiftCode = functions.https.onCall(async (data, context) => {
     if (!context.auth || context.auth.token.email !== 'dragomirvaleriu@gmail.com') {
@@ -124,12 +142,14 @@ export const createGiftCode = functions.https.onCall(async (data, context) => {
     }
 
     const days = data.days || 30;
+    const product = data.product as string | undefined;
     const code = Math.random().toString(36).substring(2, 10).toUpperCase();
 
     await db.collection('gift_codes').doc(code).set({
         code,
         days,
         used: false,
+        ...(product ? { product } : {}),
         createdBy: context.auth.uid,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
@@ -404,38 +424,6 @@ export const receiveTelemetry = functions.https.onCall(async (data, context) => 
     }
 
     return { success: true, status: 'buffered', reason: 'No state change or threshold crossed, within 4 hour heartbeat buffer.' };
-});
-
-/**
- * SuperAdmin: Create a gift code for a specific product
- */
-export const createGiftCodeForProduct = functions.https.onCall(async (data, context) => {
-    // Verify superadmin
-    if (!context.auth || context.auth.token.email !== 'dragomirvaleriu@gmail.com') {
-        throw new functions.https.HttpsError('permission-denied', 'Only superadmin can create gift codes.');
-    }
-
-    const { userId, product, days = 30 } = data;
-    if (!userId || !product) {
-        throw new functions.https.HttpsError('invalid-argument', 'userId and product are required.');
-    }
-
-    const code = Math.random().toString(36).substring(2, 10).toUpperCase();
-
-    try {
-        await db.collection('gift_codes').doc(code).set({
-            code,
-            product,
-            days,
-            used: false,
-            createdBy: context.auth.uid,
-            createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-
-        return { success: true, code };
-    } catch (err: any) {
-        throw new functions.https.HttpsError('internal', 'Failed to create gift code: ' + err.message);
-    }
 });
 
 /**

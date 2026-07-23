@@ -30,7 +30,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.trackAdClick = exports.trackAdImpression = exports.seedDefaultAds = exports.updateUserSubscription = exports.createAd = exports.listAllUsers = exports.createGiftCodeForProduct = exports.receiveTelemetry = exports.weatherAlert = exports.stripeWebhook = exports.createCheckoutSession = exports.createGiftCode = exports.redeemGiftCode = exports.generateReferralCode = void 0;
+exports.trackAdClick = exports.trackAdImpression = exports.seedDefaultAds = exports.updateUserSubscription = exports.createAd = exports.listAllUsers = exports.receiveTelemetry = exports.weatherAlert = exports.stripeWebhook = exports.createCheckoutSession = exports.createGiftCode = exports.redeemGiftCode = exports.generateReferralCode = void 0;
 const functions = __importStar(require("firebase-functions"));
 const admin = __importStar(require("firebase-admin"));
 const stripe_1 = __importDefault(require("stripe"));
@@ -89,11 +89,21 @@ exports.redeemGiftCode = functions.https.onCall(async (data, context) => {
         }
         const durationDays = (giftData === null || giftData === void 0 ? void 0 : giftData.days) || 30;
         const expires = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000);
-        tx.update(db.collection('organizations').doc(orgId), {
-            subscriptionTier: 'pro',
+        const product = giftData === null || giftData === void 0 ? void 0 : giftData.product;
+        const orgUpdate = {
             planExpires: admin.firestore.Timestamp.fromDate(expires),
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
+        };
+        if (product) {
+            orgUpdate.subscriptionProduct = product;
+            if (product === 'academyPro' || product === 'bundle') {
+                orgUpdate.subscriptionTier = 'pro';
+            }
+        }
+        else {
+            orgUpdate.subscriptionTier = 'pro';
+        }
+        tx.update(db.collection('organizations').doc(orgId), orgUpdate);
         tx.update(giftCodeRef, {
             used: true,
             usedBy: context.auth.uid,
@@ -110,14 +120,10 @@ exports.createGiftCode = functions.https.onCall(async (data, context) => {
         throw new functions.https.HttpsError('permission-denied', 'Only the product owner can generate gift codes.');
     }
     const days = data.days || 30;
+    const product = data.product;
     const code = Math.random().toString(36).substring(2, 10).toUpperCase();
-    await db.collection('gift_codes').doc(code).set({
-        code,
-        days,
-        used: false,
-        createdBy: context.auth.uid,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
+    await db.collection('gift_codes').doc(code).set(Object.assign(Object.assign({ code,
+        days, used: false }, (product ? { product } : {})), { createdBy: context.auth.uid, createdAt: admin.firestore.FieldValue.serverTimestamp() }));
     return { success: true, code };
 });
 exports.createCheckoutSession = functions.https.onCall(async (data, context) => {
@@ -297,30 +303,6 @@ exports.receiveTelemetry = functions.https.onCall(async (data, context) => {
         return { success: true, status: 'written', stateChanged, thresholdCrossed, timeLimitExceeded };
     }
     return { success: true, status: 'buffered', reason: 'No state change or threshold crossed, within 4 hour heartbeat buffer.' };
-});
-exports.createGiftCodeForProduct = functions.https.onCall(async (data, context) => {
-    if (!context.auth || context.auth.token.email !== 'dragomirvaleriu@gmail.com') {
-        throw new functions.https.HttpsError('permission-denied', 'Only superadmin can create gift codes.');
-    }
-    const { userId, product, days = 30 } = data;
-    if (!userId || !product) {
-        throw new functions.https.HttpsError('invalid-argument', 'userId and product are required.');
-    }
-    const code = Math.random().toString(36).substring(2, 10).toUpperCase();
-    try {
-        await db.collection('gift_codes').doc(code).set({
-            code,
-            product,
-            days,
-            used: false,
-            createdBy: context.auth.uid,
-            createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-        return { success: true, code };
-    }
-    catch (err) {
-        throw new functions.https.HttpsError('internal', 'Failed to create gift code: ' + err.message);
-    }
 });
 exports.listAllUsers = functions.https.onCall(async (data, context) => {
     if (!context.auth || context.auth.token.email !== 'dragomirvaleriu@gmail.com') {

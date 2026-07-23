@@ -13,6 +13,8 @@ import {
   onSnapshot,
   updateDoc,
   serverTimestamp,
+  functions,
+  httpsCallable,
 } from '../services/firebase';
 import { updateUserSettings, UserSettings } from '../services/settings';
 import i18n from './i18n';
@@ -249,6 +251,38 @@ const App: React.FC = () => {
         }).catch(err => {
           toast.error('Eroare la activare abonament: ' + err.message);
         });
+      });
+    }
+  }, [profile?.organizationId, user?.uid]);
+
+  // Gift code auto-redeem: ?giftCode= link shared from SuperAdmin. Goes
+  // through the redeemGiftCode Cloud Function (Admin SDK) rather than a
+  // client write, since planExpires is an entitlement field the client
+  // can't touch directly per firestore.rules.
+  useEffect(() => {
+    if (!profile?.organizationId || !user?.uid) return;
+
+    const params = new URLSearchParams(window.location.hash.split('?')[1]);
+    const giftCode = params.get('giftCode');
+
+    if (giftCode) {
+      import('react-hot-toast').then(async ({ default: toast }) => {
+        try {
+          const redeem = httpsCallable(functions, 'redeemGiftCode');
+          await redeem({ code: giftCode });
+          toast.success('🎁 Cod cadou activat! Contul tău a fost actualizat.', { duration: 6000 });
+        } catch (err: any) {
+          const message: string = err?.message || '';
+          if (message.includes('already used')) {
+            toast.error('Acest cod cadou a fost deja folosit.');
+          } else if (message.includes('Invalid gift code')) {
+            toast.error('Cod cadou invalid.');
+          } else {
+            toast.error('Nu am putut activa codul cadou: ' + message);
+          }
+        } finally {
+          window.location.hash = window.location.hash.split('?')[0];
+        }
       });
     }
   }, [profile?.organizationId, user?.uid]);
