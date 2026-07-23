@@ -76,7 +76,7 @@ const DesktopSidebar: React.FC<Props> = ({
         <div className="flex items-center justify-center gap-2.5 w-full">
           <div className="shrink-0" style={{ width: '2.4rem', height: '2.4rem' }}>
             <img
-              src="/logo.svg"
+              src="/logo.png"
               alt={`${APP_NAME} Logo`}
               className="w-full h-full object-contain transition-transform duration-500 hover:scale-105"
             />
@@ -84,15 +84,15 @@ const DesktopSidebar: React.FC<Props> = ({
           <h1
             className="leading-none whitespace-nowrap"
             style={{
-              fontFamily: 'Inter, system-ui, sans-serif',
+              fontFamily: "'Fraunces', serif",
               fontSize: '2rem',
-              fontWeight: 400,
-              color: '#2D3A3A',
+              fontWeight: 700,
               letterSpacing: '-0.5px',
               lineHeight: 1
             }}
           >
-            {APP_NAME}
+            <span style={{ color: 'var(--accent-color)' }}>my</span>
+            <span style={{ color: '#4F7942' }}> garden</span>
           </h1>
         </div>
 

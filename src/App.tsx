@@ -332,7 +332,7 @@ const App: React.FC = () => {
         <div className="relative w-[80px] h-[80px] mb-5">
           <div className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-[var(--brand-green)] border-r-[var(--brand-green)] animate-[spin_1.5s_cubic-bezier(0.68,-0.55,0.265,1.55)_infinite]"></div>
           <div className="absolute top-[5px] left-[5px] right-[5px] bottom-[5px] rounded-full border-[3px] border-transparent border-b-[var(--brand-olive)] border-l-[var(--brand-olive)] animate-[spin_2s_cubic-bezier(0.68,-0.55,0.265,1.55)_infinite_reverse] opacity-80"></div>
-          <img src="/logo.svg" alt="Logo" className="absolute top-[15px] left-[15px] w-[50px] h-[50px] object-contain animate-[bounce_3s_ease-in-out_infinite]" style={{ animation: 'float 3s ease-in-out infinite' }} />
+          <img src="/logo.png" alt="Logo" className="absolute top-[15px] left-[15px] w-[50px] h-[50px] object-contain animate-[bounce_3s_ease-in-out_infinite]" style={{ animation: 'float 3s ease-in-out infinite' }} />
         </div>
 
         <h2 className="m-0 text-[38px] tracking-[-1px] font-black leading-none">

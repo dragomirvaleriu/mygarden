@@ -367,7 +367,7 @@ const GardenJournal: React.FC<Props> = ({ organizationId, onNavigate, userId, is
           </div>
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <img src="/logo.svg" alt="My Garden" className="w-3 h-3 md:w-4 md:h-4 object-contain drop-shadow-sm" />
+              <img src="/logo.png" alt="My Garden" className="w-3 h-3 md:w-4 md:h-4 object-contain drop-shadow-sm" />
               <h2 className="text-[9px] md:text-[11px] font-black text-violet-500 uppercase tracking-[0.4em] leading-none">My Garden</h2>
               <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-violet-500 text-white text-[8px] font-black uppercase tracking-tighter shadow-sm">{t('Intelligence Terminal')}</span>
             </div>

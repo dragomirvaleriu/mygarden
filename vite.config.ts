@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => {
             globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
             maximumFileSizeToCacheInBytes: 6000000 // Support caching up to 6MB bundle size
           },
-          includeAssets: ['icon.png', 'apple-touch-icon.png'],
+          includeAssets: ['icon.png', 'apple-touch-icon.png', 'logo.png', 'pwa-192x192.png', 'pwa-512x512.png'],
           manifest: {
             name: 'My Garden',
             short_name: 'My Garden',

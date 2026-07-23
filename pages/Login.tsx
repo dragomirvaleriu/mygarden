@@ -398,11 +398,11 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
     <div className="min-h-screen flex items-center justify-center p-6 bg-bg-main relative overflow-hidden text-main">
       <div className="stihl-card w-full max-w-md rounded-2xl p-10 relative z-10 shadow-xl animate-in fade-in zoom-in duration-500 bg-bg-card border border-border-color">
         <div className="flex flex-col items-center mb-10 text-center">
-          <img src="/logo.svg" alt="My Garden Logo" className="w-24 h-24 object-contain mb-2 drop-shadow-md" />
+          <img src="/logo.png" alt="My Garden Logo" className="w-24 h-24 object-contain mb-2 drop-shadow-md" />
           <div className="flex flex-col items-center">
-            <h1 className="text-4xl font-black tracking-tighter mb-0 leading-none" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-              <span style={{ color: 'var(--brand-olive)' }}>My</span>
-              <span style={{ color: 'var(--brand-green)' }}> Garden</span>
+            <h1 className="text-4xl tracking-tighter mb-0 leading-none" style={{ fontFamily: "'Fraunces', serif", fontWeight: 700 }}>
+              <span style={{ color: 'var(--accent-color)' }}>my</span>
+              <span style={{ color: '#4F7942' }}> garden</span>
             </h1>
             <span className="text-[10px] font-black tracking-[0.2em] uppercase opacity-80 mt-2 mb-4 text-center leading-tight" style={{ color: 'var(--brand-olive)' }}>
               Your garden,<br/>smartly cared for
