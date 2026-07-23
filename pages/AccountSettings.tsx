@@ -168,6 +168,40 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
     }
   };
 
+  const handleExportData = async () => {
+    try {
+      const data = {
+        profile: {
+          email: userProfile.email,
+          displayName: userProfile.displayName,
+          language: userProfile.language,
+          role: userProfile.role,
+          level: userProfile.level,
+          exp: userProfile.exp,
+        },
+        subscription: {
+          product: userProfile.subscriptionProduct,
+          expiresAt: userProfile.subscriptionExpiresAt,
+        },
+        exportedAt: new Date().toISOString(),
+      };
+
+      const json = JSON.stringify(data, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `mygarden-data-${userProfile.email}-${new Date().getTime()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success('Data exported successfully!');
+    } catch (err) {
+      toast.error('Failed to export data');
+    }
+  };
+
   const currentLang = (userProfile.language || 'ro') as 'ro' | 'en';
 
   return (
@@ -437,6 +471,21 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
           Salvează Parola Nouă
         </button>
       </form>
+
+      {/* Export Data */}
+      <div className="stihl-card rounded-lg p-5 bg-bg-card border border-border-color">
+        <div className="flex items-center gap-2 mb-3 text-text-secondary">
+          <Wrench size={14} className="text-accent-color" />
+          <span className="text-[11px] font-bold uppercase tracking-wider">Date și Confidențialitate</span>
+        </div>
+        <button
+          onClick={handleExportData}
+          className="w-full py-2.5 rounded-md font-bold uppercase tracking-wider text-xs bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+        >
+          📥 Exportă Datele Mele
+        </button>
+        <p className="text-[10px] text-text-secondary mt-2">Descarcă profilul și setările în format JSON</p>
+      </div>
 
       {/* Logout */}
       <button

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { db, doc, collection, getDocs } from '../services/firebase';
+import { db, doc, collection, getDocs, functions, httpsCallable } from '../services/firebase';
 import { X } from 'lucide-react';
 
 interface Ad {
@@ -9,6 +9,8 @@ interface Ad {
   link: string;
   company: string;
   discountPercent?: number;
+  category?: string;
+  isAmazonAffiliate?: boolean;
 }
 
 interface Props {
@@ -38,6 +40,23 @@ const AdBanner: React.FC<Props> = ({ userSubscriptionProduct }) => {
     loadAds();
   }, []);
 
+  // Track impression when ad mounts or changes
+  useEffect(() => {
+    if (!shouldShowAds || ads.length === 0) return;
+
+    const currentAd = ads[currentAdIndex % ads.length];
+    const trackImpression = async () => {
+      try {
+        const track = httpsCallable(functions, 'trackAdImpression');
+        await track({ adId: currentAd.id });
+      } catch (err) {
+        console.error('Failed to track impression:', err);
+      }
+    };
+
+    trackImpression();
+  }, [currentAdIndex, ads, shouldShowAds]);
+
   if (!shouldShowAds || ads.length === 0 || dismissed) {
     return null;
   }
@@ -48,10 +67,22 @@ const AdBanner: React.FC<Props> = ({ userSubscriptionProduct }) => {
     setCurrentAdIndex((prev) => (prev + 1) % ads.length);
   };
 
+  const handleAdClick = async (e: React.MouseEvent<HTMLAnchorElement>) => {
+    const currentAd = ads[currentAdIndex % ads.length];
+    try {
+      const track = httpsCallable(functions, 'trackAdClick');
+      await track({ adId: currentAd.id });
+    } catch (err) {
+      console.error('Failed to track click:', err);
+    }
+    // Allow default link behavior
+  };
+
   return (
     <div className="w-full rounded-xl border border-border-color bg-bg-card overflow-hidden hover:shadow-md transition-shadow">
       <a
         href={currentAd.link}
+        onClick={handleAdClick}
         target="_blank"
         rel="noopener noreferrer"
         className="block relative group"

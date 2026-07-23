@@ -475,3 +475,122 @@ export const updateUserSubscription = functions.https.onCall(async (data, contex
         throw new functions.https.HttpsError('internal', 'Failed to update subscription: ' + err.message);
     }
 });
+
+/**
+ * SuperAdmin: Seed default Romanian ads (one-time setup)
+ */
+export const seedDefaultAds = functions.https.onCall(async (data, context) => {
+    if (!context.auth || context.auth.token.email !== 'dragomirvaleriu@gmail.com') {
+        throw new functions.https.HttpsError('permission-denied', 'Only superadmin can seed ads.');
+    }
+
+    const defaultAds = [
+        {
+            title: 'Semințe Premium pentru Gazon',
+            company: 'GradinaPerfecta.ro',
+            link: 'https://gradinaperfecta.ro?utm_source=mygarden&promo=GARDEN20',
+            imageUrl: 'https://images.unsplash.com/photo-1464207687429-7505649dae38?w=400&q=80',
+            discountPercent: 20,
+            category: 'seeds'
+        },
+        {
+            title: 'Îngrășământ Organic - 30% OFF',
+            company: 'BioDelta.ro',
+            link: 'https://biodelta.ro?utm_campaign=mygarden30',
+            imageUrl: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&q=80',
+            discountPercent: 30,
+            category: 'fertilizer'
+        },
+        {
+            title: 'Unelte de Grădină Professional',
+            company: 'ProTools.ro',
+            link: 'https://amazon.ro/s?k=gardening+tools&tag=mygarden-20',
+            imageUrl: 'https://images.unsplash.com/photo-1578654881325-8f95ea3cffe7?w=400&q=80',
+            discountPercent: 15,
+            category: 'tools',
+            isAmazonAffiliate: true
+        },
+        {
+            title: 'Sistem Irigare Inteligent',
+            company: 'AquaSmart.ro',
+            link: 'https://aquasmart.ro/sisteme-irigare?ref=mygarden',
+            imageUrl: 'https://images.unsplash.com/photo-1584622281867-8fc18f4be5f4?w=400&q=80',
+            discountPercent: 25,
+            category: 'irrigation'
+        },
+        {
+            title: 'Tratamente Ecologice - Fără Chimicale',
+            company: 'NaturalCare.ro',
+            link: 'https://naturalcare.ro/tratamente?promo=mygarden10',
+            imageUrl: 'https://images.unsplash.com/photo-1574482620811-1aa16ffe3c82?w=400&q=80',
+            discountPercent: 10,
+            category: 'treatments'
+        }
+    ];
+
+    try {
+        const adsRef = db.collection('superadmin').doc('data').collection('ads');
+        const batch = db.batch();
+
+        for (const ad of defaultAds) {
+            const docRef = adsRef.doc();
+            batch.set(docRef, {
+                ...ad,
+                isActive: true,
+                impressions: 0,
+                clicks: 0,
+                createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                createdBy: context.auth.uid,
+            });
+        }
+
+        await batch.commit();
+        return { success: true, count: defaultAds.length };
+    } catch (err: any) {
+        throw new functions.https.HttpsError('internal', 'Failed to seed ads: ' + err.message);
+    }
+});
+
+/**
+ * Track ad impression (when ad is displayed)
+ */
+export const trackAdImpression = functions.https.onCall(async (data, context) => {
+    const { adId } = data;
+    if (!adId) {
+        throw new functions.https.HttpsError('invalid-argument', 'adId is required.');
+    }
+
+    try {
+        const adRef = db.collection('superadmin').doc('data').collection('ads').doc(adId);
+        await adRef.update({
+            impressions: admin.firestore.FieldValue.increment(1),
+            lastImpressionAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        return { success: true };
+    } catch (err: any) {
+        console.error('Failed to track ad impression:', err);
+        return { success: false }; // Don't throw, ad display shouldn't fail
+    }
+});
+
+/**
+ * Track ad click (when user clicks ad link)
+ */
+export const trackAdClick = functions.https.onCall(async (data, context) => {
+    const { adId } = data;
+    if (!adId) {
+        throw new functions.https.HttpsError('invalid-argument', 'adId is required.');
+    }
+
+    try {
+        const adRef = db.collection('superadmin').doc('data').collection('ads').doc(adId);
+        await adRef.update({
+            clicks: admin.firestore.FieldValue.increment(1),
+            lastClickAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        return { success: true };
+    } catch (err: any) {
+        console.error('Failed to track ad click:', err);
+        return { success: false };
+    }
+});

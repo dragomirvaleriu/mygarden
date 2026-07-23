@@ -36,6 +36,91 @@ interface GiftCodeData {
   link: string;
 }
 
+const CreateAdForm: React.FC<{ onAdCreated: () => void }> = ({ onAdCreated }) => {
+  const [formData, setFormData] = useState({
+    title: '',
+    company: '',
+    imageUrl: '',
+    link: '',
+    discountPercent: 0,
+  });
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      const createAdFn = httpsCallable(functions, 'createAd');
+      await createAdFn(formData);
+      toast.success('Ad created successfully!');
+      setFormData({ title: '', company: '', imageUrl: '', link: '', discountPercent: 0 });
+      onAdCreated();
+    } catch (err: any) {
+      toast.error('Failed to create ad: ' + (err?.message || 'Unknown error'));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid md:grid-cols-2 gap-4">
+        <input
+          type="text"
+          placeholder="Ad Title"
+          value={formData.title}
+          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+          required
+          className="px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+        />
+        <input
+          type="text"
+          placeholder="Company Name"
+          value={formData.company}
+          onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+          required
+          className="px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+        />
+        <input
+          type="url"
+          placeholder="Image URL"
+          value={formData.imageUrl}
+          onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+          required
+          className="px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+        />
+        <input
+          type="url"
+          placeholder="Ad Link (with affiliate codes)"
+          value={formData.link}
+          onChange={(e) => setFormData({ ...formData, link: e.target.value })}
+          required
+          className="px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+        />
+        <div>
+          <input
+            type="number"
+            min="0"
+            max="100"
+            placeholder="Discount (%)"
+            value={formData.discountPercent}
+            onChange={(e) => setFormData({ ...formData, discountPercent: parseInt(e.target.value) })}
+            className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+          />
+        </div>
+      </div>
+      <button
+        type="submit"
+        disabled={submitting}
+        className="w-full px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition disabled:opacity-50 flex items-center justify-center gap-2"
+      >
+        {submitting ? <Loader2 size={18} className="animate-spin" /> : <Megaphone size={18} />}
+        Create Ad
+      </button>
+    </form>
+  );
+};
+
 const SuperAdmin: React.FC<Props> = ({ userProfile }) => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'users' | 'gifting' | 'ads' | 'analytics'>('users');
@@ -161,6 +246,19 @@ const SuperAdmin: React.FC<Props> = ({ userProfile }) => {
     toast.success('Copied to clipboard');
   };
 
+  // Delete ad
+  const deleteAd = async (adId: string) => {
+    if (!confirm('Are you sure you want to delete this ad?')) return;
+
+    try {
+      await db.collection('superadmin').doc('data').collection('ads').doc(adId).delete();
+      setAds(ads.filter(a => a.id !== adId));
+      toast.success('Ad deleted successfully');
+    } catch (err: any) {
+      toast.error('Failed to delete ad: ' + err.message);
+    }
+  };
+
   // Filter users
   const filteredUsers = users.filter(u =>
     u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -231,9 +329,9 @@ const SuperAdmin: React.FC<Props> = ({ userProfile }) => {
               />
             </div>
 
-            {/* Users Table */}
+            {/* Users Table - Responsive */}
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full hidden md:table">
                 <thead>
                   <tr className="border-b border-slate-300 dark:border-slate-600">
                     <th className="text-left py-3 px-4 font-semibold text-slate-700 dark:text-slate-300">Email</th>
@@ -271,6 +369,34 @@ const SuperAdmin: React.FC<Props> = ({ userProfile }) => {
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-3">
+              {filteredUsers.map((user) => (
+                <div
+                  key={user.uid}
+                  onClick={() => setSelectedUser(user)}
+                  className={`p-4 border rounded-lg cursor-pointer transition ${
+                    selectedUser?.uid === user.uid
+                      ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-300'
+                      : 'bg-slate-50 dark:bg-slate-700 border-slate-300 dark:border-slate-600'
+                  }`}
+                >
+                  <p className="font-semibold text-slate-900 dark:text-white">{user.email}</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">{user.displayName || 'No name'}</p>
+                  <div className="flex gap-2 mt-2 flex-wrap">
+                    <span className="px-2 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300 rounded text-xs font-medium">
+                      {user.subscriptionProduct || 'Free'}
+                    </span>
+                    {user.subscriptionExpiresAt && (
+                      <span className="px-2 py-1 bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded text-xs">
+                        Expires: {new Date(user.subscriptionExpiresAt).toLocaleDateString()}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           </Card>
         )}
@@ -391,53 +517,87 @@ const SuperAdmin: React.FC<Props> = ({ userProfile }) => {
 
         {/* Ads Tab */}
         {activeTab === 'ads' && (
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Manage Ads</h2>
-              <button
-                onClick={loadAds}
-                className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition flex items-center gap-2"
-              >
-                {loading ? <Loader2 size={18} className="animate-spin" /> : <Megaphone size={18} />}
-                Refresh
-              </button>
-            </div>
+          <div className="space-y-6">
+            {/* Create Ad Form */}
+            <Card className="p-6">
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Create New Ad</h2>
+              <CreateAdForm onAdCreated={() => { loadAds(); setGeneratedCode(null); }} />
+            </Card>
 
-            <div className="grid md:grid-cols-2 gap-6">
-              {ads.map((ad) => (
-                <div key={ad.id} className="border border-slate-300 dark:border-slate-600 rounded-lg overflow-hidden">
-                  <img src={ad.imageUrl} alt={ad.title} className="w-full h-40 object-cover" />
-                  <div className="p-4">
-                    <h3 className="font-semibold text-slate-900 dark:text-white">{ad.title}</h3>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">{ad.company}</p>
-                    {ad.discountPercent && (
-                      <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400 mb-2">
-                        {ad.discountPercent}% discount
-                      </p>
-                    )}
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => window.open(ad.link, '_blank')}
-                        className="flex-1 px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white rounded text-sm hover:bg-slate-200 dark:hover:bg-slate-600 transition"
-                      >
-                        View
-                      </button>
-                      <button className="flex-1 px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded text-sm hover:bg-red-200 dark:hover:bg-red-900/50 transition">
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {ads.length === 0 && (
-              <div className="text-center py-12">
-                <Megaphone className="mx-auto mb-4 text-slate-400" size={48} />
-                <p className="text-slate-600 dark:text-slate-400">No ads yet</p>
+            {/* Active Ads */}
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Active Ads</h2>
+                <button
+                  onClick={loadAds}
+                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition flex items-center gap-2"
+                >
+                  {loading ? <Loader2 size={18} className="animate-spin" /> : <Megaphone size={18} />}
+                  Refresh
+                </button>
               </div>
-            )}
-          </Card>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                {ads.map((ad) => {
+                  const impressions = (ad as any).impressions || 0;
+                  const clicks = (ad as any).clicks || 0;
+                  const ctr = impressions > 0 ? ((clicks / impressions) * 100).toFixed(2) : '0.00';
+                  return (
+                    <div key={ad.id} className="border border-slate-300 dark:border-slate-600 rounded-lg overflow-hidden hover:shadow-lg transition">
+                      <img src={ad.imageUrl} alt={ad.title} className="w-full h-40 object-cover" loading="lazy" />
+                      <div className="p-4">
+                        <h3 className="font-semibold text-slate-900 dark:text-white">{ad.title}</h3>
+                        <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">{ad.company}</p>
+
+                        {/* Analytics */}
+                        <div className="grid grid-cols-3 gap-2 mb-3 p-2 bg-slate-50 dark:bg-slate-800 rounded">
+                          <div>
+                            <p className="text-xs text-slate-600 dark:text-slate-400">Impressions</p>
+                            <p className="font-bold text-slate-900 dark:text-white">{impressions}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-slate-600 dark:text-slate-400">Clicks</p>
+                            <p className="font-bold text-slate-900 dark:text-white">{clicks}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-slate-600 dark:text-slate-400">CTR</p>
+                            <p className="font-bold text-emerald-600 dark:text-emerald-400">{ctr}%</p>
+                          </div>
+                        </div>
+
+                        {ad.discountPercent && (
+                          <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400 mb-3">
+                            {ad.discountPercent}% discount
+                          </p>
+                        )}
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => window.open(ad.link, '_blank')}
+                            className="flex-1 px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white rounded text-sm hover:bg-slate-200 dark:hover:bg-slate-600 transition"
+                          >
+                            View Link
+                          </button>
+                          <button
+                            onClick={() => deleteAd(ad.id || '')}
+                            className="flex-1 px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded text-sm hover:bg-red-200 dark:hover:bg-red-900/50 transition"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {ads.length === 0 && (
+                <div className="text-center py-12">
+                  <Megaphone className="mx-auto mb-4 text-slate-400" size={48} />
+                  <p className="text-slate-600 dark:text-slate-400">No ads yet. Create one to get started!</p>
+                </div>
+              )}
+            </Card>
+          </div>
         )}
 
         {/* Analytics Tab */}
