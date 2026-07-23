@@ -526,7 +526,7 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
 
       {/* ── Interactive Tools Banners ── */}
       <div className="mb-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Asistent Noua Peluză */}
           <div className="relative overflow-hidden rounded-[2rem] border border-emerald-500/20 bg-gradient-to-br from-emerald-950/40 via-bg-card to-bg-card p-6 md:p-8 flex flex-col justify-between shadow-md hover:shadow-lg transition-all group">
             <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/0 via-emerald-500/5 to-emerald-500/0 rounded-[2rem] blur opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
@@ -580,7 +580,7 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
       </div>
 
       {/* ── Category Filters ── */}
-      <div className="flex items-center gap-3 overflow-x-auto pb-3 scrollbar-hide mb-8 -mx-4 px-4" style={{ scrollbarWidth: 'none' }}>
+      <div className="flex flex-wrap items-center gap-2.5 mb-8">
         <CategoryPill label="Toate" emoji="📚" active={activeCategory === 'all'} onClick={() => setActiveCategory('all')} />
         {availableCategories.map(cat => (
           <CategoryPill
@@ -676,7 +676,7 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
           BUSTED: Erori Critice
         </h2>
         <p className="text-sm text-text-secondary mb-6">Cele mai comune mituri care distrug grădinile.</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {[
             {
               myth: '"Dau cu Erbicid Total și curăț terenul!"',

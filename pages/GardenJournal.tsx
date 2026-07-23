@@ -355,43 +355,38 @@ const GardenJournal: React.FC<Props> = ({ organizationId, onNavigate, userId, is
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-700">
       
-      {/* ── PREMIUM TERMINAL HEADER ── */}
-      <div className="relative flex flex-col md:flex-row md:items-center justify-between bg-gradient-to-r from-violet-500/10 via-transparent to-transparent p-4 md:p-6 md:min-h-[104px] rounded-3xl border border-violet-500/20 mb-6 shadow-sm gap-4 overflow-hidden">
-        
+      {/* ── HEADER ── */}
+      <div className="relative flex flex-col lg:flex-row lg:items-center justify-between bg-gradient-to-r from-violet-500/10 via-transparent to-transparent p-5 md:p-6 rounded-3xl border border-violet-500/20 mb-6 shadow-sm gap-5 overflow-hidden">
+
         {/* Dictando Lines Pattern */}
         <div className="absolute inset-0 opacity-[0.04] dark:opacity-[0.08] pointer-events-none" style={{ backgroundImage: 'linear-gradient(currentColor 1px, transparent 1px)', backgroundSize: '100% 28px' }} />
 
-        <div className="relative z-10 flex items-center gap-4 md:gap-5">
+        <div className="relative z-10 flex items-center gap-4">
           <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-violet-500 flex items-center justify-center text-white shadow-lg shadow-violet-500/30 transform -rotate-3 hover:rotate-0 transition-transform duration-300 shrink-0">
             <Camera className="w-6 h-6 md:w-7 md:h-7" strokeWidth={2.5} />
           </div>
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <img src="/logo.png" alt="My Garden" className="w-3 h-3 md:w-4 md:h-4 object-contain drop-shadow-sm" />
-              <h2 className="text-[9px] md:text-[11px] font-black text-violet-500 uppercase tracking-[0.4em] leading-none">My Garden</h2>
-              <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-violet-500 text-white text-[8px] font-black uppercase tracking-tighter shadow-sm">{t('Intelligence Terminal')}</span>
-            </div>
-            <h1 className="text-xl md:text-2xl font-black text-main tracking-tight leading-tight mb-1">
+          <div className="min-w-0">
+            <h1 className="text-xl md:text-2xl font-black text-main tracking-tight leading-tight">
               {t('Garden Journal')}
             </h1>
-            <p className="text-text-secondary text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-1.5">
-              {t('Centralized garden timeline and premium gallery')}
+            <p className="text-text-secondary text-xs font-semibold mt-0.5">
+              {t('Istoricul grădinii tale, la un loc')}
             </p>
           </div>
         </div>
 
-        <div className="relative z-10 flex flex-row items-center justify-end gap-3 w-auto">
+        <div className="relative z-10 flex flex-wrap items-center gap-2.5">
           {/* Main Tabs */}
-          <div className="flex bg-bg-card border border-border-color rounded-xl p-1 shadow-sm">
-            <button 
+          <div className="flex bg-bg-card border border-border-color rounded-xl p-1 shadow-sm shrink-0">
+            <button
               onClick={() => setActiveTab('timeline')}
-              className={`px-4 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all ${activeTab === 'timeline' ? 'bg-violet-500 text-white shadow-md' : 'text-text-secondary hover:text-main'}`}
+              className={`whitespace-nowrap px-4 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all ${activeTab === 'timeline' ? 'bg-violet-500 text-white shadow-md' : 'text-text-secondary hover:text-main'}`}
             >
-              Timeline Jurnal
+              Timeline
             </button>
-            <button 
+            <button
               onClick={() => setActiveTab('gallery')}
-              className={`px-4 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all ${activeTab === 'gallery' ? 'bg-violet-500 text-white shadow-md' : 'text-text-secondary hover:text-main'}`}
+              className={`whitespace-nowrap px-4 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all ${activeTab === 'gallery' ? 'bg-violet-500 text-white shadow-md' : 'text-text-secondary hover:text-main'}`}
             >
               Galerie Foto
             </button>
@@ -405,7 +400,7 @@ const GardenJournal: React.FC<Props> = ({ organizationId, onNavigate, userId, is
                 setIsPlaying(true);
                 setShowTimelapse(true);
               }}
-              className="flex items-center gap-2 px-4 py-2.5 bg-bg-card text-violet-500 border border-border-color hover:border-violet-500/30 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-sm"
+              className="whitespace-nowrap shrink-0 flex items-center gap-2 px-4 py-2.5 bg-bg-card text-violet-500 border border-border-color hover:border-violet-500/30 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-sm"
             >
               <Play size={14} fill="currentColor" />
               <span className="hidden sm:inline">{t('Play Time-lapse')}</span>
@@ -420,7 +415,7 @@ const GardenJournal: React.FC<Props> = ({ organizationId, onNavigate, userId, is
                 setCompareAfterIdx(timelapsePhotos.length - 1);
                 setShowCompare(true);
               }}
-              className="flex items-center gap-2 px-4 py-2.5 bg-bg-card text-violet-500 border border-border-color hover:border-violet-500/30 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-sm"
+              className="whitespace-nowrap shrink-0 flex items-center gap-2 px-4 py-2.5 bg-bg-card text-violet-500 border border-border-color hover:border-violet-500/30 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-sm"
             >
               <Columns2 size={14} />
               <span className="hidden sm:inline">Compară Progres</span>
@@ -430,7 +425,7 @@ const GardenJournal: React.FC<Props> = ({ organizationId, onNavigate, userId, is
           {/* Add Event Button */}
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-violet-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-violet-500/20 hover:scale-105 active:scale-95 transition-all"
+            className="whitespace-nowrap shrink-0 flex items-center gap-2 px-4 py-2.5 bg-violet-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-violet-500/20 hover:scale-105 active:scale-95 transition-all"
           >
             <Plus size={14} />
             <span className="hidden sm:inline">Adaugă Însemnare</span>
