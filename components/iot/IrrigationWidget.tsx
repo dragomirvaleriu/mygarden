@@ -57,72 +57,69 @@ export const IrrigationWidget: React.FC = () => {
   };
 
   return (
-    <div className="bg-bg-card border border-border-color rounded-3xl p-6 shadow-sm flex flex-col h-full">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${status === 'ACTIVE' ? 'bg-blue-500/10 text-blue-500' : 'bg-amber-500/10 text-amber-500'}`}>
-            <Droplets size={20} />
+    <div className="bg-bg-card border border-border-color rounded-2xl p-5 shadow-sm">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${status === 'ACTIVE' ? 'bg-blue-500/10 text-blue-500' : 'bg-amber-500/10 text-amber-500'}`}>
+            <Droplets size={16} />
           </div>
-          <div>
-            <h3 className="text-sm font-black text-main uppercase tracking-widest">Sistem Irigații</h3>
-            <p className="text-[10px] font-bold text-text-secondary uppercase tracking-[0.2em]">Controller Smart</p>
+          <div className="min-w-0">
+            <h3 className="text-[11px] font-black text-main uppercase tracking-widest leading-none truncate">Sistem Irigații</h3>
+            <p className="text-[9px] font-bold text-text-secondary uppercase tracking-[0.15em] mt-0.5">Controller Smart</p>
           </div>
         </div>
-        
+
         {/* iOS style Toggle */}
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Smart Sync Meteo</span>
-          <button 
-            onClick={() => setIsSmartSync(!isSmartSync)}
-            className={`relative w-11 h-6 rounded-full transition-colors duration-300 ${isSmartSync ? 'bg-emerald-500' : 'bg-border-color'}`}
-          >
-            <div className={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 ${isSmartSync ? 'translate-x-5 shadow-sm' : ''}`} />
-          </button>
+        <button
+          onClick={() => setIsSmartSync(!isSmartSync)}
+          title="Smart Sync Meteo"
+          className={`relative w-9 h-5 rounded-full transition-colors duration-300 shrink-0 ${isSmartSync ? 'bg-emerald-500' : 'bg-border-color'}`}
+        >
+          <div className={`absolute top-0.5 left-0.5 bg-white w-4 h-4 rounded-full transition-transform duration-300 ${isSmartSync ? 'translate-x-4 shadow-sm' : ''}`} />
+        </button>
+      </div>
+
+      <div className={`flex items-center justify-between gap-2 rounded-xl px-3 py-2.5 border transition-all ${status === 'ACTIVE' ? 'bg-blue-500/5 border-blue-500/20' : 'bg-amber-500/5 border-amber-500/20'}`}>
+        <div className="flex items-center gap-2 min-w-0">
+          {status === 'ACTIVE' ? (
+            <CheckCircle2 size={16} className="text-blue-500 shrink-0" />
+          ) : (
+            <Clock size={16} className="text-amber-500 shrink-0 animate-pulse" />
+          )}
+          <div className="min-w-0">
+            <p className="text-xs font-black text-main leading-tight">{status === 'ACTIVE' ? 'Activ' : 'Suspendat'}</p>
+            <p className="text-[10px] text-text-secondary font-medium truncate">
+              {status === 'ACTIVE' ? 'Conform programului stabilit' : `Reluare în ~${suspendHoursLeft}h`}
+            </p>
+          </div>
         </div>
-      </div>
 
-      <div className={`flex-1 rounded-2xl p-6 border flex flex-col items-center justify-center text-center transition-all ${status === 'ACTIVE' ? 'bg-blue-500/5 border-blue-500/20' : 'bg-amber-500/5 border-amber-500/20'}`}>
         {status === 'ACTIVE' ? (
-          <>
-            <CheckCircle2 size={32} className="text-blue-500 mb-3" />
-            <h4 className="text-lg font-black text-main mb-1">Active & Optimized</h4>
-            <p className="text-xs text-text-secondary font-medium">Sistemul funcționează conform programului stabilit.</p>
-          </>
-        ) : (
-          <>
-            <Clock size={32} className="text-amber-500 mb-3 animate-pulse" />
-            <h4 className="text-lg font-black text-main mb-1">Suspended</h4>
-            <p className="text-xs text-text-secondary font-medium mb-2">Reluare automată în aprox. {suspendHoursLeft}h</p>
-            {isSmartSync && mockWeather.precipitationProbability > 60 && (
-               <div className="flex items-center gap-1 text-[10px] font-bold text-amber-600 bg-amber-500/10 px-2 py-1 rounded-lg">
-                 <CloudRain size={12} /> Ploaie iminentă
-               </div>
-            )}
-          </>
-        )}
-      </div>
-
-      <div className="mt-6 flex gap-3">
-        {status === 'ACTIVE' ? (
-          <button 
+          <button
             onClick={() => handleSuspend(24)}
             disabled={isLoading}
-            className="flex-1 py-3 rounded-xl bg-bg-main border border-border-color text-xs font-black text-main uppercase tracking-widest hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-bg-main border border-border-color text-[10px] font-black text-main uppercase tracking-wider hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/20 transition-all disabled:opacity-50"
           >
-            {isLoading ? <RefreshCw size={16} className="animate-spin" /> : <PowerOff size={16} />}
-            Suspendă Udarea (24h)
+            {isLoading ? <RefreshCw size={12} className="animate-spin" /> : <PowerOff size={12} />}
+            Suspendă
           </button>
         ) : (
-          <button 
+          <button
             onClick={handleResume}
             disabled={isLoading}
-            className="flex-1 py-3 rounded-xl bg-blue-500 text-white shadow-lg shadow-blue-500/20 text-xs font-black uppercase tracking-widest hover:bg-blue-600 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500 text-white text-[10px] font-black uppercase tracking-wider hover:bg-blue-600 transition-all disabled:opacity-50"
           >
-            {isLoading ? <RefreshCw size={16} className="animate-spin" /> : <Droplets size={16} />}
-            Reluare Program
+            {isLoading ? <RefreshCw size={12} className="animate-spin" /> : <Droplets size={12} />}
+            Reluare
           </button>
         )}
       </div>
+
+      {status === 'SUSPENDED' && isSmartSync && mockWeather.precipitationProbability > 60 && (
+        <div className="mt-2 flex items-center gap-1 text-[10px] font-bold text-amber-600 bg-amber-500/10 px-2 py-1 rounded-lg w-fit">
+          <CloudRain size={12} /> Ploaie iminentă
+        </div>
+      )}
     </div>
   );
 };
