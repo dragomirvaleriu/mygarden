@@ -298,9 +298,8 @@ const SuperAdmin: React.FC<Props> = ({ userProfile }) => {
 
   // Delete a user account (profile, personal garden if sole owner, Auth record)
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
-  const handleDeleteUser = async (user: UserData) => {
-    if (!confirm(`Ești sigur că vrei să ștergi definitiv contul ${user.email}? Această acțiune nu poate fi anulată.`)) return;
 
+  const confirmAndDeleteUser = async (user: UserData) => {
     if (!user.uid) {
       toast.error('Error: user ID is missing');
       return;
@@ -312,13 +311,41 @@ const SuperAdmin: React.FC<Props> = ({ userProfile }) => {
       const result = await deleteFn({ userId: user.uid });
       setUsers(prev => prev.filter(u => u.uid !== user.uid));
       if (selectedUser?.uid === user.uid) setSelectedUser(null);
-      toast.success(`Cont ${user.email} șters.`);
+      toast.success(`Cont ${user.email} șters permanent.`);
     } catch (err: any) {
       console.error('Delete error:', err);
       toast.error('Eroare la ștergere: ' + (err?.message || 'Unknown error'));
     } finally {
       setDeletingUserId(null);
     }
+  };
+
+  const handleDeleteUser = (user: UserData) => {
+    toast((t) => (
+      <div className="flex flex-col gap-2">
+        <div className="font-semibold text-sm">Ești sigur? Această acțiune nu poate fi anulată!</div>
+        <div className="text-xs opacity-90">{user.email}</div>
+        <div className="flex gap-2 mt-2">
+          <button
+            onClick={() => {
+              toast.dismiss(t.id);
+              confirmAndDeleteUser(user);
+            }}
+            className="flex-1 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs font-bold transition"
+          >
+            DA, ȘTERGE
+          </button>
+          <button
+            onClick={() => {
+              toast.dismiss(t.id);
+            }}
+            className="flex-1 bg-gray-400 hover:bg-gray-500 text-white px-3 py-1 rounded text-xs font-bold transition"
+          >
+            ANULEAZĂ
+          </button>
+        </div>
+      </div>
+    ), { duration: 10000 });
   };
 
   // Copy to clipboard
