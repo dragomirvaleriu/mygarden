@@ -11,6 +11,7 @@ import {
   Copy,
   CheckCircle,
   AlertCircle,
+  Trash2,
 } from 'lucide-react';
 import { Card } from '../components/ui/primitives';
 import { db, functions, httpsCallable, doc, getDoc, collection, query, where, getDocs, deleteDoc } from '../services/firebase';
@@ -295,6 +296,25 @@ const SuperAdmin: React.FC<Props> = ({ userProfile }) => {
     }
   };
 
+  // Delete a user account (profile, personal garden if sole owner, Auth record)
+  const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
+  const handleDeleteUser = async (user: UserData) => {
+    if (!confirm(`Ești sigur că vrei să ștergi definitiv contul ${user.email}? Această acțiune nu poate fi anulată.`)) return;
+
+    setDeletingUserId(user.uid);
+    try {
+      const deleteFn = httpsCallable(functions, 'deleteUserAccount');
+      await deleteFn({ userId: user.uid });
+      setUsers(prev => prev.filter(u => u.uid !== user.uid));
+      if (selectedUser?.uid === user.uid) setSelectedUser(null);
+      toast.success(`Cont ${user.email} șters.`);
+    } catch (err: any) {
+      toast.error('Eroare la ștergere: ' + (err?.message || 'Unknown error'));
+    } finally {
+      setDeletingUserId(null);
+    }
+  };
+
   // Copy to clipboard
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -410,6 +430,7 @@ const SuperAdmin: React.FC<Props> = ({ userProfile }) => {
                     <th className="text-left py-3 px-4 font-semibold text-slate-700 dark:text-slate-300">Subscription</th>
                     <th className="text-left py-3 px-4 font-semibold text-slate-700 dark:text-slate-300">Expires</th>
                     <th className="text-left py-3 px-4 font-semibold text-slate-700 dark:text-slate-300">Created</th>
+                    <th className="text-right py-3 px-4 font-semibold text-slate-700 dark:text-slate-300">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -438,6 +459,18 @@ const SuperAdmin: React.FC<Props> = ({ userProfile }) => {
                       <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
                         {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '-'}
                       </td>
+                      <td className="py-3 px-4 text-right">
+                        {user.email !== userProfile.email && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleDeleteUser(user); }}
+                            disabled={deletingUserId === user.uid}
+                            className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition disabled:opacity-50"
+                            title="Șterge utilizator"
+                          >
+                            {deletingUserId === user.uid ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                          </button>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -456,8 +489,22 @@ const SuperAdmin: React.FC<Props> = ({ userProfile }) => {
                       : 'bg-slate-50 dark:bg-slate-700 border-slate-300 dark:border-slate-600'
                   }`}
                 >
-                  <p className="font-semibold text-slate-900 dark:text-white">{user.email}</p>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">{user.displayName || 'No name'}</p>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="font-semibold text-slate-900 dark:text-white truncate">{user.email}</p>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">{user.displayName || 'No name'}</p>
+                    </div>
+                    {user.email !== userProfile.email && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDeleteUser(user); }}
+                        disabled={deletingUserId === user.uid}
+                        className="shrink-0 p-2 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition disabled:opacity-50"
+                        title="Șterge utilizator"
+                      >
+                        {deletingUserId === user.uid ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                      </button>
+                    )}
+                  </div>
                   <div className="flex gap-2 mt-2 flex-wrap">
                     <span className="px-2 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300 rounded text-xs font-medium">
                       {getEffectivePlanLabel(user, userProfile.email)}

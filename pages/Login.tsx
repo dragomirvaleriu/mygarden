@@ -22,9 +22,8 @@ import {
   isPersistenceError,
   recoverFromPersistenceError
 } from '../services/firebase';
-import { Eye, EyeOff, Loader2, Lock, Mail, Building2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Lock, Mail, User, CheckCircle2, AlertCircle } from 'lucide-react';
 import { UserProfile } from '../src/types';
-import { APP_VARIANT, isHomeownerApp } from '../src/config/appVariant';
 
 const toBase64 = (str: string) => {
   try {
@@ -43,8 +42,11 @@ const fromBase64 = (str: string) => {
 };
 
 // Set when a write dies on a broken IndexedDB cache: the page reloads into
-// memory-cache mode and picks the setup back up where it left off.
+// memory-cache mode and picks the setup back up where it left off. The name
+// rides along since it only lives in component state and would otherwise be
+// lost across the reload.
 const RESUME_SETUP_KEY = 'mg_resume_setup';
+const RESUME_NAME_KEY = 'mg_resume_setup_name';
 
 const MIN_PASSWORD_LENGTH = 6;
 
@@ -59,9 +61,7 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [firmName, setFirmName] = useState('');
-  // My Garden is homeowner-only, so new accounts are always PF (see src/config/appVariant).
-  const [accountType, setAccountType] = useState<'PF' | 'PJ'>(APP_VARIANT);
+  const [name, setName] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
   
   const [error, setError] = useState('');
@@ -221,22 +221,25 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
   const promptOrResumeSetup = async (user: { uid: string; email: string | null }) => {
     setIsRegister(true);
 
-    let resume = false;
+    let resumeName: string | null = null;
     try {
-      resume = sessionStorage.getItem(RESUME_SETUP_KEY) === '1';
-      if (resume) sessionStorage.removeItem(RESUME_SETUP_KEY);
+      if (sessionStorage.getItem(RESUME_SETUP_KEY) === '1') {
+        resumeName = sessionStorage.getItem(RESUME_NAME_KEY) || '';
+        sessionStorage.removeItem(RESUME_SETUP_KEY);
+        sessionStorage.removeItem(RESUME_NAME_KEY);
+      }
     } catch { /* no session storage — fall through to the manual prompt */ }
 
-    // A homeowner account needs no further input from the user, so an
-    // interrupted setup can finish on its own.
-    if (resume && accountType === 'PF') {
-      await completeOnboarding(user.uid, user.email || '');
+    // My Garden accounts need only a name, so an interrupted setup can finish
+    // on its own — unless the name itself didn't survive the reload, in which
+    // case we still need the person to type it.
+    if (resumeName) {
+      setName(resumeName);
+      await completeOnboarding(user.uid, user.email || '', resumeName);
       return;
     }
 
-    setStatusMsg(isHomeownerApp
-      ? t("Account detected. Finish setting up your garden.")
-      : t("Account detected. Finish setting up your company."));
+    setStatusMsg(t("Account detected. Finish setting up your garden."));
   };
 
   useEffect(() => {
@@ -320,18 +323,17 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
     }
   };
 
-  const completeOnboarding = async (uid: string, userEmail: string) => {
-    if (!inviteData && !firmName.trim() && accountType === 'PJ') {
-      setError(t("Enter the company name to finish setup."));
+  const completeOnboarding = async (uid: string, userEmail: string, nameOverride?: string) => {
+    const trimmedName = (nameOverride ?? name).trim();
+    if (!trimmedName) {
+      setError(t("Enter your name to finish setup."));
       return;
     }
 
     busyRef.current = true;
     setError('');
     setLoading(true);
-    setStatusMsg(inviteData
-      ? t("Finalizing invitation...")
-      : isHomeownerApp ? t("Setting up your garden...") : t("Configuring company..."));
+    setStatusMsg(inviteData ? t("Finalizing invitation...") : t("Setting up your garden..."));
     try {
       let orgId = inviteData?.organizationId;
 
@@ -347,7 +349,10 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
         const orgRef = doc(collection(db, 'organizations'));
         orgId = orgRef.id;
 
-        const orgName = accountType === 'PF' ? (firmName || t('My Garden')) : firmName;
+        // My Garden is homeowner-only: every account gets a personal garden,
+        // never a company. Named after them since it's the only thing shown
+        // next to the dashboard date.
+        const orgName = `Grădina lui ${trimmedName}`;
 
         // Calculate 14 days PRO trial
         const trialExpires = new Date();
@@ -374,7 +379,7 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
         organizationId: orgId,
         role: (inviteData?.role as any) || 'admin',
         theme: 'dark',
-        accountType: accountType,
+        displayName: trimmedName,
         ...(referredByRef.current ? { referredBy: referredByRef.current } : {})
       };
 
@@ -398,7 +403,10 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
       // IndexedDbTransactionError). Switch that off and reload: the org we may
       // have already created is picked up again above, so this is a clean retry.
       if (isPersistenceError(err) && recoverFromPersistenceError()) {
-        try { sessionStorage.setItem(RESUME_SETUP_KEY, '1'); } catch { /* best effort */ }
+        try {
+          sessionStorage.setItem(RESUME_SETUP_KEY, '1');
+          sessionStorage.setItem(RESUME_NAME_KEY, trimmedName);
+        } catch { /* best effort */ }
         setStatusMsg(t("Optimizing for your device..."));
         window.location.reload();
         return;
@@ -432,6 +440,10 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
     }
 
     if (isRegister) {
+      if (!name.trim()) {
+        setError(t("Please enter your name."));
+        return;
+      }
       if (password.length < MIN_PASSWORD_LENGTH) {
         setError(t("Password must be at least 6 characters."));
         return;
@@ -494,7 +506,10 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
       setStatusMsg('');
 
       if (isPersistenceError(err) && recoverFromPersistenceError()) {
-        try { sessionStorage.setItem(RESUME_SETUP_KEY, '1'); } catch { /* best effort */ }
+        try {
+          sessionStorage.setItem(RESUME_SETUP_KEY, '1');
+          if (isRegister) sessionStorage.setItem(RESUME_NAME_KEY, name.trim());
+        } catch { /* best effort */ }
         setStatusMsg(t("Optimizing for your device..."));
         window.location.reload();
         return;
@@ -706,44 +721,21 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
             </>
           ) : null}
 
-          {/* Account-type selector is hidden in the homeowner app — every account is PF. */}
-          {isRegister && !inviteData && !isHomeownerApp && (
-            <div className="space-y-4 animate-in slide-in-from-top-4 duration-500 pt-2 border-t border-border-color">
-              <label className="text-[11px] font-bold text-text-secondary uppercase tracking-wider ml-1">
-                {t('Account Type')}
-              </label>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setAccountType('PJ')}
-                  className={`flex-1 py-3 rounded-md text-[11px] font-black uppercase tracking-widest border transition-all ${accountType === 'PJ' ? 'bg-accent-color text-white border-accent-color' : 'bg-bg-main text-text-secondary border-border-color'}`}
-                >
-                  {t('Company (PJ)')}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAccountType('PF')}
-                  className={`flex-1 py-3 rounded-md text-[11px] font-black uppercase tracking-widest border transition-all ${accountType === 'PF' ? 'bg-accent-color text-white border-accent-color' : 'bg-bg-main text-text-secondary border-border-color'}`}
-                >
-                  {t('Individual (PF)')}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {(isRegister || isAlreadyLoggedIn) && !inviteData && accountType === 'PJ' && (
+          {/* My Garden is homeowner-only: every account just needs a name, no company. */}
+          {isRegister && !inviteData && (
             <div className="space-y-2 animate-in slide-in-from-top-4 duration-500 pt-2 border-t border-border-color">
               <label className="text-[11px] font-bold text-accent-color uppercase tracking-wider ml-1 flex items-center gap-2">
-                <Building2 size={10} />
-                {t('Company Name')}
+                <User size={10} />
+                {t('Your Name')}
               </label>
-              <input 
-                type="text" 
+              <input
+                type="text"
+                autoComplete="name"
                 required
-                className="w-full bg-bg-main rounded-md px-4 py-3 outline-none text-main font-black border border-accent-color focus:ring-1 focus:ring-accent-color transition-all shadow-sm" 
-                value={firmName} 
-                onChange={e => setFirmName(e.target.value)} 
-                placeholder="Ex: Landscape Design SRL" 
+                className="w-full bg-bg-main rounded-md px-4 py-3 outline-none text-main font-black border border-accent-color focus:ring-1 focus:ring-accent-color transition-all shadow-sm"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                placeholder={t('Ex: Ion, Maria...')}
                 autoFocus
               />
             </div>
@@ -767,7 +759,7 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
             {!isAlreadyLoggedIn ? (
               <div className="flex flex-col gap-2 pt-4 text-center">
                 <button type="button" onClick={() => { setIsRegister(!isRegister); setError(''); setInfo(''); setStatusMsg(''); setConfirmPassword(''); }} className="text-[11px] font-bold text-text-secondary uppercase tracking-wider hover:text-main transition-colors py-2">
-                  {isRegister ? t('Already have an account? Login') : (isHomeownerApp ? t('New here? Create account') : t('New company? Register'))}
+                  {isRegister ? t('Already have an account? Login') : t('New here? Create account')}
                 </button>
               </div>
             ) : (

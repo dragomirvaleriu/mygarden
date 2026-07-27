@@ -1090,5 +1090,9 @@
   "Show password": "Show password",
   "At least 6 characters.": "At least 6 characters.",
   "Confirm Password": "Confirm Password",
-  "Forgot password?": "Forgot password?"
+  "Forgot password?": "Forgot password?",
+  "Your Name": "Your Name",
+  "Ex: Ion, Maria...": "E.g.: John, Mary...",
+  "Enter your name to finish setup.": "Enter your name to finish setup.",
+  "Please enter your name.": "Please enter your name."
 }

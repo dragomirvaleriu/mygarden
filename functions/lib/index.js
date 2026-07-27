@@ -30,7 +30,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.trackAdClick = exports.trackAdImpression = exports.seedDefaultAds = exports.updateUserSubscription = exports.createAd = exports.listAllUsers = exports.receiveTelemetry = exports.weatherAlert = exports.stripeWebhook = exports.createCheckoutSession = exports.createGiftCode = exports.redeemGiftCode = exports.generateReferralCode = void 0;
+exports.trackAdClick = exports.trackAdImpression = exports.seedDefaultAds = exports.deleteUserAccount = exports.updateUserSubscription = exports.updateAd = exports.createAd = exports.listAllUsers = exports.receiveTelemetry = exports.weatherAlert = exports.stripeWebhook = exports.createCheckoutSession = exports.createGiftCode = exports.redeemGiftCode = exports.generateReferralCode = void 0;
 const functions = __importStar(require("firebase-functions"));
 const admin = __importStar(require("firebase-admin"));
 const stripe_1 = __importDefault(require("stripe"));
@@ -342,6 +342,35 @@ exports.createAd = functions.https.onCall(async (data, context) => {
         throw new functions.https.HttpsError('internal', 'Failed to create ad: ' + err.message);
     }
 });
+exports.updateAd = functions.https.onCall(async (data, context) => {
+    if (!context.auth || context.auth.token.email !== 'dragomirvaleriu@gmail.com') {
+        throw new functions.https.HttpsError('permission-denied', 'Only superadmin can update ads.');
+    }
+    const { adId, title, imageUrl, link, company, discountPercent, isActive } = data;
+    if (!adId) {
+        throw new functions.https.HttpsError('invalid-argument', 'adId is required.');
+    }
+    const updateFields = { updatedAt: admin.firestore.FieldValue.serverTimestamp() };
+    if (title !== undefined)
+        updateFields.title = title;
+    if (imageUrl !== undefined)
+        updateFields.imageUrl = imageUrl;
+    if (link !== undefined)
+        updateFields.link = link;
+    if (company !== undefined)
+        updateFields.company = company;
+    if (discountPercent !== undefined)
+        updateFields.discountPercent = discountPercent;
+    if (isActive !== undefined)
+        updateFields.isActive = isActive;
+    try {
+        await db.collection('superadmin').doc('data').collection('ads').doc(adId).update(updateFields);
+        return { success: true };
+    }
+    catch (err) {
+        throw new functions.https.HttpsError('internal', 'Failed to update ad: ' + err.message);
+    }
+});
 exports.updateUserSubscription = functions.https.onCall(async (data, context) => {
     if (!context.auth || context.auth.token.email !== 'dragomirvaleriu@gmail.com') {
         throw new functions.https.HttpsError('permission-denied', 'Only superadmin can update subscriptions.');
@@ -361,6 +390,127 @@ exports.updateUserSubscription = functions.https.onCall(async (data, context) =>
     }
     catch (err) {
         throw new functions.https.HttpsError('internal', 'Failed to update subscription: ' + err.message);
+    }
+});
+const ORG_SCOPED_COLLECTIONS = [
+    'clients', 'visits', 'properties', 'service_types', 'products',
+    'garden_tasks', 'garden_journal', 'client_history', 'user_plants',
+    'expertValidations', 'invitations', 'invoices', 'audit_logs', 'leads',
+];
+const UID_SCOPED_COLLECTIONS = [
+    { name: 'pf_zones', field: 'uid' },
+    { name: 'pf_equipment', field: 'uid' },
+    { name: 'pf_products', field: 'uid' },
+    { name: 'pf_treatments', field: 'uid' },
+    { name: 'pf_tasks', field: 'uid' },
+    { name: 'marketplace_items', field: 'sellerId' },
+    { name: 'messages', field: 'senderId' },
+];
+async function deleteWhere(collectionName, field, value) {
+    const snap = await db.collection(collectionName).where(field, '==', value).get();
+    if (snap.empty)
+        return 0;
+    const chunks = [];
+    for (let i = 0; i < snap.docs.length; i += 400)
+        chunks.push(snap.docs.slice(i, i + 400));
+    for (const chunk of chunks) {
+        const batch = db.batch();
+        chunk.forEach(d => batch.delete(d.ref));
+        await batch.commit();
+    }
+    return snap.size;
+}
+exports.deleteUserAccount = functions.https.onCall(async (data, context) => {
+    var _a, _b;
+    if (!context.auth || context.auth.token.email !== 'dragomirvaleriu@gmail.com') {
+        throw new functions.https.HttpsError('permission-denied', 'Only superadmin can delete users.');
+    }
+    const { userId } = data;
+    if (!userId || typeof userId !== 'string') {
+        throw new functions.https.HttpsError('invalid-argument', 'userId is required.');
+    }
+    if (userId === context.auth.uid) {
+        throw new functions.https.HttpsError('failed-precondition', 'You cannot delete your own superadmin account.');
+    }
+    const deletedCounts = {};
+    try {
+        const userSnap = await db.collection('users').doc(userId).get();
+        const orgId = (_a = userSnap.data()) === null || _a === void 0 ? void 0 : _a.organizationId;
+        let isSoleOwner = false;
+        if (orgId) {
+            try {
+                const orgSnap = await db.collection('organizations').doc(orgId).get();
+                isSoleOwner = orgSnap.exists && ((_b = orgSnap.data()) === null || _b === void 0 ? void 0 : _b.adminUid) === userId;
+            }
+            catch (err) {
+                console.error(`deleteUserAccount: failed to read organization ${orgId} for ${userId} (continuing):`, err);
+            }
+        }
+        if (orgId && isSoleOwner) {
+            for (const collectionName of ORG_SCOPED_COLLECTIONS) {
+                try {
+                    deletedCounts[collectionName] = await deleteWhere(collectionName, 'organizationId', orgId);
+                }
+                catch (err) {
+                    console.error(`deleteUserAccount: failed to sweep ${collectionName} for org ${orgId} (continuing):`, err);
+                }
+            }
+            try {
+                await db.collection('organizations').doc(orgId).delete();
+            }
+            catch (err) {
+                console.error(`deleteUserAccount: failed to remove organization ${orgId} for ${userId} (continuing):`, err);
+            }
+        }
+        for (const { name, field } of UID_SCOPED_COLLECTIONS) {
+            try {
+                deletedCounts[name] = await deleteWhere(name, field, userId);
+            }
+            catch (err) {
+                console.error(`deleteUserAccount: failed to sweep ${name} for ${userId} (continuing):`, err);
+            }
+        }
+        try {
+            const notifsSnap = await db.collection('users').doc(userId).collection('notifications').get();
+            await Promise.all(notifsSnap.docs.map(d => d.ref.delete()));
+            deletedCounts['notifications'] = notifsSnap.size;
+        }
+        catch (err) {
+            console.error(`deleteUserAccount: failed to clear notifications for ${userId} (continuing):`, err);
+        }
+        if (orgId) {
+            try {
+                const bucket = admin.storage().bucket();
+                await bucket.deleteFiles({ prefix: `uploads/${orgId}/${userId}/` });
+            }
+            catch (err) {
+                console.error(`deleteUserAccount: failed to remove storage files for ${userId} (continuing):`, err);
+            }
+        }
+        try {
+            await db.collection('user_settings').doc(userId).delete();
+        }
+        catch (err) {
+            console.error(`deleteUserAccount: failed to remove user_settings for ${userId} (continuing):`, err);
+        }
+        try {
+            await db.collection('users').doc(userId).delete();
+        }
+        catch (err) {
+            console.error(`deleteUserAccount: failed to remove users/${userId} (continuing):`, err);
+        }
+        try {
+            await admin.auth().deleteUser(userId);
+        }
+        catch (err) {
+            if ((err === null || err === void 0 ? void 0 : err.code) !== 'auth/user-not-found') {
+                throw err;
+            }
+        }
+        return { success: true, deletedOrganization: !!(orgId && isSoleOwner), deletedCounts };
+    }
+    catch (err) {
+        throw new functions.https.HttpsError('internal', 'Failed to delete user: ' + ((err === null || err === void 0 ? void 0 : err.message) || String(err)));
     }
 });
 exports.seedDefaultAds = functions.https.onCall(async (data, context) => {

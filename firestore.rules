@@ -259,6 +259,60 @@ service cloud.firestore {
       allow update, delete: if isSuperAdmin() || (isSignedIn() && request.auth.uid == resource.data.userId);
     }
 
+    // PF tool collections (services/pf/*.ts) — Garden Setup zones, Fleet
+    // equipment, Product Inventory, Treatment Log, Maintenance tasks. All
+    // isolated per-uid, no organization sharing (My Garden accounts are
+    // single-user). These had no rules at all before, so every write from
+    // these tools was silently rejected as permission-denied.
+    match /pf_zones/{docId} {
+      allow read: if isSuperAdmin() || (isSignedIn() && request.auth.uid == resource.data.uid);
+      allow create: if isSignedIn() && request.auth.uid == request.resource.data.uid;
+      allow update, delete: if isSuperAdmin() || (isSignedIn() && request.auth.uid == resource.data.uid);
+    }
+    match /pf_equipment/{docId} {
+      allow read: if isSuperAdmin() || (isSignedIn() && request.auth.uid == resource.data.uid);
+      allow create: if isSignedIn() && request.auth.uid == request.resource.data.uid;
+      allow update, delete: if isSuperAdmin() || (isSignedIn() && request.auth.uid == resource.data.uid);
+    }
+    match /pf_products/{docId} {
+      allow read: if isSuperAdmin() || (isSignedIn() && request.auth.uid == resource.data.uid);
+      allow create: if isSignedIn() && request.auth.uid == request.resource.data.uid;
+      allow update, delete: if isSuperAdmin() || (isSignedIn() && request.auth.uid == resource.data.uid);
+    }
+    match /pf_treatments/{docId} {
+      allow read: if isSuperAdmin() || (isSignedIn() && request.auth.uid == resource.data.uid);
+      allow create: if isSignedIn() && request.auth.uid == request.resource.data.uid;
+      allow update, delete: if isSuperAdmin() || (isSignedIn() && request.auth.uid == resource.data.uid);
+    }
+    match /pf_tasks/{docId} {
+      allow read: if isSuperAdmin() || (isSignedIn() && request.auth.uid == resource.data.uid);
+      allow create: if isSignedIn() && request.auth.uid == request.resource.data.uid;
+      allow update, delete: if isSuperAdmin() || (isSignedIn() && request.auth.uid == resource.data.uid);
+    }
+
+    // Community marketplace (GardenixMarketplace) — listings are browsable
+    // by every signed-in user, but only the seller can create/edit their own.
+    match /marketplace_items/{docId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.auth.uid == request.resource.data.sellerId;
+      allow update, delete: if isSuperAdmin() || (isSignedIn() && request.auth.uid == resource.data.sellerId);
+    }
+
+    // Marketplace chat — only the two participants of that conversation.
+    match /messages/{docId} {
+      allow read: if isSuperAdmin() || (isSignedIn() && request.auth.uid in [resource.data.senderId, resource.data.receiverId]);
+      allow create: if isSignedIn() && request.auth.uid == request.resource.data.senderId;
+    }
+
+    // AI Lens Scanner "ask an expert" requests — owner can read/create,
+    // superadmin reviews and updates the status.
+    match /expertValidations/{docId} {
+      allow read: if isSuperAdmin() || (isSignedIn() && request.auth.uid == resource.data.userId);
+      allow create: if isSignedIn() && request.auth.uid == request.resource.data.userId;
+      allow update: if isSuperAdmin();
+      allow delete: if isSuperAdmin() || (isSignedIn() && request.auth.uid == resource.data.userId);
+    }
+
     match /temporary_shares/{docId} {
       // "get" (single doc, by the unguessable share-link ID) is open to an unexpired
       // holder of that link; "list" requires org membership so the collection can't

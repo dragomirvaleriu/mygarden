@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Page, UserProfile } from '../src/types';
 import {
   User,
+  Mail,
   Lock,
   Globe,
   Sparkles,
@@ -228,40 +229,28 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
   const currentLang = (userProfile.language || 'ro') as 'ro' | 'en';
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6 pb-10">
-      <div className="flex items-center gap-4">
-        <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-accent-color flex items-center justify-center text-white shadow-lg shadow-accent-color/30 shrink-0">
-          <User className="w-6 h-6 md:w-7 md:h-7" strokeWidth={2.5} />
-        </div>
-        <div className="min-w-0">
-          <h1 className="text-xl md:text-2xl font-black text-main tracking-tight leading-tight">Setări Cont</h1>
-          <p className="text-text-secondary text-xs md:text-sm font-medium mt-0.5">Contul tău, parola și preferințele.</p>
+    <div className="p-4 md:p-6 max-w-2xl mx-auto space-y-6 animate-in fade-in duration-700 pb-10">
+      {/* ── HEADER — same "terminal" treatment as Calendar/Jurnal ── */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between bg-gradient-to-r from-sky-500/10 via-transparent to-transparent p-4 md:p-6 md:min-h-[104px] rounded-3xl border border-sky-500/20 shadow-sm gap-4">
+        <div className="flex items-center gap-4 md:gap-5">
+          <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-sky-500 flex items-center justify-center text-white shadow-lg shadow-sky-500/30 transform -rotate-3 hover:rotate-0 transition-transform duration-300 shrink-0">
+            <User className="w-6 h-6 md:w-7 md:h-7" strokeWidth={2.5} />
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <img src="/logo.png" alt="My Garden" className="w-3 h-3 md:w-4 md:h-4 object-contain drop-shadow-sm" />
+              <h2 className="text-[9px] md:text-[11px] font-black text-sky-500 uppercase tracking-[0.4em] leading-none">My Garden</h2>
+              <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-sky-500 text-white text-[8px] font-black uppercase tracking-tighter shadow-sm">{TIER_LABEL[subscriptionTier]}</span>
+            </div>
+            <h1 className="text-xl md:text-2xl font-black text-main tracking-tight leading-tight">Contul Meu</h1>
+            <p className="text-text-secondary text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em]">Date, parolă și preferințe</p>
+          </div>
         </div>
       </div>
 
-      {/* Profile summary & name editor */}
-      <div className="space-y-4">
-        <div className="stihl-card rounded-lg p-5 bg-bg-card border border-border-color flex items-center gap-4">
-          <div className="w-14 h-14 rounded-full bg-accent-color/10 text-accent-color flex items-center justify-center shrink-0">
-            <User size={26} />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="font-black text-main truncate">{displayName || 'Utilizator'}</p>
-            <p className="text-sm text-text-secondary font-medium truncate">{userProfile.email}</p>
-          </div>
-          <div className="flex flex-col items-end gap-1">
-            <span className="px-2.5 py-1 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-[10px] font-black rounded-full uppercase tracking-widest shrink-0">
-              {TIER_LABEL[subscriptionTier]}
-            </span>
-            {userProfile.subscriptionProduct && userProfile.subscriptionExpiresAt && (
-              <span className="text-[9px] text-text-secondary font-medium">
-                {new Date(userProfile.subscriptionExpiresAt).toLocaleDateString()}
-              </span>
-            )}
-          </div>
-        </div>
-
-        <form onSubmit={handleSaveName} className="stihl-card rounded-lg p-5 bg-bg-card border border-border-color space-y-3">
+      {/* Identity: name, email and password all live in one card. */}
+      <div className="stihl-card rounded-lg p-5 bg-bg-card border border-border-color divide-y divide-border-color">
+        <form onSubmit={handleSaveName} className="space-y-3 pb-5">
           <div className="flex items-center gap-2 text-text-secondary">
             <User size={14} className="text-accent-color" />
             <span className="text-[11px] font-bold uppercase tracking-wider">Cum te cheamă?</span>
@@ -284,7 +273,139 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
           </div>
           <p className="text-[10px] text-text-secondary font-medium">Acest nume va apărea în salutul personalizat de pe dashboard.</p>
         </form>
+
+        <div className="py-5 space-y-2">
+          <div className="flex items-center gap-2 text-text-secondary">
+            <Mail size={14} className="text-accent-color" />
+            <span className="text-[11px] font-bold uppercase tracking-wider">Email</span>
+          </div>
+          <div className="flex items-center justify-between gap-3 bg-bg-main border border-border-color rounded-md px-3 py-2.5">
+            <span className="text-sm font-medium text-main truncate">{userProfile.email}</span>
+            <div className="flex flex-col items-end gap-1 shrink-0">
+              <span className="px-2.5 py-1 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-[9px] font-black rounded-full uppercase tracking-widest">
+                {TIER_LABEL[subscriptionTier]}
+              </span>
+              {userProfile.subscriptionProduct && userProfile.subscriptionExpiresAt && (
+                <span className="text-[9px] text-text-secondary font-medium">
+                  {new Date(userProfile.subscriptionExpiresAt).toLocaleDateString()}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <form onSubmit={handleChangePassword} className="pt-5 space-y-3">
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2 text-text-secondary">
+              <Lock size={14} className="text-accent-color" />
+              <span className="text-[11px] font-bold uppercase tracking-wider">Schimbă Parola</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowPasswords(v => !v)}
+              className="text-text-secondary hover:text-main transition-colors"
+              title={showPasswords ? 'Ascunde' : 'Arată'}
+            >
+              {showPasswords ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
+
+          <input
+            type={showPasswords ? 'text' : 'password'}
+            placeholder="Parola curentă"
+            autoComplete="current-password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            required
+            className="w-full bg-bg-main border border-border-color rounded-md px-3 py-2.5 text-sm font-medium outline-none focus:border-accent-color"
+          />
+          <input
+            type={showPasswords ? 'text' : 'password'}
+            placeholder="Parola nouă"
+            autoComplete="new-password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            required
+            minLength={6}
+            className="w-full bg-bg-main border border-border-color rounded-md px-3 py-2.5 text-sm font-medium outline-none focus:border-accent-color"
+          />
+          <input
+            type={showPasswords ? 'text' : 'password'}
+            placeholder="Confirmă parola nouă"
+            autoComplete="new-password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            minLength={6}
+            className="w-full bg-bg-main border border-border-color rounded-md px-3 py-2.5 text-sm font-medium outline-none focus:border-accent-color"
+          />
+
+          <button
+            type="submit"
+            disabled={isSavingPassword}
+            className="w-full stihl-button py-3 rounded-md font-bold uppercase tracking-wider text-xs text-white shadow-md flex items-center justify-center gap-2 disabled:opacity-60"
+          >
+            {isSavingPassword ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
+            Salvează Parola Nouă
+          </button>
+        </form>
       </div>
+
+      {/* Language */}
+      <div className="stihl-card rounded-lg p-5 bg-bg-card border border-border-color">
+        <div className="flex items-center gap-2 mb-3 text-text-secondary">
+          <Globe size={14} className="text-accent-color" />
+          <span className="text-[11px] font-bold uppercase tracking-wider">Limbă</span>
+        </div>
+        <div className="flex gap-2">
+          {(['ro', 'en'] as const).map(lang => (
+            <button
+              key={lang}
+              onClick={() => handleChangeLanguage(lang)}
+              disabled={isSavingLanguage}
+              className={`flex-1 py-2.5 rounded-md text-xs font-black uppercase tracking-wider transition-all ${
+                currentLang === lang
+                  ? 'bg-accent-color text-white shadow-md'
+                  : 'bg-bg-main border border-border-color text-text-secondary hover:bg-black/5 dark:hover:bg-white/5'
+              }`}
+            >
+              {lang === 'ro' ? 'Română' : 'English'}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Referral program */}
+      {referralCode && (
+        <div className="stihl-card rounded-lg p-5 bg-bg-card border border-border-color space-y-3">
+          <div className="flex items-center gap-2 text-text-secondary">
+            <Share2 size={14} className="text-accent-color" />
+            <span className="text-[11px] font-bold uppercase tracking-wider">Recomandă și Câștigă</span>
+          </div>
+          <p className="text-xs text-text-secondary font-medium">
+            Trimite link-ul tău unui prieten. Când face prima achiziție, primiți amândoi +7 zile PRO gratuit.
+          </p>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              readOnly
+              value={`${window.location.origin}/?ref=${referralCode}`}
+              className="flex-1 min-w-0 bg-bg-main border border-border-color rounded-md px-3 py-2.5 text-xs font-medium outline-none"
+            />
+            <button
+              onClick={handleCopyReferralLink}
+              className="shrink-0 stihl-button px-4 py-2.5 rounded-md font-bold uppercase tracking-wider text-xs text-white shadow-md flex items-center justify-center gap-2"
+            >
+              <Copy size={14} />
+            </button>
+          </div>
+          {(userProfile.referralCount || 0) > 0 && (
+            <p className="text-[11px] font-bold text-accent-color">
+              🎉 {userProfile.referralCount} {userProfile.referralCount === 1 ? 'persoană s-a alăturat' : 'persoane s-au alăturat'} prin linkul tău
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Quick Links — Tools/GardenSetup/Explore live here instead of as
           separate tabs, now that navigation is unified to 5 tabs. */}
@@ -418,119 +539,6 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
           </div>
         </form>
       )}
-
-      {/* Referral program */}
-      {referralCode && (
-        <div className="stihl-card rounded-lg p-5 bg-bg-card border border-border-color space-y-3">
-          <div className="flex items-center gap-2 text-text-secondary">
-            <Share2 size={14} className="text-accent-color" />
-            <span className="text-[11px] font-bold uppercase tracking-wider">Recomandă și Câștigă</span>
-          </div>
-          <p className="text-xs text-text-secondary font-medium">
-            Trimite link-ul tău unui prieten. Când face prima achiziție, primiți amândoi +7 zile PRO gratuit.
-          </p>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              readOnly
-              value={`${window.location.origin}/?ref=${referralCode}`}
-              className="flex-1 min-w-0 bg-bg-main border border-border-color rounded-md px-3 py-2.5 text-xs font-medium outline-none"
-            />
-            <button
-              onClick={handleCopyReferralLink}
-              className="shrink-0 stihl-button px-4 py-2.5 rounded-md font-bold uppercase tracking-wider text-xs text-white shadow-md flex items-center justify-center gap-2"
-            >
-              <Copy size={14} />
-            </button>
-          </div>
-          {(userProfile.referralCount || 0) > 0 && (
-            <p className="text-[11px] font-bold text-accent-color">
-              🎉 {userProfile.referralCount} {userProfile.referralCount === 1 ? 'persoană s-a alăturat' : 'persoane s-au alăturat'} prin linkul tău
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* Language */}
-      <div className="stihl-card rounded-lg p-5 bg-bg-card border border-border-color">
-        <div className="flex items-center gap-2 mb-3 text-text-secondary">
-          <Globe size={14} className="text-accent-color" />
-          <span className="text-[11px] font-bold uppercase tracking-wider">Limbă</span>
-        </div>
-        <div className="flex gap-2">
-          {(['ro', 'en'] as const).map(lang => (
-            <button
-              key={lang}
-              onClick={() => handleChangeLanguage(lang)}
-              disabled={isSavingLanguage}
-              className={`flex-1 py-2.5 rounded-md text-xs font-black uppercase tracking-wider transition-all ${
-                currentLang === lang
-                  ? 'bg-accent-color text-white shadow-md'
-                  : 'bg-bg-main border border-border-color text-text-secondary hover:bg-black/5 dark:hover:bg-white/5'
-              }`}
-            >
-              {lang === 'ro' ? 'Română' : 'English'}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Change password */}
-      <form onSubmit={handleChangePassword} className="stihl-card rounded-lg p-5 bg-bg-card border border-border-color space-y-3">
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center gap-2 text-text-secondary">
-            <Lock size={14} className="text-accent-color" />
-            <span className="text-[11px] font-bold uppercase tracking-wider">Schimbă Parola</span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setShowPasswords(v => !v)}
-            className="text-text-secondary hover:text-main transition-colors"
-            title={showPasswords ? 'Ascunde' : 'Arată'}
-          >
-            {showPasswords ? <EyeOff size={16} /> : <Eye size={16} />}
-          </button>
-        </div>
-
-        <input
-          type={showPasswords ? 'text' : 'password'}
-          placeholder="Parola curentă"
-          autoComplete="current-password"
-          value={currentPassword}
-          onChange={(e) => setCurrentPassword(e.target.value)}
-          required
-          className="w-full bg-bg-main border border-border-color rounded-md px-3 py-2.5 text-sm font-medium outline-none focus:border-accent-color"
-        />
-        <input
-          type={showPasswords ? 'text' : 'password'}
-          placeholder="Parola nouă"
-          autoComplete="new-password"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-          required
-          minLength={6}
-          className="w-full bg-bg-main border border-border-color rounded-md px-3 py-2.5 text-sm font-medium outline-none focus:border-accent-color"
-        />
-        <input
-          type={showPasswords ? 'text' : 'password'}
-          placeholder="Confirmă parola nouă"
-          autoComplete="new-password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          required
-          minLength={6}
-          className="w-full bg-bg-main border border-border-color rounded-md px-3 py-2.5 text-sm font-medium outline-none focus:border-accent-color"
-        />
-
-        <button
-          type="submit"
-          disabled={isSavingPassword}
-          className="w-full stihl-button py-3 rounded-md font-bold uppercase tracking-wider text-xs text-white shadow-md flex items-center justify-center gap-2 disabled:opacity-60"
-        >
-          {isSavingPassword ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
-          Salvează Parola Nouă
-        </button>
-      </form>
 
       {/* Export Data */}
       <div className="stihl-card rounded-lg p-5 bg-bg-card border border-border-color">

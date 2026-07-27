@@ -481,6 +481,35 @@ export const createAd = functions.https.onCall(async (data, context) => {
 });
 
 /**
+ * SuperAdmin: Update an existing advertisement (edit fields, toggle active state)
+ */
+export const updateAd = functions.https.onCall(async (data, context) => {
+    if (!context.auth || context.auth.token.email !== 'dragomirvaleriu@gmail.com') {
+        throw new functions.https.HttpsError('permission-denied', 'Only superadmin can update ads.');
+    }
+
+    const { adId, title, imageUrl, link, company, discountPercent, isActive } = data;
+    if (!adId) {
+        throw new functions.https.HttpsError('invalid-argument', 'adId is required.');
+    }
+
+    const updateFields: Record<string, any> = { updatedAt: admin.firestore.FieldValue.serverTimestamp() };
+    if (title !== undefined) updateFields.title = title;
+    if (imageUrl !== undefined) updateFields.imageUrl = imageUrl;
+    if (link !== undefined) updateFields.link = link;
+    if (company !== undefined) updateFields.company = company;
+    if (discountPercent !== undefined) updateFields.discountPercent = discountPercent;
+    if (isActive !== undefined) updateFields.isActive = isActive;
+
+    try {
+        await db.collection('superadmin').doc('data').collection('ads').doc(adId).update(updateFields);
+        return { success: true };
+    } catch (err: any) {
+        throw new functions.https.HttpsError('internal', 'Failed to update ad: ' + err.message);
+    }
+});
+
+/**
  * SuperAdmin: Update user subscription
  */
 export const updateUserSubscription = functions.https.onCall(async (data, context) => {
@@ -506,6 +535,154 @@ export const updateUserSubscription = functions.https.onCall(async (data, contex
         return { success: true };
     } catch (err: any) {
         throw new functions.https.HttpsError('internal', 'Failed to update subscription: ' + err.message);
+    }
+});
+
+// Every collection a My Garden account can write into, and the field that
+// scopes a document to it. Organization-scoped ones only get swept when the
+// user is the org's sole owner (see isSoleOwner below) — a shared org's
+// content must survive for whoever else is still a member. uid-scoped ones
+// (the services/pf/* tools: zones, equipment, inventory, treatment log,
+// maintenance tasks, marketplace listings, marketplace chat) belong to this
+// person alone regardless of org membership, so they're always swept.
+const ORG_SCOPED_COLLECTIONS = [
+    'clients', 'visits', 'properties', 'service_types', 'products',
+    'garden_tasks', 'garden_journal', 'client_history', 'user_plants',
+    'expertValidations', 'invitations', 'invoices', 'audit_logs', 'leads',
+];
+const UID_SCOPED_COLLECTIONS: Array<{ name: string; field: string }> = [
+    { name: 'pf_zones', field: 'uid' },
+    { name: 'pf_equipment', field: 'uid' },
+    { name: 'pf_products', field: 'uid' },
+    { name: 'pf_treatments', field: 'uid' },
+    { name: 'pf_tasks', field: 'uid' },
+    { name: 'marketplace_items', field: 'sellerId' },
+    { name: 'messages', field: 'senderId' },
+];
+
+async function deleteWhere(collectionName: string, field: string, value: string): Promise<number> {
+    const snap = await db.collection(collectionName).where(field, '==', value).get();
+    if (snap.empty) return 0;
+    // Firestore batches cap at 500 writes; chunk defensively even though no
+    // single My Garden account is likely to ever hit that.
+    const chunks: FirebaseFirestore.QueryDocumentSnapshot[][] = [];
+    for (let i = 0; i < snap.docs.length; i += 400) chunks.push(snap.docs.slice(i, i + 400));
+    for (const chunk of chunks) {
+        const batch = db.batch();
+        chunk.forEach(d => batch.delete(d.ref));
+        await batch.commit();
+    }
+    return snap.size;
+}
+
+/**
+ * SuperAdmin: Permanently delete a user — every collection their My Garden
+ * account could have written to (journal, calendar, garden setup, tool
+ * logs, uploaded photos), their personal garden (if they're its sole
+ * owner), their profile, and their Auth account.
+ *
+ * Every step is try/caught individually and logged rather than left to
+ * bubble up, so one missing/already-gone document can't turn the whole
+ * operation into an opaque "internal" error for the caller — the client
+ * only ever sees a real HttpsError with a message that says what failed.
+ */
+export const deleteUserAccount = functions.https.onCall(async (data, context) => {
+    if (!context.auth || context.auth.token.email !== 'dragomirvaleriu@gmail.com') {
+        throw new functions.https.HttpsError('permission-denied', 'Only superadmin can delete users.');
+    }
+
+    const { userId } = data;
+    if (!userId || typeof userId !== 'string') {
+        throw new functions.https.HttpsError('invalid-argument', 'userId is required.');
+    }
+    if (userId === context.auth.uid) {
+        throw new functions.https.HttpsError('failed-precondition', 'You cannot delete your own superadmin account.');
+    }
+
+    const deletedCounts: Record<string, number> = {};
+
+    try {
+        const userSnap = await db.collection('users').doc(userId).get();
+        const orgId: string | undefined = userSnap.data()?.organizationId;
+        let isSoleOwner = false;
+
+        if (orgId) {
+            try {
+                const orgSnap = await db.collection('organizations').doc(orgId).get();
+                isSoleOwner = orgSnap.exists && orgSnap.data()?.adminUid === userId;
+            } catch (err) {
+                console.error(`deleteUserAccount: failed to read organization ${orgId} for ${userId} (continuing):`, err);
+            }
+        }
+
+        if (orgId && isSoleOwner) {
+            for (const collectionName of ORG_SCOPED_COLLECTIONS) {
+                try {
+                    deletedCounts[collectionName] = await deleteWhere(collectionName, 'organizationId', orgId);
+                } catch (err) {
+                    console.error(`deleteUserAccount: failed to sweep ${collectionName} for org ${orgId} (continuing):`, err);
+                }
+            }
+
+            try {
+                await db.collection('organizations').doc(orgId).delete();
+            } catch (err) {
+                console.error(`deleteUserAccount: failed to remove organization ${orgId} for ${userId} (continuing):`, err);
+            }
+        }
+
+        for (const { name, field } of UID_SCOPED_COLLECTIONS) {
+            try {
+                deletedCounts[name] = await deleteWhere(name, field, userId);
+            } catch (err) {
+                console.error(`deleteUserAccount: failed to sweep ${name} for ${userId} (continuing):`, err);
+            }
+        }
+
+        try {
+            const notifsSnap = await db.collection('users').doc(userId).collection('notifications').get();
+            await Promise.all(notifsSnap.docs.map(d => d.ref.delete()));
+            deletedCounts['notifications'] = notifsSnap.size;
+        } catch (err) {
+            console.error(`deleteUserAccount: failed to clear notifications for ${userId} (continuing):`, err);
+        }
+
+        // Uploaded photos live under uploads/{organizationId}/{uid}/... — the
+        // entire prefix is this user's, whether or not they own the org.
+        if (orgId) {
+            try {
+                const bucket = admin.storage().bucket();
+                await bucket.deleteFiles({ prefix: `uploads/${orgId}/${userId}/` });
+            } catch (err) {
+                console.error(`deleteUserAccount: failed to remove storage files for ${userId} (continuing):`, err);
+            }
+        }
+
+        try {
+            await db.collection('user_settings').doc(userId).delete();
+        } catch (err) {
+            console.error(`deleteUserAccount: failed to remove user_settings for ${userId} (continuing):`, err);
+        }
+
+        try {
+            await db.collection('users').doc(userId).delete();
+        } catch (err) {
+            console.error(`deleteUserAccount: failed to remove users/${userId} (continuing):`, err);
+        }
+
+        try {
+            await admin.auth().deleteUser(userId);
+        } catch (err: any) {
+            // A missing Auth record (already deleted, or a Firestore-only test
+            // profile) shouldn't fail the whole cleanup — the profile is gone either way.
+            if (err?.code !== 'auth/user-not-found') {
+                throw err;
+            }
+        }
+
+        return { success: true, deletedOrganization: !!(orgId && isSoleOwner), deletedCounts };
+    } catch (err: any) {
+        throw new functions.https.HttpsError('internal', 'Failed to delete user: ' + (err?.message || String(err)));
     }
 });
 

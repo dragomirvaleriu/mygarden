@@ -1100,5 +1100,9 @@
   "Show password": "Arată parola",
   "At least 6 characters.": "Minimum 6 caractere.",
   "Confirm Password": "Confirmă Parola",
-  "Forgot password?": "Ai uitat parola?"
+  "Forgot password?": "Ai uitat parola?",
+  "Your Name": "Numele Tău",
+  "Ex: Ion, Maria...": "Ex: Ion, Maria...",
+  "Enter your name to finish setup.": "Introdu numele tău pentru a finaliza setup-ul.",
+  "Please enter your name.": "Te rugăm să introduci numele tău."
 }
