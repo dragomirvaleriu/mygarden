@@ -459,7 +459,7 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
   const progressPct = totalCount > 0 ? Math.round((readCount / totalCount) * 100) : 0;
 
   return (
-    <div className="max-w-6xl mx-auto pb-20 animate-in fade-in duration-500">
+    <div className="p-4 md:p-6 max-w-7xl mx-auto pb-20 animate-in fade-in duration-500">
 
       {/* ── Hero Header ── */}
       <div className="relative overflow-hidden rounded-3xl mb-8 p-8 md:p-10 border border-emerald-500/20 dark:border-none shadow-xl shadow-emerald-500/5 dark:shadow-none">
