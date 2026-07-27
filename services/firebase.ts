@@ -22,21 +22,29 @@ import {
   arrayUnion,
   Timestamp,
   initializeFirestore,
+  memoryLocalCache,
   persistentLocalCache,
   persistentMultipleTabManager,
   persistentSingleTabManager
 } from "firebase/firestore";
-import { 
-  getAuth, 
-  signInWithEmailAndPassword, 
+import {
+  getAuth,
+  initializeAuth,
+  browserLocalPersistence,
+  indexedDBLocalPersistence,
+  inMemoryPersistence,
+  browserPopupRedirectResolver,
+  signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  signOut, 
+  sendPasswordResetEmail,
+  signOut,
   onAuthStateChanged,
   signInWithPopup,
   GoogleAuthProvider,
   updatePassword,
   reauthenticateWithCredential,
-  EmailAuthProvider
+  EmailAuthProvider,
+  type Auth
 } from "firebase/auth";
 import {
   getStorage,
@@ -59,18 +67,123 @@ import { Capacitor } from '@capacitor/core';
 
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
+// ─────────────────────────────────────────────────────────────
+// Firestore cache selection
+//
+// With persistence enabled every write is committed to IndexedDB *before* it
+// is sent, so a broken IndexedDB doesn't merely cost us the offline cache — it
+// fails the write itself:
+//   "Failed to persist write: IndexedDbTransactionError [code=unavailable]:
+//    IndexedDB transaction 'Locally write mutations' failed: AbortError"
+// iOS Safari aborts IndexedDB transactions under memory pressure (many open
+// tabs, low battery), in Private Browsing, and inside the in-app WKWebView
+// browsers (WhatsApp, Instagram, Facebook). Offline caching is a nice-to-have;
+// being able to save is not. So: skip persistence where it can't be trusted,
+// remember that decision across reloads, and recover if it fails anyway.
+// ─────────────────────────────────────────────────────────────
+const MEMORY_CACHE_KEY = 'mg_firestore_memory_cache';
+const RECOVERY_ATTEMPT_KEY = 'mg_firestore_cache_recovery';
+
+function indexedDbAvailable(): boolean {
+  try {
+    // Sandboxed iframes and locked-down WebViews throw on property access
+    // rather than reporting the API as undefined.
+    return typeof indexedDB !== 'undefined' && indexedDB !== null;
+  } catch {
+    return false;
+  }
+}
+
+function memoryCacheForced(): boolean {
+  try {
+    return localStorage.getItem(MEMORY_CACHE_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+/** Firestore errors that mean "the local IndexedDB cache is unusable". */
+export function isPersistenceError(error: unknown): boolean {
+  const message = (error instanceof Error ? error.message : String(error ?? '')).toLowerCase();
+  return message.includes('indexeddbtransactionerror')
+    || message.includes('failed to persist write')
+    || message.includes('indexeddb transaction')
+    || message.includes('exclusive access to the persistence layer');
+}
+
+/**
+ * Drop back to the in-memory cache and tell the caller to reload. Returns
+ * false if we already tried this in the current session, so a device that
+ * keeps failing can never be caught in a reload loop.
+ */
+export function recoverFromPersistenceError(): boolean {
+  try {
+    if (sessionStorage.getItem(RECOVERY_ATTEMPT_KEY) === '1') return false;
+    sessionStorage.setItem(RECOVERY_ATTEMPT_KEY, '1');
+    localStorage.setItem(MEMORY_CACHE_KEY, '1');
+  } catch {
+    // No storage at all (hard Private Browsing) — a reload would just repeat
+    // the same failure, so don't promise the caller a recovery.
+    return false;
+  }
+  // Best effort: drop the corrupted cache so the next boot starts clean. The
+  // request may stay blocked behind our own open connection, and the exact
+  // internal name has shifted across SDK versions, so we try the known
+  // patterns and swallow failures either way — we reload regardless, and the
+  // memory-cache flag means we never touch IndexedDB again after that.
+  const dbId = firebaseConfig.firestoreDatabaseId || '(default)';
+  for (const name of [
+    `firestore/[DEFAULT]/${firebaseConfig.projectId}.${dbId}/main`,
+    `firestore/[DEFAULT]/${firebaseConfig.projectId}/main`
+  ]) {
+    try { indexedDB.deleteDatabase(name); } catch { /* nothing we can do */ }
+  }
+  return true;
+}
+
+const usePersistentCache = !import.meta.env.DEV && indexedDbAvailable() && !memoryCacheForced();
+
 // In dev, Vite HMR re-runs this module without releasing the previous IndexedDB
 // persistence lock, which is what causes the b815/ca9 internal assertion crashes.
-// Persistent multi-tab cache is only safe to enable in production builds.
-const db = import.meta.env.DEV
-  ? initializeFirestore(app, {}, firebaseConfig.firestoreDatabaseId)
-  : initializeFirestore(app, {
+// Persistent cache is only safe to enable in production builds.
+const db = usePersistentCache
+  ? initializeFirestore(app, {
       localCache: persistentLocalCache({
-        tabManager: (Capacitor.isNativePlatform() || isMobile) ? persistentSingleTabManager({ forceOwnership: false }) : persistentMultipleTabManager()
+        // forceOwnership on mobile: a phone with a stale duplicate tab of the
+        // app would otherwise never get the lease, and every write would fail
+        // with "failed to obtain exclusive access".
+        tabManager: (Capacitor.isNativePlatform() || isMobile)
+          ? persistentSingleTabManager({ forceOwnership: true })
+          : persistentMultipleTabManager()
       })
-    }, firebaseConfig.firestoreDatabaseId);
+    }, firebaseConfig.firestoreDatabaseId)
+  : initializeFirestore(app, { localCache: memoryLocalCache() }, firebaseConfig.firestoreDatabaseId);
 
-const auth = getAuth(app);
+console.log(`Firebase: Firestore cache = ${usePersistentCache ? 'persistent (IndexedDB)' : 'memory'}`);
+
+// Safety net for writes anywhere else in the app (journal, calendar, settings…):
+// if the cache blows up we switch to memory mode and reload once.
+if (typeof window !== 'undefined' && usePersistentCache) {
+  window.addEventListener('unhandledrejection', (event) => {
+    if (!isPersistenceError(event.reason)) return;
+    console.warn('Firestore: local cache unusable, switching to in-memory cache', event.reason);
+    if (recoverFromPersistenceError()) window.location.reload();
+  });
+}
+
+// Auth session storage: localStorage first. iOS Safari evicts IndexedDB far
+// more readily than localStorage, and a session lost mid-onboarding is what
+// makes people report "login is broken".
+let auth: Auth;
+try {
+  auth = initializeAuth(app, {
+    persistence: [browserLocalPersistence, indexedDBLocalPersistence, inMemoryPersistence],
+    popupRedirectResolver: browserPopupRedirectResolver
+  });
+} catch {
+  // Already initialised (HMR, or a duplicate import) — reuse that instance.
+  auth = getAuth(app);
+}
 const storage = getStorage(app);
 const functionsInstance = getFunctions(app);
 console.log("Firebase: Services initialized");
@@ -205,10 +318,11 @@ export {
   getDocFromServer,
   serverTimestamp, 
   arrayUnion,
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
-  signOut, 
-  onAuthStateChanged, 
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+  signOut,
+  onAuthStateChanged,
   signInWithPopup,
   GoogleAuthProvider,
   Timestamp,

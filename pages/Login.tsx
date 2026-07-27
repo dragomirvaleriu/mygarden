@@ -1,23 +1,26 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { 
-  auth, 
-  db, 
-  signInWithEmailAndPassword, 
+import {
+  auth,
+  db,
+  signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  doc, 
-  getDoc, 
+  sendPasswordResetEmail,
+  doc,
+  getDoc,
   getDocFromServer,
-  setDoc, 
-  collection, 
+  setDoc,
+  collection,
   serverTimestamp,
   logout,
   query,
   where,
   getDocs,
   updateDoc,
-  Timestamp
+  Timestamp,
+  isPersistenceError,
+  recoverFromPersistenceError
 } from '../services/firebase';
 import { Eye, EyeOff, Loader2, Lock, Mail, Building2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { UserProfile } from '../src/types';
@@ -39,6 +42,12 @@ const fromBase64 = (str: string) => {
   }
 };
 
+// Set when a write dies on a broken IndexedDB cache: the page reloads into
+// memory-cache mode and picks the setup back up where it left off.
+const RESUME_SETUP_KEY = 'mg_resume_setup';
+
+const MIN_PASSWORD_LENGTH = 6;
+
 interface Props {
   onOnboarded: (profile: UserProfile) => void;
 }
@@ -48,6 +57,7 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
   const [isRegister, setIsRegister] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [firmName, setFirmName] = useState('');
   // My Garden is homeowner-only, so new accounts are always PF (see src/config/appVariant).
@@ -55,17 +65,68 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
   const [rememberMe, setRememberMe] = useState(true);
   
   const [error, setError] = useState('');
+  const [info, setInfo] = useState('');
   const [loading, setLoading] = useState(false);
   const [statusMsg, setStatusMsg] = useState('');
   const [isAlreadyLoggedIn, setIsAlreadyLoggedIn] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [inviteData, setInviteData] = useState<{ organizationId: string; role: string; code: string } | null>(null);
-  
+
   const emailRef = useRef<HTMLInputElement>(null);
   const passRef = useRef<HTMLInputElement>(null);
   // Captured once on mount, before any hash-routing navigation could strip
   // the query string — used to attribute a new signup to whoever shared the link.
   const referredByRef = useRef<string | null>(new URLSearchParams(window.location.search).get('ref'));
+  // The auth listener and a manual submit both resolve the profile. Without
+  // this guard they can race and create two organizations for one account.
+  const busyRef = useRef(false);
+  const onboardedRef = useRef(false);
+
+  const finishOnboarding = (profile: UserProfile) => {
+    if (onboardedRef.current) return;
+    onboardedRef.current = true;
+    onOnboarded(profile);
+  };
+
+  /**
+   * Server-first, cache-fallback profile read. A forced server read alone
+   * turns a flaky mobile connection into "profile not found", which used to
+   * push returning users into the registration form.
+   */
+  const readProfile = async (uid: string) => {
+    try {
+      return await getDocFromServer(doc(db, 'users', uid));
+    } catch (e) {
+      console.warn("Profile server read failed, falling back to cache", e);
+      return await getDoc(doc(db, 'users', uid));
+    }
+  };
+
+  const describeError = (err: any): string => {
+    if (isPersistenceError(err)) {
+      return t("Your browser blocked local storage. Reload the page and try again, or close some tabs.");
+    }
+    switch (err?.code) {
+      case 'auth/email-already-in-use':
+        return t("Email already in use. Try logging in.");
+      case 'auth/invalid-credential':
+      case 'auth/wrong-password':
+      case 'auth/user-not-found':
+        return t("Incorrect email or password.");
+      case 'auth/invalid-email':
+        return t("That email address is not valid.");
+      case 'auth/weak-password':
+        return t("Password must be at least 6 characters.");
+      case 'auth/too-many-requests':
+        return t("Too many attempts. Please try again in a few minutes.");
+      case 'auth/network-request-failed':
+        return t("Connection problem. Check your internet and try again.");
+      case 'auth/user-disabled':
+        return t("This account has been disabled.");
+      default:
+        return err?.message || t("Something went wrong. Please try again.");
+    }
+  };
 
   const attemptServerRecovery = async (firebaseUser: { getIdToken: () => Promise<string> }) => {
     try {
@@ -78,9 +139,15 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
           'Authorization': `Bearer ${idToken}`
         }
       });
+      // This endpoint only exists on the local express server; on the hosted
+      // build it 404s to the SPA shell. Parsing that as JSON throws and buries
+      // the real flow in noise, so bail out quietly instead.
+      if (!res.ok || !res.headers.get('content-type')?.includes('application/json')) {
+        return false;
+      }
       const data = await res.json();
       if (data.recovered && data.profile && data.profile.organizationId) {
-        onOnboarded(data.profile);
+        finishOnboarding(data.profile);
         return true;
       }
     } catch (e) {
@@ -118,7 +185,7 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
     try {
       const res = await fetch(`/api/invite-lookup?code=${encodeURIComponent(code)}`);
 
-      if (res.ok) {
+      if (res.ok && res.headers.get('content-type')?.includes('application/json')) {
         const data = await res.json();
 
         // Check status in JS
@@ -146,27 +213,58 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
     }
   };
 
+  /**
+   * The account exists in Auth but has no usable profile yet. Normally we ask
+   * the user to press "Finalize setup"; if we got here right after recovering
+   * from a broken local cache, carry on by ourselves so the reload is invisible.
+   */
+  const promptOrResumeSetup = async (user: { uid: string; email: string | null }) => {
+    setIsRegister(true);
+
+    let resume = false;
+    try {
+      resume = sessionStorage.getItem(RESUME_SETUP_KEY) === '1';
+      if (resume) sessionStorage.removeItem(RESUME_SETUP_KEY);
+    } catch { /* no session storage — fall through to the manual prompt */ }
+
+    // A homeowner account needs no further input from the user, so an
+    // interrupted setup can finish on its own.
+    if (resume && accountType === 'PF') {
+      await completeOnboarding(user.uid, user.email || '');
+      return;
+    }
+
+    setStatusMsg(isHomeownerApp
+      ? t("Account detected. Finish setting up your garden.")
+      : t("Account detected. Finish setting up your company."));
+  };
+
   useEffect(() => {
     const unsub = auth.onAuthStateChanged(async (user) => {
       if (user) {
         console.log("Auth state changed: user is logged in", user.uid);
         setIsAlreadyLoggedIn(true);
+
+        // A manual login/registration is already resolving this same user —
+        // let it finish rather than racing it.
+        if (busyRef.current) {
+          setCheckingAuth(false);
+          return;
+        }
+
         setStatusMsg(t("Active session detected. Checking profile..."));
 
         try {
-          const snap = await getDocFromServer(doc(db, 'users', user.uid));
+          const snap = await readProfile(user.uid);
           if (snap.exists()) {
             const data = snap.data() as UserProfile;
             console.log("Profile found in auth state:", data);
             if (data.organizationId) {
-              onOnboarded(data);
+              finishOnboarding(data);
             } else {
               console.log("Profile missing organizationId in auth state, attempting recovery");
               const recovered = await attemptServerRecovery(user);
-              if (!recovered) {
-                setStatusMsg("Cont detectat. Finalizează configurarea firmei.");
-                setIsRegister(true);
-              }
+              if (!recovered) await promptOrResumeSetup(user);
             }
           } else {
             console.log("Profile not found in auth state, checking organizations for adminUid:", user.uid);
@@ -185,30 +283,25 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
                 theme: 'dark'
               };
               await setDoc(doc(db, 'users', user.uid), profile);
-              onOnboarded(profile);
+              finishOnboarding(profile);
             } else {
               console.log("No organization found in auth state, attempting server recovery");
               const recovered = await attemptServerRecovery(user);
-              if (!recovered) {
-                setStatusMsg("Cont detectat. Finalizează configurarea firmei.");
-                setIsRegister(true); 
-              }
+              if (!recovered) await promptOrResumeSetup(user);
             }
           }
         } catch (e) {
           console.error("Firestore error:", e);
-          setIsRegister(true);
-          setStatusMsg("Eroare la verificarea profilului.");
+          setStatusMsg('');
+          setError(describeError(e));
+          // Keep the "Finalize setup" button available so the check can be
+          // retried; don't strand them on a dead screen.
         }
         setCheckingAuth(false);
       } else {
-        // Auto-login fallback if session was lost (e.g. iframe restrictions)
-        const savedEmail = localStorage.getItem('ls_email');
-        const remember = localStorage.getItem('ls_remember') !== 'false';
-        
-        // Firebase Auth manages session persistence natively
-        // No need to store/restore passwords
-        setCheckingAuth(false);
+        // Signed out. Firebase Auth restores the session by itself, so there
+        // is nothing to recover here — just show the form.
+        setIsAlreadyLoggedIn(false);
         setCheckingAuth(false);
       }
     });
@@ -229,21 +322,33 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
 
   const completeOnboarding = async (uid: string, userEmail: string) => {
     if (!inviteData && !firmName.trim() && accountType === 'PJ') {
-      setError("Introdu numele firmei pentru a finaliza setup-ul.");
+      setError(t("Enter the company name to finish setup."));
       return;
     }
-    
+
+    busyRef.current = true;
+    setError('');
     setLoading(true);
-    setStatusMsg(inviteData ? t("Finalizing invitation...") : t("Configuring company..."));
+    setStatusMsg(inviteData
+      ? t("Finalizing invitation...")
+      : isHomeownerApp ? t("Setting up your garden...") : t("Configuring company..."));
     try {
       let orgId = inviteData?.organizationId;
+
+      if (!orgId) {
+        // An earlier attempt may have created the organization and then failed
+        // on the profile write. Reuse it instead of leaving orphans behind and
+        // handing the user a second, empty garden.
+        const existing = await getDocs(query(collection(db, 'organizations'), where('adminUid', '==', uid)));
+        if (!existing.empty) orgId = existing.docs[0].id;
+      }
 
       if (!orgId) {
         const orgRef = doc(collection(db, 'organizations'));
         orgId = orgRef.id;
 
         const orgName = accountType === 'PF' ? (firmName || t('My Garden')) : firmName;
-        
+
         // Calculate 14 days PRO trial
         const trialExpires = new Date();
         trialExpires.setDate(trialExpires.getDate() + 14);
@@ -285,30 +390,59 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
       }
 
       saveCredentials();
-      onOnboarded(profile);
+      finishOnboarding(profile);
     } catch (err: any) {
-      setError("Eroare: " + err.message);
+      console.error("Onboarding failed:", err);
+
+      // The local cache died mid-write (the classic iOS Safari
+      // IndexedDbTransactionError). Switch that off and reload: the org we may
+      // have already created is picked up again above, so this is a clean retry.
+      if (isPersistenceError(err) && recoverFromPersistenceError()) {
+        try { sessionStorage.setItem(RESUME_SETUP_KEY, '1'); } catch { /* best effort */ }
+        setStatusMsg(t("Optimizing for your device..."));
+        window.location.reload();
+        return;
+      }
+
+      setStatusMsg('');
+      setError(describeError(err));
     } finally {
+      busyRef.current = false;
       setLoading(false);
     }
   };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
     setError('');
+    setInfo('');
     const trimmedEmail = email.trim().toLowerCase();
 
-    try {
-      if (auth.currentUser) {
-        await completeOnboarding(auth.currentUser.uid, auth.currentUser.email || trimmedEmail);
-        return;
-      }
-    } catch (err: any) {
-      setError(t("Error finalizing setup") + ": " + err.message);
-      setLoading(false);
+    // Already signed in with an unfinished account: the only thing left to do
+    // is finish the setup. completeOnboarding reports its own errors.
+    if (auth.currentUser) {
+      await completeOnboarding(auth.currentUser.uid, auth.currentUser.email || trimmedEmail);
       return;
     }
 
+    if (!trimmedEmail || !password) {
+      setError(t("Enter your email and password."));
+      return;
+    }
+
+    if (isRegister) {
+      if (password.length < MIN_PASSWORD_LENGTH) {
+        setError(t("Password must be at least 6 characters."));
+        return;
+      }
+      if (password !== confirmPassword) {
+        setError(t("The passwords do not match."));
+        return;
+      }
+    }
+
+    busyRef.current = true;
     setLoading(true);
     try {
       if (isRegister) {
@@ -318,19 +452,17 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
         const cred = await signInWithEmailAndPassword(auth, trimmedEmail, password);
         console.log("Login successful, uid:", cred.user.uid);
         saveCredentials();
-        const profileSnap = await getDocFromServer(doc(db, 'users', cred.user.uid));
+        setStatusMsg(t("Active session detected. Checking profile..."));
+        const profileSnap = await readProfile(cred.user.uid);
         if (profileSnap.exists()) {
           const data = profileSnap.data() as UserProfile;
           console.log("Profile found:", data);
           if (data.organizationId) {
-            onOnboarded(data);
+            finishOnboarding(data);
           } else {
             console.log("Profile missing organizationId, attempting recovery");
             const recovered = await attemptServerRecovery(cred.user);
-            if (!recovered) {
-              setIsRegister(true);
-              setStatusMsg("Autentificare reușită. Introdu numele firmei.");
-            }
+            if (!recovered) await promptOrResumeSetup(cred.user);
           }
         } else {
           console.log("Profile not found, checking organizations for adminUid:", cred.user.uid);
@@ -349,25 +481,59 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
               theme: 'dark'
             };
             await setDoc(doc(db, 'users', cred.user.uid), profile);
-            onOnboarded(profile);
+            finishOnboarding(profile);
           } else {
             console.log("No organization found, attempting server recovery");
             const recovered = await attemptServerRecovery(cred.user);
-            if (!recovered) {
-              setIsRegister(true);
-              setStatusMsg("Autentificare reușită. Introdu numele firmei.");
-            }
+            if (!recovered) await promptOrResumeSetup(cred.user);
           }
         }
       }
     } catch (err: any) {
+      console.error("Auth failed:", err);
+      setStatusMsg('');
+
+      if (isPersistenceError(err) && recoverFromPersistenceError()) {
+        try { sessionStorage.setItem(RESUME_SETUP_KEY, '1'); } catch { /* best effort */ }
+        setStatusMsg(t("Optimizing for your device..."));
+        window.location.reload();
+        return;
+      }
+
       if (err.code === 'auth/email-already-in-use') {
-        setError(t("Email already in use. Try logging in."));
+        // Send them to the login form with the email they already typed.
         setIsRegister(false);
-      } else if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
-        setError(t("Incorrect email or password."));
+        setConfirmPassword('');
+      }
+      setError(describeError(err));
+    } finally {
+      busyRef.current = false;
+      setLoading(false);
+    }
+  };
+
+  const handlePasswordReset = async () => {
+    const trimmedEmail = email.trim().toLowerCase();
+    setError('');
+    setInfo('');
+    if (!trimmedEmail) {
+      setError(t("Enter your email address first, then tap 'Forgot password?'."));
+      emailRef.current?.focus();
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await sendPasswordResetEmail(auth, trimmedEmail);
+      // Deliberately the same message whether or not the account exists, so
+      // this can't be used to probe which emails are registered.
+      setInfo(t("If an account exists for this address, a reset link is on its way. Check your spam folder too."));
+    } catch (err: any) {
+      console.error("Password reset failed:", err);
+      if (err?.code === 'auth/user-not-found') {
+        setInfo(t("If an account exists for this address, a reset link is on its way. Check your spam folder too."));
       } else {
-        setError(err.message);
+        setError(describeError(err));
       }
     } finally {
       setLoading(false);
@@ -418,7 +584,14 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
             </div>
           )}
 
-          {statusMsg && !error && (
+          {info && !error && (
+            <div className="p-4 bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 text-xs rounded-md flex items-center gap-3 font-bold">
+              <CheckCircle2 size={16} className="shrink-0" />
+              <span>{info}</span>
+            </div>
+          )}
+
+          {statusMsg && !error && !info && (
             <div className="p-4 bg-accent-color/10 border border-accent-color/20 text-accent-color text-xs rounded-md flex items-center gap-3 font-bold animate-pulse">
               <Loader2 size={16} className="animate-spin shrink-0" />
               <span>{statusMsg}</span>
@@ -432,14 +605,21 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
                   <Mail size={10} />
                   {t('User Email')}
                 </label>
-                <input 
-                  type="email" 
+                <input
+                  ref={emailRef}
+                  type="email"
                   name="email"
                   autoComplete="username"
-                  required 
-                  className="w-full bg-bg-main rounded-md px-4 py-3 outline-none text-main font-bold border border-border-color focus:border-accent-color transition-all" 
-                  value={email} 
-                  onChange={e => setEmail(e.target.value)} 
+                  // Without these, iOS capitalises and autocorrects the first
+                  // word of the address and the sign-in silently fails.
+                  inputMode="email"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  required
+                  className="w-full bg-bg-main rounded-md px-4 py-3 outline-none text-main font-bold border border-border-color focus:border-accent-color transition-all"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
                 />
               </div>
 
@@ -449,34 +629,79 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
                   {t('Password')}
                 </label>
                 <div className="relative">
-                  <input 
-                    type={showPassword ? "text" : "password"} 
+                  <input
+                    ref={passRef}
+                    type={showPassword ? "text" : "password"}
                     name="password"
-                    autoComplete="current-password"
-                    required 
-                    className="w-full bg-bg-main rounded-md px-4 py-3 outline-none text-main font-bold border border-border-color focus:border-accent-color transition-all pr-12" 
-                    value={password} 
-                    onChange={e => setPassword(e.target.value)} 
+                    autoComplete={isRegister ? "new-password" : "current-password"}
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    required
+                    minLength={isRegister ? MIN_PASSWORD_LENGTH : undefined}
+                    className="w-full bg-bg-main rounded-md px-4 py-3 outline-none text-main font-bold border border-border-color focus:border-accent-color transition-all pr-12"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? t('Hide password') : t('Show password')}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-accent-color transition-colors"
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
+                {isRegister && (
+                  <p className="text-[10px] font-bold text-text-secondary ml-1 pt-1">
+                    {t("At least 6 characters.")}
+                  </p>
+                )}
               </div>
 
-              <div className="flex items-center gap-3 px-1">
-                <input 
-                  type="checkbox" 
-                  id="remember"
-                  className="w-4 h-4 rounded border-border-color bg-bg-main text-accent-color focus:ring-accent-color"
-                  checked={rememberMe}
-                  onChange={e => setRememberMe(e.target.checked)}
-                />
-                <label htmlFor="remember" className="text-[11px] font-bold text-text-secondary uppercase tracking-wider cursor-pointer select-none">{t('Remember me')}</label>
+              {isRegister && (
+                <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
+                  <label className="text-[11px] font-bold text-text-secondary uppercase tracking-wider ml-1 flex items-center gap-2">
+                    <Lock size={10} />
+                    {t('Confirm Password')}
+                  </label>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="confirmPassword"
+                    autoComplete="new-password"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    required
+                    className="w-full bg-bg-main rounded-md px-4 py-3 outline-none text-main font-bold border border-border-color focus:border-accent-color transition-all"
+                    value={confirmPassword}
+                    onChange={e => setConfirmPassword(e.target.value)}
+                  />
+                </div>
+              )}
+
+              <div className="flex items-center justify-between gap-3 px-1">
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    id="remember"
+                    className="w-4 h-4 rounded border-border-color bg-bg-main text-accent-color focus:ring-accent-color"
+                    checked={rememberMe}
+                    onChange={e => setRememberMe(e.target.checked)}
+                  />
+                  <label htmlFor="remember" className="text-[11px] font-bold text-text-secondary uppercase tracking-wider cursor-pointer select-none">{t('Remember me')}</label>
+                </div>
+
+                {!isRegister && (
+                  <button
+                    type="button"
+                    onClick={handlePasswordReset}
+                    disabled={loading}
+                    className="text-[11px] font-bold text-accent-color uppercase tracking-wider hover:underline disabled:opacity-50"
+                  >
+                    {t('Forgot password?')}
+                  </button>
+                )}
               </div>
             </>
           ) : null}
@@ -506,7 +731,7 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
             </div>
           )}
 
-          {(isRegister || (isAlreadyLoggedIn && !statusMsg.includes("Se verifică"))) && !inviteData && accountType === 'PJ' && (
+          {(isRegister || isAlreadyLoggedIn) && !inviteData && accountType === 'PJ' && (
             <div className="space-y-2 animate-in slide-in-from-top-4 duration-500 pt-2 border-t border-border-color">
               <label className="text-[11px] font-bold text-accent-color uppercase tracking-wider ml-1 flex items-center gap-2">
                 <Building2 size={10} />
@@ -541,7 +766,7 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
 
             {!isAlreadyLoggedIn ? (
               <div className="flex flex-col gap-2 pt-4 text-center">
-                <button type="button" onClick={() => { setIsRegister(!isRegister); setError(''); }} className="text-[11px] font-bold text-text-secondary uppercase tracking-wider hover:text-main transition-colors py-2">
+                <button type="button" onClick={() => { setIsRegister(!isRegister); setError(''); setInfo(''); setStatusMsg(''); setConfirmPassword(''); }} className="text-[11px] font-bold text-text-secondary uppercase tracking-wider hover:text-main transition-colors py-2">
                   {isRegister ? t('Already have an account? Login') : (isHomeownerApp ? t('New here? Create account') : t('New company? Register'))}
                 </button>
               </div>
