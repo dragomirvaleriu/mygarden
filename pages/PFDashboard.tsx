@@ -319,7 +319,7 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
   }, [properties]);
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 pb-24">
+    <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6 pb-24">
       {/* ── COMPACT HEADER: greeting + date + expert toggle ── */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}

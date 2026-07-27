@@ -18,7 +18,8 @@ import {
   Search,
   Gift,
   Copy,
-  Share2
+  Share2,
+  Phone
 } from 'lucide-react';
 import { Card } from '../components/ui/primitives';
 import {
@@ -51,7 +52,9 @@ const TIER_LABEL: Record<Props['subscriptionTier'], string> = {
 const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptionTier }) => {
   const { t, i18n } = useTranslation();
   const [displayName, setDisplayName] = useState(userProfile.displayName || '');
+  const [phone, setPhone] = useState(userProfile.phoneNumber || '');
   const [isSavingName, setIsSavingName] = useState(false);
+  const [isSavingPhone, setIsSavingPhone] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -94,6 +97,20 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
       toast.error(err.message || t('Error'));
     } finally {
       setIsSavingName(false);
+    }
+  };
+
+  const handleSavePhone = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isSavingPhone) return;
+    setIsSavingPhone(true);
+    try {
+      await updateDoc(doc(db, 'users', userProfile.uid), { phoneNumber: phone.trim() });
+      toast.success('Telefon actualizat cu succes!');
+    } catch (err: any) {
+      toast.error(err.message || t('Error'));
+    } finally {
+      setIsSavingPhone(false);
     }
   };
 
@@ -198,6 +215,7 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
         profile: {
           email: userProfile.email,
           displayName: userProfile.displayName,
+          phoneNumber: userProfile.phoneNumber,
           language: userProfile.language,
           role: userProfile.role,
           level: userProfile.level,
@@ -229,7 +247,7 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
   const currentLang = (userProfile.language || 'ro') as 'ro' | 'en';
 
   return (
-    <div className="p-4 md:p-6 max-w-2xl mx-auto space-y-6 animate-in fade-in duration-700 pb-10">
+    <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6 animate-in fade-in duration-700 pb-10">
       {/* ── HEADER — same "terminal" treatment as Calendar/Jurnal ── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between bg-gradient-to-r from-sky-500/10 via-transparent to-transparent p-4 md:p-6 md:min-h-[104px] rounded-3xl border border-sky-500/20 shadow-sm gap-4">
         <div className="flex items-center gap-4 md:gap-5">
@@ -293,6 +311,30 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
             </div>
           </div>
         </div>
+
+        <form onSubmit={handleSavePhone} className="py-5 space-y-3">
+          <div className="flex items-center gap-2 text-text-secondary">
+            <Phone size={14} className="text-accent-color" />
+            <span className="text-[11px] font-bold uppercase tracking-wider">Telefon</span>
+          </div>
+          <div className="flex gap-2">
+            <input
+              type="tel"
+              placeholder="+40 7XX XXX XXX"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="flex-1 min-w-0 bg-bg-main border border-border-color rounded-md px-3 py-2.5 text-sm font-medium outline-none focus:border-accent-color"
+            />
+            <button
+              type="submit"
+              disabled={isSavingPhone}
+              className="shrink-0 stihl-button px-5 py-2.5 rounded-md font-bold uppercase tracking-wider text-xs text-white shadow-md flex items-center justify-center gap-2 disabled:opacity-60"
+            >
+              {isSavingPhone ? <Loader2 size={16} className="animate-spin" /> : 'Salvează'}
+            </button>
+          </div>
+          <p className="text-[10px] text-text-secondary font-medium">Folosit pentru notificări pe WhatsApp (viitor).</p>
+        </form>
 
         <form onSubmit={handleChangePassword} className="pt-5 space-y-3">
           <div className="flex items-center justify-between mb-1">

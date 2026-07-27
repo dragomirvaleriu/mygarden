@@ -1094,5 +1094,8 @@
   "Your Name": "Your Name",
   "Ex: Ion, Maria...": "E.g.: John, Mary...",
   "Enter your name to finish setup.": "Enter your name to finish setup.",
-  "Please enter your name.": "Please enter your name."
+  "Please enter your name.": "Please enter your name.",
+  "Telefon": "Phone",
+  "Phone updated successfully!": "Phone updated successfully!",
+  "Used for WhatsApp notifications (coming soon).": "Used for WhatsApp notifications (coming soon)."
 }

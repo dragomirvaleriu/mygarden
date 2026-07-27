@@ -1104,5 +1104,8 @@
   "Your Name": "Numele Tău",
   "Ex: Ion, Maria...": "Ex: Ion, Maria...",
   "Enter your name to finish setup.": "Introdu numele tău pentru a finaliza setup-ul.",
-  "Please enter your name.": "Te rugăm să introduci numele tău."
+  "Please enter your name.": "Te rugăm să introduci numele tău.",
+  "Telefon": "Telefon",
+  "Phone updated successfully!": "Telefon actualizat cu succes!",
+  "Used for WhatsApp notifications (coming soon).": "Folosit pentru notificări pe WhatsApp (viitor)."
 }
