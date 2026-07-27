@@ -360,14 +360,53 @@ async function startServer() {
         }
       }
 
-      // Read file and send it
-      const content = await fs.readFile(filePath, "utf-8");
+      // Read file and strip frontmatter
+      let content = await fs.readFile(filePath, "utf-8");
+      // Remove YAML frontmatter (lines between --- delimiters) - flexible with line endings
+      content = content.replace(/^-{3,}\s*[\s\S]*?\n-{3,}\s*\n/, '').trim();
       res.header("Content-Type", "text/plain; charset=utf-8");
       return res.send(content);
 
     } catch (err: any) {
       console.error(`Error loading article ${id}:`, err);
       return res.status(500).json({ error: "Failed to load article content" });
+    }
+  });
+
+  // API Route to restore superadmin role (for dragomirvaleriu@gmail.com after password reset)
+  app.post("/api/restore-superadmin", async (req, res) => {
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+
+    if (!token) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
+    try {
+      const decodedToken = await getAuth(adminApp).verifyIdToken(token);
+      const uid = decodedToken.uid;
+      const email = decodedToken.email?.toLowerCase();
+
+      // Only allow dragomirvaleriu@gmail.com to restore their own role
+      if (email !== 'dragomirvaleriu@gmail.com') {
+        return res.status(403).json({ error: "Only dragomirvaleriu@gmail.com can use this endpoint" });
+      }
+
+      if (!dbAdmin) {
+        return res.status(503).json({ error: "Database not available" });
+      }
+
+      // Update user document with superadmin role
+      await dbAdmin.collection('users').doc(uid).update({
+        role: 'superadmin',
+        updatedAt: new Date()
+      });
+
+      console.log(`✓ Superadmin role restored for ${email} (uid: ${uid})`);
+      res.json({ success: true, message: 'Superadmin role restored' });
+    } catch (err: any) {
+      console.error("Failed to restore superadmin role:", err);
+      res.status(500).json({ error: "Failed to restore superadmin role: " + err.message });
     }
   });
 

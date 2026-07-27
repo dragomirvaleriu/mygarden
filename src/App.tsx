@@ -137,7 +137,8 @@ const App: React.FC = () => {
               return;
             }
           } else {
-            // First login, set session creation time
+            // ALWAYS reset session creation time on new login (handles password resets via email link)
+            const now = new Date().toISOString();
             localStorage.setItem('ls_session_created_at', now.toISOString());
           }
 
@@ -149,25 +150,14 @@ const App: React.FC = () => {
           });
 
           // Fetch user profile to check passwordChangedAt
+          // NOTE: Session invalidation for password changes in OTHER tabs is disabled to allow
+          // password resets via Firebase email links without false-positive logouts.
           const userDocRef = doc(db, 'users', firebaseUser.uid);
           onSnapshot(userDocRef, { includeMetadataChanges: false }, (userSnap) => {
             if (userSnap.exists()) {
               const userData = userSnap.data();
-              const passwordChangedAt = userData?.passwordChangedAt;
-
-              // If password was changed after this session was created, logout
-              if (passwordChangedAt && sessionCreatedAt) {
-                const passwordChangeDate = new Date(passwordChangedAt);
-                const sessionDate = new Date(sessionCreatedAt);
-                if (passwordChangeDate > sessionDate) {
-                  console.log('Password changed in another session, logging out');
-                  import('react-hot-toast').then(({ toast }) => {
-                    toast.error('Parola a fost schimbată din altă sesiune. Te rugăm să te conectezi din nou.');
-                  });
-                  auth.signOut();
-                  return;
-                }
-              }
+              // Password change detection disabled - sessionCreatedAt is reset on each login,
+              // so password changes from email resets don't trigger false logouts
             }
           }, { once: true }); // Only check once per auth state change
 

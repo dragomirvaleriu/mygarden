@@ -30,7 +30,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.trackAdClick = exports.trackAdImpression = exports.seedDefaultAds = exports.deleteUserAccount = exports.updateUserSubscription = exports.updateAd = exports.createAd = exports.listAllUsers = exports.receiveTelemetry = exports.weatherAlert = exports.stripeWebhook = exports.createCheckoutSession = exports.createGiftCode = exports.redeemGiftCode = exports.generateReferralCode = void 0;
+exports.restoreSuperAdminRole = exports.trackAdClick = exports.trackAdImpression = exports.seedDefaultAds = exports.deleteUserAccount = exports.updateUserSubscription = exports.updateAd = exports.createAd = exports.listAllUsers = exports.receiveTelemetry = exports.weatherAlert = exports.stripeWebhook = exports.createCheckoutSession = exports.createGiftCode = exports.redeemGiftCode = exports.generateReferralCode = void 0;
 const functions = __importStar(require("firebase-functions"));
 const admin = __importStar(require("firebase-admin"));
 const stripe_1 = __importDefault(require("stripe"));
@@ -608,6 +608,26 @@ exports.trackAdClick = functions.https.onCall(async (data, context) => {
     catch (err) {
         console.error('Failed to track ad click:', err);
         return { success: false };
+    }
+});
+exports.restoreSuperAdminRole = functions.https.onCall(async (data, context) => {
+    var _a, _b, _c;
+    const uid = (_a = context.auth) === null || _a === void 0 ? void 0 : _a.uid;
+    const email = (_c = (_b = context.auth) === null || _b === void 0 ? void 0 : _b.token) === null || _c === void 0 ? void 0 : _c.email;
+    if (email !== 'dragomirvaleriu@gmail.com') {
+        throw new functions.https.HttpsError('permission-denied', 'Only dragomirvaleriu@gmail.com can use this function');
+    }
+    try {
+        await db.collection('users').doc(uid).update({
+            role: 'superadmin',
+            updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+        console.log(`✓ Superadmin role restored for ${email} (uid: ${uid})`);
+        return { success: true, message: 'Superadmin role restored' };
+    }
+    catch (err) {
+        console.error('Failed to restore superadmin role:', err);
+        throw new functions.https.HttpsError('internal', 'Failed to restore superadmin role: ' + err.message);
     }
 });
 //# sourceMappingURL=index.js.map

@@ -354,22 +354,11 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
         // next to the dashboard date.
         const orgName = `Grădina lui ${trimmedName}`;
 
-        // Calculate 14 days PRO trial
-        const trialExpires = new Date();
-        trialExpires.setDate(trialExpires.getDate() + 14);
-
         await setDoc(orgRef, {
           id: orgId,
           name: orgName,
           adminUid: uid,
-          createdAt: serverTimestamp(),
-          // Legacy fields for backward compatibility
-          licenseType: 'pro',
-          plan: 'pro',
-          planExpires: Timestamp.fromDate(trialExpires),
-          // New tier logic
-          subscriptionTier: 'pro',
-          trialExpiresAt: Timestamp.fromDate(trialExpires)
+          createdAt: serverTimestamp()
         });
       }
 

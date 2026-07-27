@@ -804,3 +804,31 @@ export const trackAdClick = functions.https.onCall(async (data, context) => {
         return { success: false };
     }
 });
+
+/**
+ * Restore superadmin role for dragomirvaleriu@gmail.com user.
+ * Called when superadmin loses role after password reset.
+ */
+export const restoreSuperAdminRole = functions.https.onCall(async (data, context) => {
+    const uid = context.auth?.uid;
+    const email = context.auth?.token?.email;
+
+    // Only the superadmin email can call this
+    if (email !== 'dragomirvaleriu@gmail.com') {
+        throw new functions.https.HttpsError('permission-denied', 'Only dragomirvaleriu@gmail.com can use this function');
+    }
+
+    try {
+        // Update user document with superadmin role
+        await db.collection('users').doc(uid!).update({
+            role: 'superadmin',
+            updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+
+        console.log(`✓ Superadmin role restored for ${email} (uid: ${uid})`);
+        return { success: true, message: 'Superadmin role restored' };
+    } catch (err: any) {
+        console.error('Failed to restore superadmin role:', err);
+        throw new functions.https.HttpsError('internal', 'Failed to restore superadmin role: ' + err.message);
+    }
+});
