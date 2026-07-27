@@ -301,14 +301,20 @@ const SuperAdmin: React.FC<Props> = ({ userProfile }) => {
   const handleDeleteUser = async (user: UserData) => {
     if (!confirm(`Ești sigur că vrei să ștergi definitiv contul ${user.email}? Această acțiune nu poate fi anulată.`)) return;
 
+    if (!user.uid) {
+      toast.error('Error: user ID is missing');
+      return;
+    }
+
     setDeletingUserId(user.uid);
     try {
       const deleteFn = httpsCallable(functions, 'deleteUserAccount');
-      await deleteFn({ userId: user.uid });
+      const result = await deleteFn({ userId: user.uid });
       setUsers(prev => prev.filter(u => u.uid !== user.uid));
       if (selectedUser?.uid === user.uid) setSelectedUser(null);
       toast.success(`Cont ${user.email} șters.`);
     } catch (err: any) {
+      console.error('Delete error:', err);
       toast.error('Eroare la ștergere: ' + (err?.message || 'Unknown error'));
     } finally {
       setDeletingUserId(null);
