@@ -14,7 +14,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { Card } from '../components/ui/primitives';
-import { db, functions, httpsCallable, doc, getDoc, collection, query, where, getDocs, deleteDoc } from '../services/firebase';
+import { db, functions, httpsCallable, doc, getDoc, collection, query, where, getDocs, deleteDoc, auth } from '../services/firebase';
 import toast from 'react-hot-toast';
 import { UserProfile, Advertisement } from '../src/types';
 
@@ -156,6 +156,12 @@ const SuperAdmin: React.FC<Props> = ({ userProfile }) => {
   const [giftDays, setGiftDays] = useState(30);
   const [generatedCode, setGeneratedCode] = useState<GiftCodeData | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Subscription grant state
+  const [grantingUser, setGrantingUser] = useState<UserData | null>(null);
+  const [grantTiers, setGrantTiers] = useState<Set<string>>(new Set());
+  const [grantDuration, setGrantDuration] = useState<1 | 3 | 12 | null>(12);
+  const [granting, setGranting] = useState(false);
   const [analyticsData, setAnalyticsData] = useState({
     totalUsers: 0,
     adFreeCount: 0,
@@ -293,6 +299,53 @@ const SuperAdmin: React.FC<Props> = ({ userProfile }) => {
       toast.error('Failed to generate gift code: ' + err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Grant subscription to user
+  const grantSubscription = async () => {
+    if (!grantingUser || grantTiers.size === 0) {
+      toast.error('Please select a user and at least one tier');
+      return;
+    }
+
+    setGranting(true);
+    try {
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) {
+        throw new Error('Not authenticated');
+      }
+
+      const response = await fetch('/api/admin/grant-subscription', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          targetUid: grantingUser.uid,
+          tiers: Array.from(grantTiers),
+          durationMonths: grantDuration,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error);
+      }
+
+      const result = await response.json();
+      toast.success(`Subscription granted: ${grantTiers.join('+')} for ${grantDuration ? grantDuration + ' months' : 'infinite'}`);
+
+      // Refresh users list
+      loadUsers();
+      setGrantingUser(null);
+      setGrantTiers(new Set());
+      setGrantDuration(12);
+    } catch (err: any) {
+      toast.error('Failed to grant subscription: ' + err.message);
+    } finally {
+      setGranting(false);
     }
   };
 
@@ -438,6 +491,96 @@ const SuperAdmin: React.FC<Props> = ({ userProfile }) => {
                 {loading ? <Loader2 size={18} className="animate-spin" /> : <Users size={18} />}
                 Refresh
               </button>
+            </div>
+
+            {/* Grant Subscription Section */}
+            <div className="mb-8 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-300 dark:border-blue-700 rounded-lg">
+              <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-300 mb-4">Grant Subscription</h3>
+              <div className="space-y-4">
+                {/* User Selection */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    Select User
+                  </label>
+                  <select
+                    value={grantingUser?.uid || ''}
+                    onChange={(e) => {
+                      const user = users.find(u => u.uid === e.target.value);
+                      setGrantingUser(user || null);
+                    }}
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                  >
+                    <option value="">-- Select a user --</option>
+                    {users.map(user => (
+                      <option key={user.uid} value={user.uid}>
+                        {user.email} {user.displayName ? `(${user.displayName})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Tier Selection */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    Tiers
+                  </label>
+                  <div className="flex gap-4">
+                    {['pro', 'adFree'].map(tier => (
+                      <label key={tier} className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={grantTiers.has(tier)}
+                          onChange={(e) => {
+                            const newTiers = new Set(grantTiers);
+                            if (e.target.checked) {
+                              newTiers.add(tier);
+                            } else {
+                              newTiers.delete(tier);
+                            }
+                            setGrantTiers(newTiers);
+                          }}
+                          className="w-4 h-4 rounded"
+                        />
+                        <span className="text-sm text-slate-700 dark:text-slate-300">
+                          {tier === 'pro' ? 'Pro ($2)' : 'Ad-Free ($2)'}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                  {grantTiers.size === 2 && (
+                    <p className="text-sm text-emerald-600 dark:text-emerald-400 mt-2">Bundle pricing: $3/year</p>
+                  )}
+                </div>
+
+                {/* Duration Selection */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    Duration
+                  </label>
+                  <select
+                    value={grantDuration === null ? 'infinite' : grantDuration}
+                    onChange={(e) => {
+                      setGrantDuration(e.target.value === 'infinite' ? null : (parseInt(e.target.value) as 1 | 3 | 12));
+                    }}
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                  >
+                    <option value="1">1 Month</option>
+                    <option value="3">3 Months</option>
+                    <option value="12">12 Months (1 Year)</option>
+                    <option value="infinite">Infinite (Lifetime)</option>
+                  </select>
+                </div>
+
+                {/* Grant Button */}
+                <button
+                  onClick={grantSubscription}
+                  disabled={!grantingUser || grantTiers.size === 0 || granting}
+                  className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2"
+                >
+                  {granting ? <Loader2 size={18} className="animate-spin" /> : <Gift size={18} />}
+                  Grant Subscription
+                </button>
+              </div>
             </div>
 
             {/* Search */}

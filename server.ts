@@ -410,6 +410,70 @@ async function startServer() {
     }
   });
 
+  // API Route to grant subscriptions (SuperAdmin only)
+  app.post("/api/admin/grant-subscription", async (req, res) => {
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+
+    if (!token) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
+    try {
+      const decodedToken = await getAuth(adminApp).verifyIdToken(token);
+      const adminEmail = decodedToken.email?.toLowerCase();
+
+      // Only superadmin can grant subscriptions
+      if (adminEmail !== 'dragomirvaleriu@gmail.com') {
+        return res.status(403).json({ error: "Only superadmin can grant subscriptions" });
+      }
+
+      const { targetUid, tiers, durationMonths } = req.body;
+
+      if (!targetUid || !tiers || !Array.isArray(tiers) || tiers.length === 0) {
+        return res.status(400).json({ error: "Missing or invalid: targetUid, tiers (array)" });
+      }
+
+      if (![1, 3, 12, null].includes(durationMonths)) {
+        return res.status(400).json({ error: "durationMonths must be 1, 3, 12, or null (infinite)" });
+      }
+
+      if (!dbAdmin) {
+        return res.status(503).json({ error: "Database not available" });
+      }
+
+      // Calculate expiration date
+      let expiresAt = null;
+      if (durationMonths !== null) {
+        const date = new Date();
+        date.setMonth(date.getMonth() + durationMonths);
+        expiresAt = date;
+      }
+
+      // Update user with subscription
+      const updateData: any = {
+        subscriptionProduct: tiers.join('+'),
+        subscriptionExpiresAt: expiresAt,
+        updatedAt: new Date()
+      };
+
+      await dbAdmin.collection('users').doc(targetUid).update(updateData);
+
+      console.log(`✓ Subscription granted: ${tiers.join('+')} for ${durationMonths ? durationMonths + ' months' : 'infinite'} to user ${targetUid}`);
+      res.json({
+        success: true,
+        message: 'Subscription granted',
+        subscription: {
+          tiers,
+          expiresAt: expiresAt ? expiresAt.toISOString() : 'infinite'
+        }
+      });
+    } catch (err: any) {
+      console.error("Failed to grant subscription:", err);
+      res.status(500).json({ error: "Failed to grant subscription: " + err.message });
+    }
+  });
+
   // API Route to test the setup locally
   app.get("/api/test-server", (req, res) => {
     res.json({ message: "Server is running!" });
