@@ -15,6 +15,7 @@ import {
   serverTimestamp,
   functions,
   httpsCallable,
+  logout,
 } from '../services/firebase';
 import { updateUserSettings, UserSettings } from '../services/settings';
 import i18n from './i18n';
@@ -118,12 +119,57 @@ const App: React.FC = () => {
         if (firebaseUser) {
           setUser(firebaseUser);
 
-          // Update last login
+          // Session validation: check if session needs to be invalidated
+          const sessionCreatedAt = localStorage.getItem('ls_session_created_at');
+          const now = new Date();
+
+          // Check session age (max 1 month = 30 days)
+          if (sessionCreatedAt) {
+            const sessionDate = new Date(sessionCreatedAt);
+            const ageInMs = now.getTime() - sessionDate.getTime();
+            const ageInDays = ageInMs / (1000 * 60 * 60 * 24);
+            if (ageInDays > 30) {
+              console.log('Session expired (>30 days), logging out');
+              import('react-hot-toast').then(({ toast }) => {
+                toast.error('Sesiunea ta a expirat după 30 de zile. Te rugăm să te conectezi din nou.');
+              });
+              logout();
+              return;
+            }
+          } else {
+            // First login, set session creation time
+            localStorage.setItem('ls_session_created_at', now.toISOString());
+          }
+
+          // Update last login and check for password change invalidation
           const loginUpdateRef = doc(db, 'users', firebaseUser.uid);
           updateDoc(loginUpdateRef, { lastLoginAt: serverTimestamp() }).catch(err => {
             // Silently fail if they don't have permission yet or document doesn't exist
             console.debug("Could not update lastLoginAt immediately", err);
           });
+
+          // Fetch user profile to check passwordChangedAt
+          const userDocRef = doc(db, 'users', firebaseUser.uid);
+          onSnapshot(userDocRef, { includeMetadataChanges: false }, (userSnap) => {
+            if (userSnap.exists()) {
+              const userData = userSnap.data();
+              const passwordChangedAt = userData?.passwordChangedAt;
+
+              // If password was changed after this session was created, logout
+              if (passwordChangedAt && sessionCreatedAt) {
+                const passwordChangeDate = new Date(passwordChangedAt);
+                const sessionDate = new Date(sessionCreatedAt);
+                if (passwordChangeDate > sessionDate) {
+                  console.log('Password changed in another session, logging out');
+                  import('react-hot-toast').then(({ toast }) => {
+                    toast.error('Parola a fost schimbată din altă sesiune. Te rugăm să te conectezi din nou.');
+                  });
+                  auth.signOut();
+                  return;
+                }
+              }
+            }
+          }, { once: true }); // Only check once per auth state change
 
           // Set up settings listener
           const settingsRef = doc(db, 'user_settings', firebaseUser.uid);

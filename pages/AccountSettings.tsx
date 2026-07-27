@@ -146,10 +146,19 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
       const credential = EmailAuthProvider.credential(user.email, currentPassword);
       await reauthenticateWithCredential(user, credential);
       await updatePassword(user, newPassword);
-      toast.success('Parola a fost schimbată cu succes.');
+
+      // Record password change timestamp to invalidate other sessions
+      await updateDoc(doc(db, 'users', userProfile.uid), {
+        passwordChangedAt: new Date().toISOString()
+      });
+
+      toast.success('Parola a fost schimbată cu succes. Vei fi delogat din alte sesiuni.');
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
+
+      // Logout after a short delay so user sees the message
+      setTimeout(() => logout(), 2000);
     } catch (err: any) {
       if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
         toast.error('Parola curentă este greșită.');
@@ -266,77 +275,87 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
         </div>
       </div>
 
-      {/* Identity: name, email and password all live in one card. */}
-      <div className="stihl-card rounded-lg p-5 bg-bg-card border border-border-color divide-y divide-border-color">
-        <form onSubmit={handleSaveName} className="space-y-3 pb-5">
-          <div className="flex items-center gap-2 text-text-secondary">
-            <User size={14} className="text-accent-color" />
-            <span className="text-[11px] font-bold uppercase tracking-wider">Cum te cheamă?</span>
-          </div>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              placeholder="Numele tău (ex: Ion, Maria, etc.)"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              className="flex-1 min-w-0 bg-bg-main border border-border-color rounded-md px-3 py-2.5 text-sm font-medium outline-none focus:border-accent-color"
-            />
-            <button
-              type="submit"
-              disabled={isSavingName || !displayName.trim()}
-              className="shrink-0 stihl-button px-5 py-2.5 rounded-md font-bold uppercase tracking-wider text-xs text-white shadow-md flex items-center justify-center gap-2 disabled:opacity-60"
-            >
-              {isSavingName ? <Loader2 size={16} className="animate-spin" /> : 'Salvează'}
-            </button>
-          </div>
-          <p className="text-[10px] text-text-secondary font-medium">Acest nume va apărea în salutul personalizat de pe dashboard.</p>
-        </form>
+      {/* Identity: name, email and phone in 2-col grid on desktop */}
+      <div className="stihl-card rounded-lg p-5 bg-bg-card border border-border-color">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Column 1: Name + Phone */}
+          <div className="space-y-6">
+            {/* Name */}
+            <form onSubmit={handleSaveName} className="space-y-3">
+              <div className="flex items-center gap-2 text-text-secondary">
+                <User size={14} className="text-accent-color" />
+                <span className="text-[11px] font-bold uppercase tracking-wider">Cum te cheamă?</span>
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Numele tău (ex: Ion, Maria, etc.)"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  className="flex-1 min-w-0 bg-bg-main border border-border-color rounded-md px-3 py-2.5 text-sm font-medium outline-none focus:border-accent-color"
+                />
+                <button
+                  type="submit"
+                  disabled={isSavingName || !displayName.trim()}
+                  className="shrink-0 stihl-button px-5 py-2.5 rounded-md font-bold uppercase tracking-wider text-xs text-white shadow-md flex items-center justify-center gap-2 disabled:opacity-60"
+                >
+                  {isSavingName ? <Loader2 size={16} className="animate-spin" /> : 'Salvează'}
+                </button>
+              </div>
+              <p className="text-[10px] text-text-secondary font-medium">Salut personalizat pe dashboard.</p>
+            </form>
 
-        <div className="py-5 space-y-2">
-          <div className="flex items-center gap-2 text-text-secondary">
-            <Mail size={14} className="text-accent-color" />
-            <span className="text-[11px] font-bold uppercase tracking-wider">Email</span>
+            {/* Phone */}
+            <form onSubmit={handleSavePhone} className="space-y-3">
+              <div className="flex items-center gap-2 text-text-secondary">
+                <Phone size={14} className="text-accent-color" />
+                <span className="text-[11px] font-bold uppercase tracking-wider">Telefon</span>
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="tel"
+                  placeholder="+40 7XX XXX XXX"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="flex-1 min-w-0 bg-bg-main border border-border-color rounded-md px-3 py-2.5 text-sm font-medium outline-none focus:border-accent-color"
+                />
+                <button
+                  type="submit"
+                  disabled={isSavingPhone}
+                  className="shrink-0 stihl-button px-5 py-2.5 rounded-md font-bold uppercase tracking-wider text-xs text-white shadow-md flex items-center justify-center gap-2 disabled:opacity-60"
+                >
+                  {isSavingPhone ? <Loader2 size={16} className="animate-spin" /> : 'Salvează'}
+                </button>
+              </div>
+              <p className="text-[10px] text-text-secondary font-medium">WhatsApp (viitor).</p>
+            </form>
           </div>
-          <div className="flex items-center justify-between gap-3 bg-bg-main border border-border-color rounded-md px-3 py-2.5">
-            <span className="text-sm font-medium text-main truncate">{userProfile.email}</span>
-            <div className="flex flex-col items-end gap-1 shrink-0">
-              <span className="px-2.5 py-1 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-[9px] font-black rounded-full uppercase tracking-widest">
-                {TIER_LABEL[subscriptionTier]}
-              </span>
-              {userProfile.subscriptionProduct && userProfile.subscriptionExpiresAt && (
-                <span className="text-[9px] text-text-secondary font-medium">
-                  {new Date(userProfile.subscriptionExpiresAt).toLocaleDateString()}
-                </span>
-              )}
+
+          {/* Column 2: Email + Password */}
+          <div className="space-y-6">
+            {/* Email */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-text-secondary">
+                <Mail size={14} className="text-accent-color" />
+                <span className="text-[11px] font-bold uppercase tracking-wider">Email</span>
+              </div>
+              <div className="flex items-center justify-between gap-3 bg-bg-main border border-border-color rounded-md px-3 py-2.5">
+                <span className="text-sm font-medium text-main truncate">{userProfile.email}</span>
+                <div className="flex flex-col items-end gap-1 shrink-0">
+                  <span className="px-2.5 py-1 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-[9px] font-black rounded-full uppercase tracking-widest">
+                    {TIER_LABEL[subscriptionTier]}
+                  </span>
+                  {userProfile.subscriptionProduct && userProfile.subscriptionExpiresAt && (
+                    <span className="text-[9px] text-text-secondary font-medium">
+                      {new Date(userProfile.subscriptionExpiresAt).toLocaleDateString()}
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
 
-        <form onSubmit={handleSavePhone} className="py-5 space-y-3">
-          <div className="flex items-center gap-2 text-text-secondary">
-            <Phone size={14} className="text-accent-color" />
-            <span className="text-[11px] font-bold uppercase tracking-wider">Telefon</span>
-          </div>
-          <div className="flex gap-2">
-            <input
-              type="tel"
-              placeholder="+40 7XX XXX XXX"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="flex-1 min-w-0 bg-bg-main border border-border-color rounded-md px-3 py-2.5 text-sm font-medium outline-none focus:border-accent-color"
-            />
-            <button
-              type="submit"
-              disabled={isSavingPhone}
-              className="shrink-0 stihl-button px-5 py-2.5 rounded-md font-bold uppercase tracking-wider text-xs text-white shadow-md flex items-center justify-center gap-2 disabled:opacity-60"
-            >
-              {isSavingPhone ? <Loader2 size={16} className="animate-spin" /> : 'Salvează'}
-            </button>
-          </div>
-          <p className="text-[10px] text-text-secondary font-medium">Folosit pentru notificări pe WhatsApp (viitor).</p>
-        </form>
-
-        <form onSubmit={handleChangePassword} className="pt-5 space-y-3">
+            {/* Password - smaller form */}
+            <form onSubmit={handleChangePassword} className="space-y-3">
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-2 text-text-secondary">
               <Lock size={14} className="text-accent-color" />
@@ -390,7 +409,9 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
             {isSavingPassword ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
             Salvează Parola Nouă
           </button>
-        </form>
+            </form>
+          </div>
+        </div>
       </div>
 
       {/* Language */}
