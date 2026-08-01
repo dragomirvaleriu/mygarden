@@ -42,6 +42,7 @@ import { APP_NAME } from './config/appVariant';
 
 import DesktopSidebar from '../components/DesktopSidebar';
 import MobileDock from '../components/MobileDock';
+import MobileSettingsModal from '../components/MobileSettingsModal';
 const PFTools = React.lazy(() => import('../pages/PFTools'));
 const GardenSetup = React.lazy(() => import('../pages/GardenSetup').then(m => ({ default: m.GardenSetup })));
 const AccountSettings = React.lazy(() => import('../pages/AccountSettings'));
@@ -526,6 +527,16 @@ const App: React.FC = () => {
           />
         </div>
         <main className="flex-1 md:ml-60 px-4 pt-[calc(max(env(safe-area-inset-top),16px))] pb-32 md:py-6 sm:px-6 md:px-6 min-w-0">
+          {/* Mobile Settings Header */}
+          <div className="md:hidden mb-4 flex items-center justify-end">
+            <MobileSettingsModal
+              theme={currentTheme as 'light' | 'dark'}
+              onToggleTheme={toggleTheme}
+              selectedAccentColor={profile.accentColor || '#4A7C59'}
+              onSelectAccentColor={selectAccentColor}
+            />
+          </div>
+
           <div className="max-w-7xl mx-auto w-full">
             {systemConfig.announcement && dismissedAnnouncement !== systemConfig.announcement && (
               <div className="mb-6 bg-accent-color p-3 rounded-xl shadow-lg shadow-accent-color/20 flex items-center gap-3 animate-in slide-in-from-top duration-500 relative group">
