@@ -333,7 +333,7 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
                   <label className="block text-xs font-black text-text-secondary uppercase tracking-wide">
                     Cum te cheamă?
                   </label>
-                  <div className="flex gap-3">
+                  <div className="flex flex-col sm:flex-row gap-3">
                     <input
                       type="text"
                       placeholder="Exemplu: Ion Popescu"
@@ -344,7 +344,7 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
                     <button
                       type="submit"
                       disabled={isSavingName || !displayName.trim()}
-                      className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold text-sm rounded-lg hover:shadow-lg disabled:opacity-50 transition"
+                      className="sm:w-auto w-full px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold text-sm rounded-lg hover:shadow-lg disabled:opacity-50 transition flex items-center justify-center gap-2"
                     >
                       {isSavingName ? <Loader2 size={18} className="animate-spin" /> : 'Salvează'}
                     </button>
@@ -357,14 +357,15 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
                   <label className="block text-xs font-black text-text-secondary uppercase tracking-wide">
                     Email
                   </label>
-                  <div className="flex items-center justify-between gap-4 bg-slate-50 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3">
-                    <div className="flex items-center gap-3 flex-1">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
                       <Mail size={18} className="text-sky-500 flex-shrink-0" />
-                      <span className="font-medium text-sm text-main">{userProfile.email}</span>
+                      <span className="font-medium text-sm text-main truncate">{userProfile.email}</span>
                     </div>
-                    <span className="px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-xs font-bold rounded-full">
-                      Verificat
-                    </span>
+                    <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-xs bg-emerald-100 dark:bg-emerald-900/30 px-3 py-1.5 rounded-full w-fit shrink-0">
+                      <CheckCircle size={14} />
+                      <span className="hidden sm:inline">Verificat</span>
+                    </div>
                   </div>
                 </div>
 
@@ -373,7 +374,7 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
                   <label className="block text-xs font-black text-text-secondary uppercase tracking-wide">
                     Telefon
                   </label>
-                  <div className="flex gap-3">
+                  <div className="flex flex-col sm:flex-row gap-3">
                     <input
                       type="tel"
                       placeholder="+40 7XX XXX XXX"
@@ -384,7 +385,7 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
                     <button
                       type="submit"
                       disabled={isSavingPhone}
-                      className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold text-sm rounded-lg hover:shadow-lg disabled:opacity-50 transition"
+                      className="sm:w-auto w-full px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold text-sm rounded-lg hover:shadow-lg disabled:opacity-50 transition flex items-center justify-center gap-2"
                     >
                       {isSavingPhone ? <Loader2 size={18} className="animate-spin" /> : 'Salvează'}
                     </button>
