@@ -256,376 +256,357 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
   const currentLang = (userProfile.language || 'ro') as 'ro' | 'en';
 
   return (
-    <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6 animate-in fade-in duration-700 pb-10">
-      {/* ── HEADER — same "terminal" treatment as Calendar/Jurnal ── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between bg-gradient-to-r from-sky-500/10 via-transparent to-transparent p-4 md:p-6 md:min-h-[104px] rounded-3xl border border-sky-500/20 shadow-sm gap-4">
-        <div className="flex items-center gap-4 md:gap-5">
-          <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-sky-500 flex items-center justify-center text-white shadow-lg shadow-sky-500/30 transform -rotate-3 hover:rotate-0 transition-transform duration-300 shrink-0">
-            <User className="w-6 h-6 md:w-7 md:h-7" strokeWidth={2.5} />
-          </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <img src="/logo.png" alt="My Garden" className="w-3 h-3 md:w-4 md:h-4 object-contain drop-shadow-sm" />
-              <h2 className="text-[9px] md:text-[11px] font-black text-sky-500 uppercase tracking-[0.4em] leading-none">My Garden</h2>
-              <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-sky-500 text-white text-[8px] font-black uppercase tracking-tighter shadow-sm">{TIER_LABEL[subscriptionTier]}</span>
+    <div className="min-h-screen bg-gradient-to-br from-bg-main via-bg-main to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
+      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8 animate-in fade-in duration-700">
+        {/* ── HEADER SECTION ── */}
+        <div className="mb-10">
+          <div className="flex items-center gap-4 mb-2">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-sky-400 to-sky-600 flex items-center justify-center text-white shadow-lg shadow-sky-500/40">
+              <User size={28} strokeWidth={2} />
             </div>
-            <h1 className="text-xl md:text-2xl font-black text-main tracking-tight leading-tight">Contul Meu</h1>
-            <p className="text-text-secondary text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em]">Date, parolă și preferințe</p>
+            <div>
+              <h1 className="text-4xl font-black text-main tracking-tight">Contul Meu</h1>
+              <p className="text-text-secondary text-sm font-semibold mt-1">Gestionează datele, securitatea și preferințele</p>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Identity: name, email and phone in 2-col grid on desktop */}
-      <div className="stihl-card rounded-lg p-5 bg-bg-card border border-border-color">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Column 1: Name + Phone */}
-          <div className="space-y-6">
-            {/* Name */}
-            <form onSubmit={handleSaveName} className="space-y-3">
-              <div className="flex items-center gap-2 text-text-secondary">
-                <User size={14} className="text-accent-color" />
-                <span className="text-[11px] font-bold uppercase tracking-wider">Cum te cheamă?</span>
-              </div>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Numele tău (ex: Ion, Maria, etc.)"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  className="flex-1 min-w-0 bg-bg-main border border-border-color rounded-md px-3 py-2.5 text-sm font-medium outline-none focus:border-accent-color"
-                />
-                <button
-                  type="submit"
-                  disabled={isSavingName || !displayName.trim()}
-                  className="shrink-0 stihl-button px-5 py-2.5 rounded-md font-bold uppercase tracking-wider text-xs text-white shadow-md flex items-center justify-center gap-2 disabled:opacity-60"
-                >
-                  {isSavingName ? <Loader2 size={16} className="animate-spin" /> : 'Salvează'}
-                </button>
-              </div>
-              <p className="text-[10px] text-text-secondary font-medium">Salut personalizat pe dashboard.</p>
-            </form>
+        {/* MAIN LAYOUT: Sidebar + Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* ── LEFT SIDEBAR: Profile Card ── */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-8 space-y-6">
+              {/* Profile Card */}
+              <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
+                <div className="flex flex-col items-center text-center">
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-400 to-sky-500 flex items-center justify-center text-white text-2xl font-black mb-4 shadow-lg">
+                    {displayName.charAt(0).toUpperCase() || 'G'}
+                  </div>
+                  <h3 className="text-xl font-black text-main">{displayName || 'Grădinar'}</h3>
+                  <p className="text-xs text-text-secondary font-semibold mt-1 truncate">{userProfile.email}</p>
 
-            {/* Phone */}
-            <form onSubmit={handleSavePhone} className="space-y-3">
-              <div className="flex items-center gap-2 text-text-secondary">
-                <Phone size={14} className="text-accent-color" />
-                <span className="text-[11px] font-bold uppercase tracking-wider">Telefon</span>
-              </div>
-              <div className="flex gap-2">
-                <input
-                  type="tel"
-                  placeholder="+40 7XX XXX XXX"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="flex-1 min-w-0 bg-bg-main border border-border-color rounded-md px-3 py-2.5 text-sm font-medium outline-none focus:border-accent-color"
-                />
-                <button
-                  type="submit"
-                  disabled={isSavingPhone}
-                  className="shrink-0 stihl-button px-5 py-2.5 rounded-md font-bold uppercase tracking-wider text-xs text-white shadow-md flex items-center justify-center gap-2 disabled:opacity-60"
-                >
-                  {isSavingPhone ? <Loader2 size={16} className="animate-spin" /> : 'Salvează'}
-                </button>
-              </div>
-              <p className="text-[10px] text-text-secondary font-medium">WhatsApp (viitor).</p>
-            </form>
-          </div>
-
-          {/* Column 2: Email + Password */}
-          <div className="space-y-6">
-            {/* Email */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-text-secondary">
-                <Mail size={14} className="text-accent-color" />
-                <span className="text-[11px] font-bold uppercase tracking-wider">Email</span>
-              </div>
-              <div className="flex items-center justify-between gap-3 bg-bg-main border border-border-color rounded-md px-3 py-2.5">
-                <span className="text-sm font-medium text-main truncate">{userProfile.email}</span>
-                <div className="flex flex-col items-end gap-1 shrink-0">
-                  <span className="px-2.5 py-1 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-[9px] font-black rounded-full uppercase tracking-widest">
-                    {TIER_LABEL[subscriptionTier]}
-                  </span>
-                  {userProfile.subscriptionProduct && userProfile.subscriptionExpiresAt && (
-                    <span className="text-[9px] text-text-secondary font-medium">
-                      {new Date(userProfile.subscriptionExpiresAt).toLocaleDateString()}
+                  <div className="w-full mt-5 pt-5 border-t border-slate-200 dark:border-slate-700">
+                    <span className="inline-block px-3 py-1.5 bg-gradient-to-r from-emerald-500 to-sky-600 text-white text-xs font-black uppercase rounded-full shadow-md">
+                      {TIER_LABEL[subscriptionTier]}
                     </span>
-                  )}
+                    {userProfile.subscriptionExpiresAt && (
+                      <p className="text-xs text-text-secondary font-medium mt-3">
+                        Expirare: {new Date(userProfile.subscriptionExpiresAt).toLocaleDateString('ro-RO')}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Stats */}
+              <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-lg border border-slate-200 dark:border-slate-700">
+                <p className="text-xs font-black text-text-secondary uppercase tracking-wide mb-3">Progres</p>
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-sm font-bold text-main mb-1">Level {userProfile.level || 1}</p>
+                    <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+                      <div
+                        className="bg-gradient-to-r from-emerald-500 to-sky-500 h-2 rounded-full"
+                        style={{width: `${((userProfile.exp || 0) % 100)}%`}}
+                      ></div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-
-            {/* Password - smaller form */}
-            <form onSubmit={handleChangePassword} className="space-y-3">
-          <div className="flex items-center justify-between mb-1">
-            <div className="flex items-center gap-2 text-text-secondary">
-              <Lock size={14} className="text-accent-color" />
-              <span className="text-[11px] font-bold uppercase tracking-wider">Schimbă Parola</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setShowPasswords(v => !v)}
-              className="text-text-secondary hover:text-main transition-colors"
-              title={showPasswords ? 'Ascunde' : 'Arată'}
-            >
-              {showPasswords ? <EyeOff size={16} /> : <Eye size={16} />}
-            </button>
           </div>
 
-          <input
-            type={showPasswords ? 'text' : 'password'}
-            placeholder="Parola curentă"
-            autoComplete="current-password"
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            required
-            className="w-full bg-bg-main border border-border-color rounded-md px-3 py-2.5 text-sm font-medium outline-none focus:border-accent-color"
-          />
-          <input
-            type={showPasswords ? 'text' : 'password'}
-            placeholder="Parola nouă"
-            autoComplete="new-password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            required
-            minLength={6}
-            className="w-full bg-bg-main border border-border-color rounded-md px-3 py-2.5 text-sm font-medium outline-none focus:border-accent-color"
-          />
-          <input
-            type={showPasswords ? 'text' : 'password'}
-            placeholder="Confirmă parola nouă"
-            autoComplete="new-password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            minLength={6}
-            className="w-full bg-bg-main border border-border-color rounded-md px-3 py-2.5 text-sm font-medium outline-none focus:border-accent-color"
-          />
-
-          <button
-            type="submit"
-            disabled={isSavingPassword}
-            className="w-full stihl-button py-3 rounded-md font-bold uppercase tracking-wider text-xs text-white shadow-md flex items-center justify-center gap-2 disabled:opacity-60"
-          >
-            {isSavingPassword ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
-            Salvează Parola Nouă
-          </button>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      {/* Language */}
-      <div className="stihl-card rounded-lg p-5 bg-bg-card border border-border-color">
-        <div className="flex items-center gap-2 mb-3 text-text-secondary">
-          <Globe size={14} className="text-accent-color" />
-          <span className="text-[11px] font-bold uppercase tracking-wider">Limbă</span>
-        </div>
-        <div className="flex gap-2">
-          {(['ro', 'en'] as const).map(lang => (
-            <button
-              key={lang}
-              onClick={() => handleChangeLanguage(lang)}
-              disabled={isSavingLanguage}
-              className={`flex-1 py-2.5 rounded-md text-xs font-black uppercase tracking-wider transition-all ${
-                currentLang === lang
-                  ? 'bg-accent-color text-white shadow-md'
-                  : 'bg-bg-main border border-border-color text-text-secondary hover:bg-black/5 dark:hover:bg-white/5'
-              }`}
-            >
-              {lang === 'ro' ? 'Română' : 'English'}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Referral program */}
-      {referralCode && (
-        <div className="stihl-card rounded-lg p-5 bg-bg-card border border-border-color space-y-3">
-          <div className="flex items-center gap-2 text-text-secondary">
-            <Share2 size={14} className="text-accent-color" />
-            <span className="text-[11px] font-bold uppercase tracking-wider">Recomandă și Câștigă</span>
-          </div>
-          <p className="text-xs text-text-secondary font-medium">
-            Trimite link-ul tău unui prieten. Când face prima achiziție, primiți amândoi +7 zile PRO gratuit.
-          </p>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              readOnly
-              value={`${window.location.origin}/?ref=${referralCode}`}
-              className="flex-1 min-w-0 bg-bg-main border border-border-color rounded-md px-3 py-2.5 text-xs font-medium outline-none"
-            />
-            <button
-              onClick={handleCopyReferralLink}
-              className="shrink-0 stihl-button px-4 py-2.5 rounded-md font-bold uppercase tracking-wider text-xs text-white shadow-md flex items-center justify-center gap-2"
-            >
-              <Copy size={14} />
-            </button>
-          </div>
-          {(userProfile.referralCount || 0) > 0 && (
-            <p className="text-[11px] font-bold text-accent-color">
-              🎉 {userProfile.referralCount} {userProfile.referralCount === 1 ? 'persoană s-a alăturat' : 'persoane s-au alăturat'} prin linkul tău
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* Quick Links — Tools/GardenSetup/Explore live here instead of as
-          separate tabs, now that navigation is unified to 5 tabs. */}
-      <Card padding="none" className="overflow-hidden divide-y divide-border-color">
-        {[
-          { page: Page.Tools, icon: Wrench, label: 'Trusa de Scule', desc: 'Calculatoare, jurnal de tratamente și unelte pentru gazon' },
-          { page: Page.GardenSetup, icon: Sprout, label: 'Configurare Curte', desc: 'Suprafață, tip de sol, zone și echipamente' },
-          { page: Page.Explore, icon: Search, label: 'Explorează', desc: 'Descoperă conținut și idei noi' },
-        ].map(({ page, icon: Icon, label, desc }) => (
-          <button
-            key={page}
-            onClick={() => onNavigate(page)}
-            className="w-full flex items-center gap-4 p-5 hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-left"
-          >
-            <div className="w-11 h-11 rounded-full bg-accent-color/10 text-accent-color flex items-center justify-center shrink-0">
-              <Icon size={20} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-black text-main">{label}</p>
-              <p className="text-xs text-text-secondary font-medium mt-0.5">{desc}</p>
-            </div>
-            <ChevronRight size={18} className="text-text-secondary shrink-0" />
-          </button>
-        ))}
-      </Card>
-
-      {/* Subscription */}
-      {subscriptionTier === 'free' && (
-        <button
-          onClick={() => onNavigate(Page.Academy)}
-          className="w-full stihl-card rounded-lg p-5 bg-gradient-to-r from-amber-400/10 to-amber-500/10 border border-amber-500/30 flex items-center gap-4 hover:scale-[1.01] active:scale-[0.99] transition-transform text-left"
-        >
-          <div className="w-11 h-11 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
-            <Sparkles size={20} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-black text-main">Treci la My Garden PRO</p>
-            <p className="text-xs text-text-secondary font-medium mt-0.5">Ghiduri complete, calculatoare avansate și diagnoză AI fără limite.</p>
-          </div>
-          <ChevronRight size={20} className="text-text-secondary shrink-0" />
-        </button>
-      )}
-
-      {/* Subscription Products */}
-      {subscriptionTier === 'free' && (
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 text-text-secondary">
-            <Sparkles size={14} className="text-accent-color" />
-            <span className="text-[11px] font-bold uppercase tracking-wider">Pachete Premium</span>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {/* Ad-Free */}
-            <div className="stihl-card rounded-lg p-5 bg-bg-card border border-border-color flex flex-col">
-              <h3 className="font-black text-main mb-1">Ad-Free</h3>
-              <p className="text-2xl font-black text-accent-color mb-3">$2</p>
-              <ul className="text-xs text-text-secondary space-y-2 mb-4 flex-1">
-                <li>✓ Fără reclame</li>
-                <li>✓ Suport prioritar</li>
-              </ul>
-              <button
-                onClick={() => handlePurchaseProduct('adFree')}
-                disabled={isPurchasing}
-                className="w-full stihl-button py-2.5 rounded-md font-bold uppercase tracking-wider text-xs text-white shadow-md flex items-center justify-center gap-2 disabled:opacity-60"
-              >
-                {isPurchasing ? <Loader2 size={14} className="animate-spin" /> : 'Cumpără'}
-              </button>
-            </div>
-
-            {/* Academy Pro */}
-            <div className="stihl-card rounded-lg p-5 bg-bg-card border border-border-color flex flex-col ring-2 ring-accent-color ring-opacity-50">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-black text-main">Academy Pro</h3>
-                <span className="text-[8px] font-black bg-accent-color text-white px-2 py-1 rounded">POPULAR</span>
+          {/* ── RIGHT CONTENT: Settings Sections ── */}
+          <div className="lg:col-span-3 space-y-6">
+            {/* 1. IDENTITY SECTION */}
+            <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-lg border border-slate-200 dark:border-slate-700">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center">
+                  <User size={20} className="text-sky-600 dark:text-sky-400" />
+                </div>
+                <h2 className="text-2xl font-black text-main">Date Personale</h2>
               </div>
-              <p className="text-2xl font-black text-accent-color mb-3">$2</p>
-              <ul className="text-xs text-text-secondary space-y-2 mb-4 flex-1">
-                <li>✓ Cursuri complete</li>
-                <li>✓ Acces la Academy PRO</li>
-              </ul>
-              <button
-                onClick={() => handlePurchaseProduct('academyPro')}
-                disabled={isPurchasing}
-                className="w-full stihl-button py-2.5 rounded-md font-bold uppercase tracking-wider text-xs text-white shadow-md flex items-center justify-center gap-2 disabled:opacity-60"
-              >
-                {isPurchasing ? <Loader2 size={14} className="animate-spin" /> : 'Cumpără'}
-              </button>
+
+              <div className="space-y-6">
+                {/* Name */}
+                <form onSubmit={handleSaveName} className="space-y-3">
+                  <label className="block text-xs font-black text-text-secondary uppercase tracking-wide">
+                    Cum te cheamă?
+                  </label>
+                  <div className="flex gap-3">
+                    <input
+                      type="text"
+                      placeholder="Exemplu: Ion Popescu"
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      className="flex-1 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 text-sm font-medium outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition"
+                    />
+                    <button
+                      type="submit"
+                      disabled={isSavingName || !displayName.trim()}
+                      className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold text-sm rounded-lg hover:shadow-lg disabled:opacity-50 transition"
+                    >
+                      {isSavingName ? <Loader2 size={18} className="animate-spin" /> : 'Salvează'}
+                    </button>
+                  </div>
+                  <p className="text-xs text-text-secondary font-medium">Salut personalizat pe pagina principală</p>
+                </form>
+
+                {/* Email Display */}
+                <div className="space-y-3">
+                  <label className="block text-xs font-black text-text-secondary uppercase tracking-wide">
+                    Email
+                  </label>
+                  <div className="flex items-center justify-between gap-4 bg-slate-50 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3">
+                    <div className="flex items-center gap-3 flex-1">
+                      <Mail size={18} className="text-sky-500 flex-shrink-0" />
+                      <span className="font-medium text-sm text-main">{userProfile.email}</span>
+                    </div>
+                    <span className="px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-xs font-bold rounded-full">
+                      Verificat
+                    </span>
+                  </div>
+                </div>
+
+                {/* Phone */}
+                <form onSubmit={handleSavePhone} className="space-y-3">
+                  <label className="block text-xs font-black text-text-secondary uppercase tracking-wide">
+                    Telefon
+                  </label>
+                  <div className="flex gap-3">
+                    <input
+                      type="tel"
+                      placeholder="+40 7XX XXX XXX"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="flex-1 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 text-sm font-medium outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition"
+                    />
+                    <button
+                      type="submit"
+                      disabled={isSavingPhone}
+                      className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold text-sm rounded-lg hover:shadow-lg disabled:opacity-50 transition"
+                    >
+                      {isSavingPhone ? <Loader2 size={18} className="animate-spin" /> : 'Salvează'}
+                    </button>
+                  </div>
+                  <p className="text-xs text-text-secondary font-medium">Pentru contactare urgență (viitor)</p>
+                </form>
+              </div>
             </div>
 
-            {/* Bundle */}
-            <div className="stihl-card rounded-lg p-5 bg-gradient-to-br from-emerald-50 dark:from-emerald-900/20 to-teal-50 dark:to-teal-900/20 border border-emerald-500/30 flex flex-col">
-              <h3 className="font-black text-main mb-1">Bundle</h3>
-              <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mb-3">$3</p>
-              <ul className="text-xs text-text-secondary space-y-2 mb-4 flex-1">
-                <li>✓ Fără reclame</li>
-                <li>✓ Academy PRO complet</li>
-              </ul>
-              <button
-                onClick={() => handlePurchaseProduct('bundle')}
-                disabled={isPurchasing}
-                className="w-full stihl-button py-2.5 rounded-md font-bold uppercase tracking-wider text-xs text-white shadow-md flex items-center justify-center gap-2 disabled:opacity-60"
-              >
-                {isPurchasing ? <Loader2 size={14} className="animate-spin" /> : 'Cumpără'}
-              </button>
+            {/* 2. SECURITY SECTION */}
+            <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-lg border border-slate-200 dark:border-slate-700">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                  <Lock size={20} className="text-red-600 dark:text-red-400" />
+                </div>
+                <h2 className="text-2xl font-black text-main">Securitate</h2>
+              </div>
+
+              <form onSubmit={handleChangePassword} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-black text-text-secondary uppercase tracking-wide mb-3">
+                    Parola curentă
+                  </label>
+                  <input
+                    type={showPasswords ? 'text' : 'password'}
+                    placeholder="••••••••"
+                    autoComplete="current-password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    required
+                    className="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 text-sm font-medium outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black text-text-secondary uppercase tracking-wide mb-3">
+                    Parola nouă
+                  </label>
+                  <input
+                    type={showPasswords ? 'text' : 'password'}
+                    placeholder="••••••••"
+                    autoComplete="new-password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    className="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 text-sm font-medium outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black text-text-secondary uppercase tracking-wide mb-3">
+                    Confirmă parola nouă
+                  </label>
+                  <div className="flex gap-3 items-end">
+                    <div className="flex-1">
+                      <input
+                        type={showPasswords ? 'text' : 'password'}
+                        placeholder="••••••••"
+                        autoComplete="new-password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        required
+                        minLength={6}
+                        className="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 text-sm font-medium outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowPasswords(v => !v)}
+                      className="p-3 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition text-text-secondary"
+                      title={showPasswords ? 'Ascunde' : 'Arată'}
+                    >
+                      {showPasswords ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSavingPassword}
+                  className="w-full mt-6 px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white font-bold rounded-lg hover:shadow-lg disabled:opacity-50 transition flex items-center justify-center gap-2"
+                >
+                  {isSavingPassword ? <Loader2 size={18} className="animate-spin" /> : <ShieldCheck size={18} />}
+                  Schimbă Parola
+                </button>
+              </form>
+            </div>
+
+            {/* 3. PREFERENCES SECTION */}
+            <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-lg border border-slate-200 dark:border-slate-700">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                  <Globe size={20} className="text-purple-600 dark:text-purple-400" />
+                </div>
+                <h2 className="text-2xl font-black text-main">Preferințe</h2>
+              </div>
+
+              <form onSubmit={handleChangeLanguage} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-black text-text-secondary uppercase tracking-wide mb-3">
+                    Limbă
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        i18n.changeLanguage('ro');
+                        setIsSavingLanguage(true);
+                      }}
+                      className={`py-3 px-4 rounded-lg font-bold text-sm transition ${
+                        currentLang === 'ro'
+                          ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg'
+                          : 'bg-slate-100 dark:bg-slate-700 text-main hover:bg-slate-200 dark:hover:bg-slate-600'
+                      }`}
+                    >
+                      🇷🇴 Română
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        i18n.changeLanguage('en');
+                        setIsSavingLanguage(true);
+                      }}
+                      className={`py-3 px-4 rounded-lg font-bold text-sm transition ${
+                        currentLang === 'en'
+                          ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg'
+                          : 'bg-slate-100 dark:bg-slate-700 text-main hover:bg-slate-200 dark:hover:bg-slate-600'
+                      }`}
+                    >
+                      🇬🇧 English
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            {/* 4. REFERRAL SECTION */}
+            {referralCode && (
+              <div className="bg-gradient-to-br from-emerald-50 to-sky-50 dark:from-emerald-900/20 dark:to-sky-900/20 rounded-2xl p-8 shadow-lg border border-emerald-200 dark:border-emerald-800">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center">
+                    <Share2 size={20} className="text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                  <h2 className="text-2xl font-black text-main">Recomandă & Câștigă</h2>
+                </div>
+                <p className="text-sm text-text-secondary font-medium mb-4">
+                  Trimite link-ul tău și ambii primiți +7 zile PRO gratuit!
+                </p>
+                <div className="flex gap-3">
+                  <input
+                    type="text"
+                    readOnly
+                    value={`${window.location.origin}/?ref=${referralCode}`}
+                    className="flex-1 bg-white dark:bg-slate-700 border border-emerald-300 dark:border-emerald-700 rounded-lg px-4 py-3 text-sm font-mono text-main select-all"
+                  />
+                  <button
+                    onClick={handleCopyReferralLink}
+                    className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold rounded-lg hover:shadow-lg transition flex items-center gap-2"
+                  >
+                    <Copy size={18} />
+                    Copiază
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* 5. GIFT CODE SECTION */}
+            <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-lg border border-slate-200 dark:border-slate-700">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-lg bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
+                  <Gift size={20} className="text-yellow-600 dark:text-yellow-400" />
+                </div>
+                <h2 className="text-2xl font-black text-main">Cod Cadou</h2>
+              </div>
+              <p className="text-sm text-text-secondary font-medium mb-4">
+                Ai un cod cadou? Activează-l aici pentru a primi Pro gratis!
+              </p>
+              <form onSubmit={handleRedeemGiftCode} className="flex gap-3">
+                <input
+                  type="text"
+                  placeholder="Introdu codul cadou..."
+                  value={giftCode}
+                  onChange={(e) => setGiftCode(e.target.value)}
+                  className="flex-1 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 text-sm font-medium outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition"
+                  maxLength={50}
+                />
+                <button
+                  type="submit"
+                  disabled={isRedeeming || !giftCode.trim()}
+                  className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white font-bold rounded-lg hover:shadow-lg disabled:opacity-50 transition"
+                >
+                  {isRedeeming ? <Loader2 size={18} className="animate-spin" /> : 'Activează'}
+                </button>
+              </form>
+            </div>
+
+            {/* 6. DATA & LOGOUT SECTION */}
+            <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-lg border border-slate-200 dark:border-slate-700">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <button
+                  onClick={handleExportData}
+                  className="px-6 py-3 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-bold rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition flex items-center justify-center gap-2"
+                >
+                  <Wrench size={18} />
+                  Export Date
+                </button>
+                <button
+                  onClick={() => {
+                    logout();
+                    onNavigate(Page.Dashboard);
+                  }}
+                  className="px-6 py-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 font-bold rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition flex items-center justify-center gap-2"
+                >
+                  <LogOut size={18} />
+                  Deconectare
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      )}
-
-      {/* Gift code redemption */}
-      {subscriptionTier === 'free' && (
-        <form onSubmit={handleRedeemGiftCode} className="stihl-card rounded-lg p-5 bg-bg-card border border-border-color space-y-3">
-          <div className="flex items-center gap-2 text-text-secondary">
-            <Gift size={14} className="text-accent-color" />
-            <span className="text-[11px] font-bold uppercase tracking-wider">Ai un Cod Cadou?</span>
-          </div>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              placeholder="Ex: GARDEN2026"
-              value={giftCode}
-              onChange={(e) => setGiftCode(e.target.value.toUpperCase())}
-              className="flex-1 min-w-0 bg-bg-main border border-border-color rounded-md px-3 py-2.5 text-sm font-medium uppercase tracking-wider outline-none focus:border-accent-color"
-            />
-            <button
-              type="submit"
-              disabled={isRedeeming || !giftCode.trim()}
-              className="shrink-0 stihl-button px-5 py-2.5 rounded-md font-bold uppercase tracking-wider text-xs text-white shadow-md flex items-center justify-center gap-2 disabled:opacity-60"
-            >
-              {isRedeeming ? <Loader2 size={16} className="animate-spin" /> : 'Activează'}
-            </button>
-          </div>
-        </form>
-      )}
-
-      {/* Export Data */}
-      <div className="stihl-card rounded-lg p-5 bg-bg-card border border-border-color">
-        <div className="flex items-center gap-2 mb-3 text-text-secondary">
-          <Wrench size={14} className="text-accent-color" />
-          <span className="text-[11px] font-bold uppercase tracking-wider">Date și Confidențialitate</span>
-        </div>
-        <button
-          onClick={handleExportData}
-          className="w-full py-2.5 rounded-md font-bold uppercase tracking-wider text-xs bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
-        >
-          📥 Exportă Datele Mele
-        </button>
-        <p className="text-[10px] text-text-secondary mt-2">Descarcă profilul și setările în format JSON</p>
       </div>
-
-      {/* Logout */}
-      <button
-        onClick={handleLogout}
-        className="w-full py-3 rounded-md font-bold uppercase tracking-wider text-xs text-red-500 border border-red-500/30 bg-red-500/5 hover:bg-red-500/10 transition-colors flex items-center justify-center gap-2"
-      >
-        <LogOut size={16} />
-        Deconectează-te
-      </button>
     </div>
   );
 };
