@@ -29,7 +29,6 @@ interface Props {
   onNavigate: (page: Page, id?: string) => void;
   organizationId: string;
   userProfile?: UserProfile | null;
-  accountType?: 'PF' | 'PJ';
 }
 
 const categoryIcons: Record<string, any> = {

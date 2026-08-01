@@ -466,7 +466,6 @@ const App: React.FC = () => {
       organizationId: profile.organizationId,
       userRole: profile.role,
       userProfile: profile,
-      accountType: 'PF' as const
     };
 
     return (
@@ -479,7 +478,7 @@ const App: React.FC = () => {
         {(() => {
           switch (currentPage) {
             case Page.Dashboard:
-              return <PFDashboard onNavigate={navigateTo} organizationId={profile.organizationId} userProfile={profile} accountType='PF' />;
+              return <PFDashboard onNavigate={navigateTo} organizationId={profile.organizationId} userProfile={profile} />;
             case Page.Tools:
               return <PFTools />;
             case Page.GardenSetup:
@@ -493,7 +492,7 @@ const App: React.FC = () => {
             case Page.Explore: return <Explore organizationId={profile.organizationId} />;
             case Page.SuperAdmin: return <SuperAdmin userProfile={profile} />;
 
-            default: return <PFDashboard onNavigate={navigateTo} organizationId={profile.organizationId} userProfile={profile} accountType='PF' />;
+            default: return <PFDashboard onNavigate={navigateTo} organizationId={profile.organizationId} userProfile={profile} />;
           }
         })()}
         </React.Suspense>

@@ -53,10 +53,6 @@ interface CareCalendarProps {
 const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
   const { t } = useTranslation();
   const { gardenTasks, properties, loading, organization, globalSystemConfig, serviceTypes } = useData();
-  // My Garden is homeowner-only, so every account is PF. Default to PF when the
-  // profile field is missing rather than falling back to the B2B (PJ) layout.
-  const accountType = userProfile?.accountType || 'PF';
-  const isPF = accountType === 'PF';
   const [showAddModal, setShowAddModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(getMonth(new Date()));
@@ -609,109 +605,38 @@ const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
             </div>
             
             <form onSubmit={handleAddTask} className="space-y-6">
-              {isPF ? (
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-[11px] font-black text-text-secondary uppercase tracking-widest ml-1">{t('Activity Date')}</label>
-                    <input 
-                      type="date"
-                      value={newTask.nextDueDate || ''}
-                      onChange={e => {
-                        const val = e.target.value;
-                        setNewTask(prev => ({
-                          ...prev, 
-                          nextDueDate: val,
-                          title: prev.title || t('Garden Maintenance'),
-                          propertyId: properties.length > 0 ? properties[0].id : '',
-                          category: 'other',
-                          frequency: 'one-time'
-                        }));
-                      }}
-                      className="w-full bg-bg-main border border-border-color rounded-2xl px-5 py-4 text-sm font-bold text-main outline-none focus:border-accent-color transition-all appearance-none shadow-inner"
-                      required
-                    />
-                  </div>
-                  <p className="text-[11px] text-text-secondary italic px-2">
-                    {t('This activity will be recorded in your Garden Journal.')}
-                  </p>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-[11px] font-black text-text-secondary uppercase tracking-widest ml-1">{t('Activity Date')}</label>
+                  <input
+                    type="date"
+                    value={newTask.nextDueDate || ''}
+                    onChange={e => {
+                      const val = e.target.value;
+                      setNewTask(prev => ({
+                        ...prev,
+                        nextDueDate: val,
+                        title: prev.title || t('Garden Maintenance'),
+                        propertyId: properties.length > 0 ? properties[0].id : '',
+                        category: 'other',
+                        frequency: 'one-time'
+                      }));
+                    }}
+                    className="w-full bg-bg-main border border-border-color rounded-2xl px-5 py-4 text-sm font-bold text-main outline-none focus:border-accent-color transition-all appearance-none shadow-inner"
+                    required
+                  />
                 </div>
-              ) : (
-                <>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-[11px] font-black text-text-secondary uppercase tracking-widest ml-1">{t('Activity / Service')}</label>
-                      <select 
-                        value={newTask.title || ''}
-                        onChange={e => {
-                          const st = serviceTypes.find(s => s.name === e.target.value);
-                          if (st) {
-                            setNewTask({...newTask, title: st.name, category: st.category || 'other'});
-                          } else {
-                            setNewTask({...newTask, title: e.target.value});
-                          }
-                        }}
-                        className="w-full bg-bg-main border border-border-color rounded-2xl px-5 py-4 text-sm font-bold text-main outline-none focus:border-accent-color transition-all appearance-none shadow-inner"
-                        required
-                      >
-                        <option value="">{t('Select Service')}</option>
-                        {serviceTypes.map(st => (
-                          <option key={st.id} value={st.name}>{st.name}</option>
-                        ))}
-                        <option value="Watering">{t('Watering')}</option>
-                        <option value="Mowing">{t('Mowing')}</option>
-                        <option value="Fertilizing">{t('Fertilizing')}</option>
-                        <option value="Pruning">{t('Pruning')}</option>
-                        <option value="Treatment">{t('Treatment')}</option>
-                      </select>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[11px] font-black text-text-secondary uppercase tracking-widest ml-1">{t('Data Programare')}</label>
-                      <input 
-                        type="date"
-                        value={newTask.nextDueDate || ''}
-                        onChange={e => setNewTask({...newTask, nextDueDate: e.target.value})}
-                        className="w-full bg-bg-main border border-border-color rounded-2xl px-5 py-4 text-sm font-bold text-main outline-none focus:border-accent-color transition-all appearance-none shadow-inner"
-                        required
-                      />
-                    </div>
-                  </div>
+                <p className="text-[11px] text-text-secondary italic px-2">
+                  {t('This activity will be recorded in your Garden Journal.')}
+                </p>
+              </div>
 
-                  <div className="space-y-2">
-                    <label className="text-[11px] font-black text-text-secondary uppercase tracking-widest ml-1">{t('Repetare (zile)')}</label>
-                    <input 
-                      type="number"
-                      min="1"
-                      value={newTask.intervalDays || ''}
-                      onChange={e => setNewTask({...newTask, intervalDays: parseInt(e.target.value)})}
-                      className="w-full bg-bg-main border border-border-color rounded-2xl px-5 py-4 text-sm font-bold text-main outline-none focus:border-accent-color transition-all appearance-none shadow-inner"
-                      placeholder="ex: 7"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-[11px] font-black text-text-secondary uppercase tracking-widest ml-1">{t('Zone')}</label>
-                    <select 
-                      value={newTask.propertyId || ''}
-                      onChange={e => setNewTask({...newTask, propertyId: e.target.value})}
-                      className="w-full bg-bg-main border border-border-color rounded-2xl px-5 py-4 text-sm font-bold text-main outline-none focus:border-accent-color transition-all appearance-none shadow-inner"
-                      required
-                    >
-                      <option value="">{t('Select Location')}</option>
-                      {properties.map(p => (
-                        <option key={p.id} value={p.id}>{p.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                </>
-              )}
-
-              <button 
+              <button
                 type="submit"
                 disabled={isSubmitting}
                 className="w-full bg-accent-color text-white py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] flex items-center justify-center gap-3 shadow-2xl shadow-accent-color/30 hover:bg-accent-color-hover hover:scale-[1.02] active:scale-95 transition-all mt-4"
               >
-                {isSubmitting ? t('Committing...') : (isPF ? t('Log to Journal') : t('Start Protocol'))}
+                {isSubmitting ? t('Committing...') : t('Log to Journal')}
                 <CheckCircle2 size={20} />
               </button>
             </form>

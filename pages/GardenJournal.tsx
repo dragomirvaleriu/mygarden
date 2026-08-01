@@ -133,7 +133,7 @@ const GardenJournal: React.FC<Props> = ({ organizationId, onNavigate, userId, is
       if (item.photos && item.photos.length > 0) {
         const itemDate = item.date?.toDate ? item.date.toDate() : parseSafeDate(item.date);
         const client = clients.find(c => c.id === item.clientId);
-        const clientName = client ? (client.tip_persoana === 'PJ' ? client.numeFirma : client.nume) : 'Grădinar';
+        const clientName = client ? client.nume : 'Grădinar';
         
         item.photos.forEach(photo => {
           photos.push({

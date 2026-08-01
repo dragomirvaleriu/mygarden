@@ -1,8 +1,4 @@
-export const checkUploadRateLimit = (accountType?: string, uploadCount: number = 1): { allowed: boolean; remaining: number; errorMsg?: string } => {
-  if (accountType !== 'PF') {
-    return { allowed: true, remaining: 999 }; // PJ/Business accounts are exempt
-  }
-  
+export const checkUploadRateLimit = (uploadCount: number = 1): { allowed: boolean; remaining: number; errorMsg?: string } => {
   const now = Date.now();
   const oneHourAgo = now - 60 * 60 * 1000;
   
@@ -26,8 +22,7 @@ export const checkUploadRateLimit = (accountType?: string, uploadCount: number =
   return { allowed: true, remaining: 5 - timestamps.length };
 };
 
-export const recordUploadAction = (accountType?: string, count: number = 1) => {
-  if (accountType !== 'PF') return;
+export const recordUploadAction = (count: number = 1) => {
   const now = Date.now();
   const stored = localStorage.getItem('pf_upload_timestamps');
   let timestamps: number[] = stored ? JSON.parse(stored) : [];

@@ -3,9 +3,6 @@ export { isDebtor } from './clientUtils';
 
 export const getClientDisplayName = (clientId: string, fallbackName: string, clients: Client[]) => {
   const c = clients.find(c => c.id === clientId);
-  if (c && c.tip_persoana === 'PJ') {
-    return `${c.numeFirma || c.nume} (${c.nume})`;
-  }
   return c ? c.nume : fallbackName;
 };
 

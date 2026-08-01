@@ -76,7 +76,6 @@ export interface UserProfile {
   leadsSearchTerm?: string;
   clientsShowBadPayersOnly?: boolean;
   clientsActiveTab?: 'clients' | 'leads';
-  accountType?: 'PF' | 'PJ';
   mobile_viewMode?: 'list' | 'agenda' | 'kanban' | 'route' | 'guide';
   lastLoginAt?: any;
   desktop_viewMode?: 'list' | 'agenda' | 'kanban' | 'route' | 'guide';
@@ -250,7 +249,6 @@ export interface Client {
   codClient: string;
   nume: string;
   email?: string;
-  tip_persoana: 'PF' | 'PJ';
   adresa?: string; // Deprecated: Moved to Property
   telefon: string;
   tarifLunar?: number; // Deprecated: Moved to Property
@@ -258,9 +256,6 @@ export interface Client {
   suprafataMp?: number; // Deprecated: Moved to Property
   status: 'Activ' | 'Inactiv' | 'Rău Platnic';
   cnp?: string;
-  numeFirma?: string;
-  roFirma?: string;
-  regCom?: string;
   banca?: string;
   iban?: string;
   data_facturare?: number;
