@@ -457,3 +457,20 @@ export interface GiftCode {
   createdBy: string;
   createdAt: any;
 }
+
+export interface ScheduledActivity {
+  id: string;
+  organizationId: string;
+  userId: string;
+  name: string;
+  icon: string;
+  emoji: string;
+  frequency: 'once' | 'weekly' | 'biweekly' | 'monthly' | 'quarterly';
+  nextDate: any; // timestamp
+  notifyBefore: number; // hours before
+  notes?: string;
+  createdAt: any;
+  completed: boolean;
+  completedAt?: any;
+  lastCompletedAt?: any;
+}
