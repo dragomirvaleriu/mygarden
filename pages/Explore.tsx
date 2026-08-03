@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X, Check, Sprout, Sun, Droplets, Gauge, Ruler, SlidersHorizontal } from 'lucide-react';
+import { Search, X, Check, Sprout, Sun, Droplets, Gauge, Ruler, SlidersHorizontal, MapPin, Layers, Flower2, Scissors, Bug, Shuffle } from 'lucide-react';
 import {
   plantCatalog,
   plantDifficulties,
@@ -321,6 +321,58 @@ const Explore: React.FC<Props> = ({ organizationId }) => {
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-wider text-text-secondary">Dificultate</p>
                     <p className="text-sm text-text-main font-medium capitalize">{selectedPlant.difficulty}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3 mb-6">
+                <div className="flex items-start gap-3">
+                  <MapPin className="w-4 h-4 text-text-secondary mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-wider text-text-secondary">Origine</p>
+                    <p className="text-sm text-text-main">{selectedPlant.origin}</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Layers className="w-4 h-4 text-text-secondary mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-wider text-text-secondary">Sol</p>
+                    <p className="text-sm text-text-main">{selectedPlant.soil}</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Flower2 className="w-4 h-4 text-text-secondary mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-wider text-text-secondary">Perioadă de înflorire</p>
+                    <p className="text-sm text-text-main">{selectedPlant.bloomTime}</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Sprout className="w-4 h-4 text-text-secondary mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-wider text-text-secondary">Fertilizare</p>
+                    <p className="text-sm text-text-main">{selectedPlant.fertilizing}</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Scissors className="w-4 h-4 text-text-secondary mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-wider text-text-secondary">Întreținere</p>
+                    <p className="text-sm text-text-main">{selectedPlant.maintenance}</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Bug className="w-4 h-4 text-text-secondary mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-wider text-text-secondary">Probleme frecvente</p>
+                    <p className="text-sm text-text-main">{selectedPlant.commonProblems}</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Shuffle className="w-4 h-4 text-text-secondary mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-wider text-text-secondary">Înmulțire</p>
+                    <p className="text-sm text-text-main">{selectedPlant.propagation}</p>
                   </div>
                 </div>
               </div>
