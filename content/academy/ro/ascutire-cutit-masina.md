@@ -5,7 +5,7 @@ Ne concentrăm foarte mult pe apă, pe îngrășăminte scumpe și erbicide sele
 ## Anatomia unei tăieturi curate vs. unei smulgeri
 Când privești firul de iarbă la microscop după tăiere, diferența este uluitoare.
 1. **Cuțit ascuțit:** Secționează firul curat, ca un bisturiu. Planta se vindecă rapid și pierde foarte puțină apă (transpirație) prin tăietură.
-2. **Cuțit bont:** Loviți iarba, nu o tăiați. Firul este smuls, zdrobit și rupt, rezultând capete sfâșiate, albicioase.
+2. **Cuțit bont:** Lovește iarba, nu o taie. Firul este smuls, zdrobit și rupt, rezultând capete sfâșiate, albicioase.
 
 ## Consecințele unui cuțit neascuțit
 - **Aspect general cenușiu-albicios:** La 24 de ore după tundere, toată curtea pare "arsă" sau decolorată pe vârfuri, pentru că a doua zi capetele zdrobite se usucă și devin albe. Oricât de mult Azot ai da, gazonul nu va fi verde intens.

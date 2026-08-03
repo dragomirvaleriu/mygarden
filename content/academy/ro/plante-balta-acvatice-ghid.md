@@ -1,0 +1,35 @@
+# Plante de Baltă și Acvatice: Ghid pe Specii pentru Iaz și Zone Mlăștinoase
+
+Dacă ai un iaz de grădină, o zonă cu drenaj slab care rămâne mereu umedă, sau vrei pur și simplu să amenajezi o mică zonă acvatică decorativă, acest grup de plante e complet diferit de restul grădinii — cerințele lor de "sol" înseamnă de fapt umiditate permanentă sau chiar apă stătută, condiții în care aproape orice altă plantă de grădină ar putrezi.
+
+## Plante pentru zone mlăștinoase (sol permanent umed, nu neapărat apă)
+
+- **Astilbe spp.** — deja detaliată în ghidul de perene de grădină; menționată aici pentru că se potrivește excelent și în zone cu sol permanent umed de la marginea unui iaz, nu doar în masive de flori clasice.
+- **Gunnera manicata** — tufă impunătoare, 2,5m înălțime, diametru 4m — una din cele mai mari plante ornamentale de grădină, cu frunze uriașe. Înflorește iunie-iulie, la semi-umbră, cu udare abundentă. Foarte pretențioasă la umiditate, are nevoie de sol fertil; **nu suportă temperaturile foarte ridicate** și suferă în plin soare. **Nu rezistă la temperaturi sub 4°C** — iarna, planta trebuie protejată sau chiar scoasă din pământ și depozitată în spații protejate, în funcție de severitatea iernii din zona ta.
+- **Rheum palmatum (Rubarbă Ornamentală)** — erbaceu, impunător, 1,80-3m înălțime, diametru 1,20-3m. Înflorește mai-iulie, la plin soare/umbră, cu udare moderată. Ușor de cultivat, dar cere sol fertil, permanent umed; **nu suportă insolația și temperaturile foarte ridicate**. Udări suplimentare, regulate.
+- **Schizostylis coccinea (Hesperantha coccinea)** — erbaceu, 60cm, diametru 40cm. Înflorește neobișnuit de târziu — vară-toamnă — la plin soare, cu udare abundentă. Are nevoie de sol fertil, bogat, permanent umed — umiditatea suficientă determină direct abundența înfloririi, dar **nu suportă stagnările de apă** (diferență importantă față de plantele cu adevărat acvatice de mai jos). Fertilizant lunar; protecție cu mulci în sezonul rece.
+- **Typha latifolia (Papura)** — erbaceu, 1,20-1,80m, diametru similar. Înflorește iunie-iulie, la plin soare/semi-umbră, cu udare abundentă — suportă chiar și stagnările de apă. **Atenție: se înmulțește foarte repede și invadează plantele din apropiere** — sistemul radicular e profund și greu de îndepărtat odată instalat. Recomandată cultivarea în vase/containere, nu direct în pământ, dacă nu vrei să acopere tot malul iazului.
+
+## Plante plutitoare și acvatice propriu-zise
+
+- **Azolla filiculoides (Ferigă de Apă)** — întreaga plantă plutește la suprafața apei, doar 1-2cm diametru per individ, dar cu o capacitate foarte mare de răspândire — poate acoperi rapid toată suprafața unui iaz mic. E și o plantă fixatoare de azot. Nu rezistă la temperaturi scăzute — peste iarnă se mută în spații protejate, cu temperaturi moderate. Trebuie rărită constant.
+- **Euryale ferox** — plantă plutitoare, cu frunze ce pot depăși 1m diametru. Iubitoare de căldură, adaptată zonelor cu veri foarte calde și uscate — climat nepotrivit pentru majoritatea grădinilor românești fără protecție suplimentară. Cultivată în Asia de Est și pentru semințe, folosite ca sursă alimentară.
+- **Trapa natans (Castana de Apă/Ciulinul de Apă)** — plantă plutitoare, 30-40cm diametru, cu rădăcini ce pot ajunge la 5m adâncime. Se înmulțește foarte ușor și rapid, putând invada suprafața apelor și limita pătrunderea luminii sub apă — **ține-o sub control activ** dacă o plantezi într-un iaz mic. Adaptată climatului cald.
+- **Stratiotes aloides (Foarfeca Bălții/Rizacul)** — plantă plutitoare, 40-50cm diametru, adaptată climatului temperat (deci potrivită și pentru România, spre deosebire de speciile de mai sus). Particularitate fascinantă: pe timpul verii plutește la suprafață, toamna se acoperă cu o secreție fină de carbonat de calciu și se scufundă la venirea înghețului, revenind la suprafață primăvara. E o specie dioică (plante separate mascul/femelă); se înmulțește prin semințe sau stoloni.
+- **Nelumbo nucifera (Floarea de Lotus)** — sistemul radicular stă în solul de la baza iazului/lacului, iar frunzele plutesc la suprafață. Impunătoare: 1,50-5m înălțime, diametru 3m, frunze de 60cm, flori de 20cm. Planta e comestibilă în întregime. În sezonul rece, se păstrează în spații protejate special amenajate — nu rezistă afară în climat temperat fără protecție.
+- **Nuphar lutea (Nufărul Galben de Baltă)** — până la 5m înălțime (parte din plantă sub apă), diametru 1,80m. Înflorește lung, mai-octombrie, la plin soare/semi-umbră. Se înmulțește foarte ușor și e greu de controlat — se recomandă plantarea rizomilor în vase, pe fundul iazului, nu direct în substrat, pentru a-i limita răspândirea.
+- **Nymphaea (Nuferii)** — genul clasic de nufăr decorativ, cu zeci de soiuri (Nymphaea alba, N. odorata, și multe hibrizi colorați). Frunzele plutesc la suprafață, cu diametru de până la 1-3m per tufă matură. Înfloresc vara (iulie-august), la plin soare/semi-umbră. Se adaptează pe o varietate mare de soluri de fund, preferând cele fertile, dar **au nevoie de o adâncime de apă de aproximativ 2-2,5m** pentru soiurile mari — pentru iazuri mici, există soiuri pitice adaptate la adâncimi mult mai mici (verifică eticheta soiului exact la cumpărare, adâncimea corectă variază enorm între soiuri).
+
+## Specii utile pentru marginea iazului (nu în apă, dar chiar pe mal)
+
+- **Acorus calamus (Obligeana/Trestia Dulce)** — 60-75cm înălțime, diametru 45-60cm, la plin soare/semi-umbră. Recomandată specific pentru amenajările de la marginea apelor sau zone mlăștinoase.
+- **Butomus umbellatus (Roșățeaua)** — 1,5m înălțime, diametru 70-80cm, înflorește iulie-august, la plin soare/semi-umbră. Aceeași utilizare — marginea apelor, zone mlăștinoase.
+- **Iris pseudacorus** — 90-150cm înălțime, diametru 60-75cm, înflorește mai-iunie, la plin soare/semi-umbră. Preferă soluri acide, permanent umede. Recomandat pentru marginea apelor.
+- **Iris sibirica** — 90-120cm înălțime, diametru 75-90cm, înflorește în mai, la plin soare/semi-umbră. Preferă soluri acide, fertile, permanent umede, dar se adaptează și pe o varietate mai mare de soluri decât I. pseudacorus. Udă și după înflorire — planta continuă să decoreze prin frunziș tot sezonul.
+
+## Cum alegi rapid
+
+- **Ai un iaz mic de grădină (sub 1m adâncime)?** → Evită speciile care cer adâncimi mari (Nymphaea soiuri mari, Nuphar lutea fără container) — alege soiuri pitice de nufăr sau Stratiotes aloides.
+- **Vrei ceva ce nu invadează necontrolat?** → Evită Typha latifolia, Trapa natans și Nuphar lutea fără plantare în vase; alege Iris pseudacorus/sibirica pentru margine.
+- **Ai doar o zonă cu sol umed, fără apă stătută propriu-zisă?** → Rheum palmatum, Gunnera manicata sau Schizostylis coccinea — nu specii acvatice propriu-zise, dar excelente pentru sol permanent reavăn.
+- **Ai iarnă geroasă și vrei plante care rezistă afară fără protecție?** → Stratiotes aloides (adaptată climatului temperat) sau speciile de Iris de mai sus; evită Nelumbo nucifera și Euryale ferox fără protecție serioasă de iarnă.

@@ -14,7 +14,7 @@ De asemenea, dacă solul tău este prea alcalin (pH > 7.5), fosforul reacționea
 ## Protocol de Aplicare
 1. Răspândește semințele de gazon uniform pe teren.
 2. Imediat după, dă o trecere cu mașina de împrăștiat pentru a aplica fertilizantul Starter (ex: la o doză de 25-30g / mp).
-3. Incorporează-le foarte ușor cu o greblă, trăgând doar spatele greblei pe deasupra pământului.
+3. Încorporează-le foarte ușor cu o greblă, trăgând doar spatele greblei pe deasupra pământului.
 4. Tăvălugește terenul pentru a asigura contactul sămânță-fertilizant-sol.
 5. Udă!
 

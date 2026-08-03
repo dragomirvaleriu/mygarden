@@ -31,9 +31,9 @@ Terenul se tunde cu firul la nivelul solului (scalpare). Urmează frezarea (ex: 
 ## 2. Selecția Semințelor și Ingineria Germinației
 
 ### Alegerea Mixului Ideal
-* **Sport Premium (Festuca Arundinacea predominantă + Poa Pratensis):** Creat pentru zone însorite/semi-umbrite (peste 6 ore de soare direct). Ideal pentru trafic intens (copii, animale de companie). Poa Pratensis se regenerează din rizomi subterani, închizând golurile.
-* **Royal Blue / Safari Play (Toleranță Extinsă):** Mixuri foarte rustice și rezistente la secetă extremă, destinate suprafețelor mari (>250 mp). Au un necesar de irigare cu 30% mai mic și iartă greșelile de mentenanță (cum ar fi fertilizarea neregulată).
-* **Elegant (Festuca Rubra spp.):** Strict pentru zonele umbrite (2-4 ore de soare/zi). Sensibil la trafic și la boli de vară.
+- **Sport Premium (Festuca Arundinacea predominantă + Poa Pratensis):** Creat pentru zone însorite/semi-umbrite (peste 6 ore de soare direct). Ideal pentru trafic intens (copii, animale de companie). Poa Pratensis se regenerează din rizomi subterani, închizând golurile.
+- **Royal Blue / Safari Play (Toleranță Extinsă):** Mixuri foarte rustice și rezistente la secetă extremă, destinate suprafețelor mari (>250 mp). Au un necesar de irigare cu 30% mai mic și iartă greșelile de mentenanță (cum ar fi fertilizarea neregulată).
+- **Elegant (Festuca Rubra spp.):** Strict pentru zonele umbrite (2-4 ore de soare/zi). Sensibil la trafic și la boli de vară.
 
 ### Procedura de Semănat și "Top-Dressing-ul"
 Sămânța se împrăștie uniform în 3-4 treceri încrucișate, amestecată obligatoriu cu îngrășământ Starter (ex: Pro Start/Biostart P, 2.5-3 kg/100 mp) bogat în Fosfor (P) pentru dezvoltarea radiculară. 
@@ -44,6 +44,6 @@ Sămânța se împrăștie uniform în 3-4 treceri încrucișate, amestecată ob
 Se acoperă cu o peliculă de 1-1.5 cm de nisip fin spălat (acest strat se numește top-dressing) care va reține umezeala pe sămânță, apoi se tăvălucește obligatoriu pentru a asigura un contact hidro-mecanic perfect. Fără tăvălugire, sămânța va sta "în aer" și va muri la primul soare puternic.
 
 ### Fereastra Termică și Germinația
-* **Martie (sol rece):** Germinație lentă în 20-25 zile.
-* **Aprilie:** Condiții ideale, germinație în 10-15 zile.
-* **Mai (sol cald):** Germinație accelerată în 7-10 zile.
+- **Martie (sol rece):** Germinație lentă în 20-25 zile.
+- **Aprilie:** Condiții ideale, germinație în 10-15 zile.
+- **Mai (sol cald):** Germinație accelerată în 7-10 zile.

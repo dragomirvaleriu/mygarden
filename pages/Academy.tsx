@@ -309,6 +309,107 @@ const ArticleCard: React.FC<{
   );
 };
 
+// Parses `**bold**` and `*italic*` spans anywhere within a plain line of
+// article markdown. The previous renderer only special-cased a **bold**
+// span at the very start of a bullet (via a single `.split('**')`) and
+// rendered just `parts[1]` + `parts[2]` — any bullet with a *second* bold
+// span later in the same sentence (a very natural pattern: "**Label:**
+// text **key word** more text") silently lost everything from that second
+// span onward. This walks every `**...**`/`*...*` occurrence instead of
+// just the first, and adds italics (used throughout for Latin species
+// names) which the old renderer didn't understand at all.
+const renderInlineMarkdown = (text: string): React.ReactNode => {
+  const segments = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g).filter(Boolean);
+  return segments.map((segment, i) => {
+    if (segment.startsWith('**') && segment.endsWith('**')) {
+      return <strong key={i} className="text-text-main">{segment.slice(2, -2)}</strong>;
+    }
+    if (segment.startsWith('*') && segment.endsWith('*')) {
+      return <em key={i}>{segment.slice(1, -1)}</em>;
+    }
+    return <React.Fragment key={i}>{segment}</React.Fragment>;
+  });
+};
+
+// A markdown table row: `| cell | cell |`. The separator row right under
+// the header (`|---|---|`) carries no content, just alignment dashes.
+const isTableRow = (line: string) => line.trim().startsWith('|');
+const isTableSeparatorRow = (line: string) => /^\|[\s:|-]+\|$/.test(line.trim());
+const parseTableRow = (line: string): string[] =>
+  line.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim());
+
+// Renders the full article body block-by-block instead of line-by-line.
+// Table rows need this: the previous renderer treated any line starting
+// with `| ` as inert markdown noise and returned null for it, which meant
+// every markdown table in every article — including the weed-ID table and
+// the herbicide dose table — rendered as nothing at all, silently. This
+// groups consecutive `|`-rows into one real `<table>` instead.
+const renderArticleBody = (content: string): React.ReactNode[] => {
+  const lines = content.split('\n');
+  const nodes: React.ReactNode[] = [];
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+
+    if (isTableRow(line)) {
+      const tableLines: string[] = [];
+      while (i < lines.length && isTableRow(lines[i])) {
+        tableLines.push(lines[i]);
+        i++;
+      }
+      const rows = tableLines.filter(l => !isTableSeparatorRow(l)).map(parseTableRow);
+      const [header, ...body] = rows;
+      nodes.push(
+        <div key={`table-${i}`} className="overflow-x-auto my-4 rounded-xl border border-border-color">
+          <table className="w-full text-sm border-collapse">
+            {header && (
+              <thead>
+                <tr className="bg-bg-main">
+                  {header.map((cell, ci) => (
+                    <th key={ci} className="text-left font-black text-text-main px-3 py-2 border-b border-border-color align-top">{renderInlineMarkdown(cell)}</th>
+                  ))}
+                </tr>
+              </thead>
+            )}
+            <tbody>
+              {body.map((row, ri) => (
+                <tr key={ri} className={ri % 2 === 1 ? 'bg-bg-main/40' : ''}>
+                  {row.map((cell, ci) => (
+                    <td key={ci} className="align-top px-3 py-2 border-b border-border-color/60 text-text-main">{renderInlineMarkdown(cell)}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+      continue;
+    }
+
+    if (line.startsWith('## ')) {
+      nodes.push(<h2 key={i} className="text-xl font-black text-text-main mt-8 mb-3 border-b border-border-color pb-2">{line.slice(3)}</h2>);
+    } else if (line.startsWith('### ')) {
+      nodes.push(<h3 key={i} className="text-base font-black text-accent-color mt-6 mb-2">{line.slice(4)}</h3>);
+    } else if (line.startsWith('# ') || line.startsWith('---')) {
+      // skip — h1 title and hr are handled by the header above
+    } else if (line.startsWith('- ') || line.startsWith('* ')) {
+      nodes.push(<li key={i} className="text-sm text-text-main font-medium ml-4 list-disc">{renderInlineMarkdown(line.slice(2))}</li>);
+    } else if (line.startsWith('> ')) {
+      nodes.push(
+        <div key={i} className="border-l-4 border-accent-color/40 bg-accent-color/5 rounded-r-lg pl-4 pr-3 py-2.5 text-sm text-text-main">
+          {renderInlineMarkdown(line.slice(2))}
+        </div>
+      );
+    } else if (line.trim() === '') {
+      nodes.push(<div key={i} className="h-2" />);
+    } else {
+      nodes.push(<p key={i} className="text-sm text-text-main font-medium leading-relaxed">{renderInlineMarkdown(line)}</p>);
+    }
+    i++;
+  }
+  return nodes;
+};
+
 // ─── Article Reader Modal ──────────────────────────────
 const ArticleReader: React.FC<{
   article: ArticleMeta;
@@ -353,18 +454,7 @@ const ArticleReader: React.FC<{
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
         <div className="prose prose-sm max-w-none text-text-main space-y-4">
-          {content.split('\n').map((line, i) => {
-            if (line.startsWith('## ')) return <h2 key={i} className="text-xl font-black text-text-main mt-8 mb-3 border-b border-border-color pb-2">{line.slice(3)}</h2>;
-            if (line.startsWith('### ')) return <h3 key={i} className="text-base font-black text-accent-color mt-6 mb-2">{line.slice(4)}</h3>;
-            if (line.startsWith('# ') || line.startsWith('---') || line.startsWith('| ')) return null;
-            if (line.startsWith('- **')) {
-              const parts = line.slice(2).split('**');
-              return <li key={i} className="text-sm text-text-main font-medium ml-4"><strong className="text-text-main">{parts[1]}</strong>{parts[2]}</li>;
-            }
-            if (line.startsWith('**')) return <p key={i} className="text-sm font-bold text-text-main">{line.replace(/\*\*/g, '')}</p>;
-            if (line.trim() === '') return <div key={i} className="h-2" />;
-            return <p key={i} className="text-sm text-text-main font-medium leading-relaxed">{line}</p>;
-          })}
+          {renderArticleBody(content)}
         </div>
         <div className="flex flex-wrap gap-2 mt-8 pt-6 border-t border-border-color">
           {article.tags.map(tag => (
