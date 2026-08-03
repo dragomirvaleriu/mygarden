@@ -63,7 +63,7 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
-  
+
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
   const [loading, setLoading] = useState(false);
@@ -71,6 +71,9 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
   const [isAlreadyLoggedIn, setIsAlreadyLoggedIn] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [inviteData, setInviteData] = useState<{ organizationId: string; role: string; code: string } | null>(null);
+
+  // Multi-step signup flow
+  const [signupStep, setSignupStep] = useState<1 | 2 | 3>(1); // 1: email/pass, 2: name/phone, 3: plans preview
 
   const emailRef = useRef<HTMLInputElement>(null);
   const passRef = useRef<HTMLInputElement>(null);
@@ -409,47 +412,92 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
     }
   };
 
-  const handleAuth = async (e: React.FormEvent) => {
+  const handleSignupStep = async (e: React.FormEvent) => {
     e.preventDefault();
     if (loading) return;
     setError('');
     setInfo('');
-    const trimmedEmail = email.trim().toLowerCase();
-
-    // Already signed in with an unfinished account: the only thing left to do
-    // is finish the setup. completeOnboarding reports its own errors.
-    if (auth.currentUser) {
-      await completeOnboarding(auth.currentUser.uid, auth.currentUser.email || trimmedEmail);
-      return;
-    }
-
-    if (!trimmedEmail || !password) {
-      setError(t("Enter your email and password."));
-      return;
-    }
 
     if (isRegister) {
-      if (!name.trim()) {
-        setError(t("Please enter your name."));
+      // Step 1: Email & Password validation
+      if (signupStep === 1) {
+        const trimmedEmail = email.trim().toLowerCase();
+        if (!trimmedEmail || !password) {
+          setError(t("Enter your email and password."));
+          return;
+        }
+        if (password.length < MIN_PASSWORD_LENGTH) {
+          setError(t("Password must be at least 6 characters."));
+          return;
+        }
+        if (password !== confirmPassword) {
+          setError(t("The passwords do not match."));
+          return;
+        }
+        setSignupStep(2);
         return;
       }
-      if (password.length < MIN_PASSWORD_LENGTH) {
-        setError(t("Password must be at least 6 characters."));
-        return;
-      }
-      if (password !== confirmPassword) {
-        setError(t("The passwords do not match."));
-        return;
-      }
-    }
 
-    busyRef.current = true;
-    setLoading(true);
-    try {
-      if (isRegister) {
-        const cred = await createUserWithEmailAndPassword(auth, trimmedEmail, password);
-        await completeOnboarding(cred.user.uid, trimmedEmail);
-      } else {
+      // Step 2: Name validation
+      if (signupStep === 2) {
+        if (!name.trim()) {
+          setError(t("Please enter your name."));
+          return;
+        }
+        setSignupStep(3);
+        return;
+      }
+
+      // Step 3: Create account & onboard
+      if (signupStep === 3) {
+        busyRef.current = true;
+        setLoading(true);
+        try {
+          const trimmedEmail = email.trim().toLowerCase();
+          const cred = await createUserWithEmailAndPassword(auth, trimmedEmail, password);
+          await completeOnboarding(cred.user.uid, trimmedEmail);
+        } catch (err: any) {
+          console.error("Auth failed:", err);
+          setStatusMsg('');
+
+          if (isPersistenceError(err) && recoverFromPersistenceError()) {
+            try {
+              sessionStorage.setItem(RESUME_SETUP_KEY, '1');
+              sessionStorage.setItem(RESUME_NAME_KEY, name.trim());
+            } catch { /* best effort */ }
+            setStatusMsg(t("Optimizing for your device..."));
+            window.location.reload();
+            return;
+          }
+
+          if (err.code === 'auth/email-already-in-use') {
+            setIsRegister(false);
+            setConfirmPassword('');
+            setSignupStep(1);
+          }
+          setError(describeError(err));
+        } finally {
+          busyRef.current = false;
+          setLoading(false);
+        }
+      }
+    } else {
+      // Login flow
+      const trimmedEmail = email.trim().toLowerCase();
+
+      if (auth.currentUser) {
+        await completeOnboarding(auth.currentUser.uid, auth.currentUser.email || trimmedEmail);
+        return;
+      }
+
+      if (!trimmedEmail || !password) {
+        setError(t("Enter your email and password."));
+        return;
+      }
+
+      busyRef.current = true;
+      setLoading(true);
+      try {
         const cred = await signInWithEmailAndPassword(auth, trimmedEmail, password);
         console.log("Login successful, uid:", cred.user.uid);
         saveCredentials();
@@ -467,7 +515,6 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
           }
         } else {
           console.log("Profile not found, checking organizations for adminUid:", cred.user.uid);
-          // Recovery logic
           const orgsQuery = query(collection(db, 'organizations'), where('adminUid', '==', cred.user.uid));
           const orgsSnap = await getDocs(orgsQuery);
           console.log("Organizations found:", orgsSnap.size);
@@ -489,30 +536,28 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
             if (!recovered) await promptOrResumeSetup(cred.user);
           }
         }
-      }
-    } catch (err: any) {
-      console.error("Auth failed:", err);
-      setStatusMsg('');
+      } catch (err: any) {
+        console.error("Auth failed:", err);
+        setStatusMsg('');
 
-      if (isPersistenceError(err) && recoverFromPersistenceError()) {
-        try {
-          sessionStorage.setItem(RESUME_SETUP_KEY, '1');
-          if (isRegister) sessionStorage.setItem(RESUME_NAME_KEY, name.trim());
-        } catch { /* best effort */ }
-        setStatusMsg(t("Optimizing for your device..."));
-        window.location.reload();
-        return;
-      }
+        if (isPersistenceError(err) && recoverFromPersistenceError()) {
+          try {
+            sessionStorage.setItem(RESUME_SETUP_KEY, '1');
+          } catch { /* best effort */ }
+          setStatusMsg(t("Optimizing for your device..."));
+          window.location.reload();
+          return;
+        }
 
-      if (err.code === 'auth/email-already-in-use') {
-        // Send them to the login form with the email they already typed.
-        setIsRegister(false);
-        setConfirmPassword('');
+        if (err.code === 'auth/email-already-in-use') {
+          setIsRegister(false);
+          setConfirmPassword('');
+        }
+        setError(describeError(err));
+      } finally {
+        busyRef.current = false;
+        setLoading(false);
       }
-      setError(describeError(err));
-    } finally {
-      busyRef.current = false;
-      setLoading(false);
     }
   };
 
@@ -580,7 +625,7 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
           </div>
         </div>
 
-        <form onSubmit={handleAuth} className="space-y-6">
+        <form onSubmit={handleSignupStep} className="space-y-6">
           {error && (
             <div className="p-4 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs rounded-md flex items-center gap-3 font-bold">
               <AlertCircle size={16} className="shrink-0" />
@@ -604,139 +649,169 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
 
           {(!isAlreadyLoggedIn || loading) ? (
             <>
-              <div className="space-y-2">
-                <label className="text-[11px] font-bold text-text-secondary uppercase tracking-wider ml-1 flex items-center gap-2">
-                  <Mail size={10} />
-                  {t('User Email')}
-                </label>
-                <input
-                  ref={emailRef}
-                  type="email"
-                  name="email"
-                  autoComplete="username"
-                  // Without these, iOS capitalises and autocorrects the first
-                  // word of the address and the sign-in silently fails.
-                  inputMode="email"
-                  autoCapitalize="none"
-                  autoCorrect="off"
-                  spellCheck={false}
-                  required
-                  className="w-full bg-bg-main rounded-md px-4 py-3 outline-none text-main font-bold border border-border-color focus:border-accent-color transition-all"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                />
-              </div>
+              {/* STEP 1: Email & Password (Signup) or Email & Password (Login) */}
+              {!isRegister || signupStep === 1 ? (
+                <>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-text-secondary uppercase tracking-wider ml-1 flex items-center gap-2">
+                      <Mail size={10} />
+                      {t('User Email')}
+                    </label>
+                    <input
+                      ref={emailRef}
+                      type="email"
+                      name="email"
+                      autoComplete="username"
+                      inputMode="email"
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      spellCheck={false}
+                      required
+                      className="w-full bg-bg-main rounded-md px-4 py-3 outline-none text-main font-bold border border-border-color focus:border-accent-color transition-all"
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                    />
+                  </div>
 
-              <div className="space-y-2">
-                <label className="text-[11px] font-bold text-text-secondary uppercase tracking-wider ml-1 flex items-center gap-2">
-                  <Lock size={10} />
-                  {t('Password')}
-                </label>
-                <div className="relative">
-                  <input
-                    ref={passRef}
-                    type={showPassword ? "text" : "password"}
-                    name="password"
-                    autoComplete={isRegister ? "new-password" : "current-password"}
-                    autoCapitalize="none"
-                    autoCorrect="off"
-                    spellCheck={false}
-                    required
-                    minLength={isRegister ? MIN_PASSWORD_LENGTH : undefined}
-                    className="w-full bg-bg-main rounded-md px-4 py-3 outline-none text-main font-bold border border-border-color focus:border-accent-color transition-all pr-12"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? t('Hide password') : t('Show password')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-accent-color transition-colors"
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-                {isRegister && (
-                  <p className="text-[10px] font-bold text-text-secondary ml-1 pt-1">
-                    {t("At least 6 characters.")}
-                  </p>
-                )}
-              </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-text-secondary uppercase tracking-wider ml-1 flex items-center gap-2">
+                      <Lock size={10} />
+                      {t('Password')}
+                    </label>
+                    <div className="relative">
+                      <input
+                        ref={passRef}
+                        type={showPassword ? "text" : "password"}
+                        name="password"
+                        autoComplete={isRegister ? "new-password" : "current-password"}
+                        autoCapitalize="none"
+                        autoCorrect="off"
+                        spellCheck={false}
+                        required
+                        minLength={isRegister ? MIN_PASSWORD_LENGTH : undefined}
+                        className="w-full bg-bg-main rounded-md px-4 py-3 outline-none text-main font-bold border border-border-color focus:border-accent-color transition-all pr-12"
+                        value={password}
+                        onChange={e => setPassword(e.target.value)}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        aria-label={showPassword ? t('Hide password') : t('Show password')}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-accent-color transition-colors"
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+                    {isRegister && (
+                      <p className="text-[10px] font-bold text-text-secondary ml-1 pt-1">
+                        {t("At least 6 characters.")}
+                      </p>
+                    )}
+                  </div>
 
-              {isRegister && (
-                <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
-                  <label className="text-[11px] font-bold text-text-secondary uppercase tracking-wider ml-1 flex items-center gap-2">
-                    <Lock size={10} />
-                    {t('Confirm Password')}
+                  {isRegister && signupStep === 1 && (
+                    <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
+                      <label className="text-[11px] font-bold text-text-secondary uppercase tracking-wider ml-1 flex items-center gap-2">
+                        <Lock size={10} />
+                        {t('Confirm Password')}
+                      </label>
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        name="confirmPassword"
+                        autoComplete="new-password"
+                        autoCapitalize="none"
+                        autoCorrect="off"
+                        spellCheck={false}
+                        required
+                        className="w-full bg-bg-main rounded-md px-4 py-3 outline-none text-main font-bold border border-border-color focus:border-accent-color transition-all"
+                        value={confirmPassword}
+                        onChange={e => setConfirmPassword(e.target.value)}
+                      />
+                    </div>
+                  )}
+
+                  {!isRegister && (
+                    <div className="flex items-center justify-between gap-3 px-1">
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          id="remember"
+                          className="w-4 h-4 rounded border-border-color bg-bg-main text-accent-color focus:ring-accent-color"
+                          checked={rememberMe}
+                          onChange={e => setRememberMe(e.target.checked)}
+                        />
+                        <label htmlFor="remember" className="text-[11px] font-bold text-text-secondary uppercase tracking-wider cursor-pointer select-none">{t('Remember me')}</label>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={handlePasswordReset}
+                        disabled={loading}
+                        className="text-[11px] font-bold text-accent-color uppercase tracking-wider hover:underline disabled:opacity-50"
+                      >
+                        {t('Forgot password?')}
+                      </button>
+                    </div>
+                  )}
+                </>
+              ) : null}
+
+              {/* STEP 2: Name (Signup only) */}
+              {isRegister && signupStep === 2 && (
+                <div className="space-y-2 animate-in slide-in-from-top-4 duration-500 border-t border-border-color pt-4">
+                  <label className="text-[11px] font-bold text-accent-color uppercase tracking-wider ml-1 flex items-center gap-2">
+                    <User size={10} />
+                    {t('Your Name')}
                   </label>
                   <input
-                    type={showPassword ? "text" : "password"}
-                    name="confirmPassword"
-                    autoComplete="new-password"
-                    autoCapitalize="none"
-                    autoCorrect="off"
-                    spellCheck={false}
+                    type="text"
+                    autoComplete="name"
                     required
-                    className="w-full bg-bg-main rounded-md px-4 py-3 outline-none text-main font-bold border border-border-color focus:border-accent-color transition-all"
-                    value={confirmPassword}
-                    onChange={e => setConfirmPassword(e.target.value)}
+                    className="w-full bg-bg-main rounded-md px-4 py-3 outline-none text-main font-black border border-accent-color focus:ring-1 focus:ring-accent-color transition-all shadow-sm"
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    placeholder={t('Ex: Ion, Maria...')}
+                    autoFocus
                   />
                 </div>
               )}
 
-              <div className="flex items-center justify-between gap-3 px-1">
-                <div className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    id="remember"
-                    className="w-4 h-4 rounded border-border-color bg-bg-main text-accent-color focus:ring-accent-color"
-                    checked={rememberMe}
-                    onChange={e => setRememberMe(e.target.checked)}
-                  />
-                  <label htmlFor="remember" className="text-[11px] font-bold text-text-secondary uppercase tracking-wider cursor-pointer select-none">{t('Remember me')}</label>
-                </div>
+              {/* STEP 3: Plan Preview (Signup only) */}
+              {isRegister && signupStep === 3 && (
+                <div className="space-y-3 animate-in slide-in-from-top-4 duration-500 border-t border-border-color pt-4">
+                  <div className="text-center mb-4">
+                    <h3 className="text-sm font-black text-accent-color mb-1">Alege planul tău</h3>
+                    <p className="text-[10px] font-bold text-text-secondary">Poți schimba oricând după creare</p>
+                  </div>
 
-                {!isRegister && (
-                  <button
-                    type="button"
-                    onClick={handlePasswordReset}
-                    disabled={loading}
-                    className="text-[11px] font-bold text-accent-color uppercase tracking-wider hover:underline disabled:opacity-50"
-                  >
-                    {t('Forgot password?')}
-                  </button>
-                )}
-              </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-4 rounded-lg border-2 border-emerald-500/30 bg-emerald-500/5">
+                      <div className="text-2xl mb-2">🌱</div>
+                      <p className="text-xs font-black text-main mb-1">FREE</p>
+                      <p className="text-[9px] font-bold text-text-secondary">Pân la 3 proprietăți</p>
+                    </div>
+                    <div className="p-4 rounded-lg border-2 border-amber-500/30 bg-amber-500/5">
+                      <div className="text-2xl mb-2">👑</div>
+                      <p className="text-xs font-black text-main mb-1">PRO</p>
+                      <p className="text-[9px] font-bold text-text-secondary">Ilimitat + Premium</p>
+                    </div>
+                  </div>
+
+                  <p className="text-[9px] font-bold text-text-secondary text-center pt-2">
+                    Poți trece la PRO oricând din Academie
+                  </p>
+                </div>
+              )}
             </>
           ) : null}
 
-          {/* My Garden is homeowner-only: every account just needs a name, no company. */}
-          {isRegister && !inviteData && (
-            <div className="space-y-2 animate-in slide-in-from-top-4 duration-500 pt-2 border-t border-border-color">
-              <label className="text-[11px] font-bold text-accent-color uppercase tracking-wider ml-1 flex items-center gap-2">
-                <User size={10} />
-                {t('Your Name')}
-              </label>
-              <input
-                type="text"
-                autoComplete="name"
-                required
-                className="w-full bg-bg-main rounded-md px-4 py-3 outline-none text-main font-black border border-accent-color focus:ring-1 focus:ring-accent-color transition-all shadow-sm"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                placeholder={t('Ex: Ion, Maria...')}
-                autoFocus
-              />
-            </div>
-          )}
-
           <div className="pt-4 space-y-4">
-            <button 
-              type="submit" 
-              disabled={loading} 
+            <button
+              type="submit"
+              disabled={loading}
               className="w-full stihl-button py-4 rounded-md font-bold uppercase tracking-wider text-xs shadow-md active:scale-95 transition-all disabled:opacity-50 text-white"
             >
-              {loading ? t('Processing...') : isAlreadyLoggedIn ? t('Finalize Setup') : isRegister ? t('Create Account') : t('Authorize Access')}
+              {loading ? t('Processing...') : isAlreadyLoggedIn ? t('Finalize Setup') : isRegister ? (signupStep === 1 || signupStep === 2 ? t('Continuă') : t('Create Account')) : t('Authorize Access')}
             </button>
 
             {statusMsg && (
@@ -747,9 +822,24 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
 
             {!isAlreadyLoggedIn ? (
               <div className="flex flex-col gap-2 pt-4 text-center">
-                <button type="button" onClick={() => { setIsRegister(!isRegister); setError(''); setInfo(''); setStatusMsg(''); setConfirmPassword(''); }} className="text-[11px] font-bold text-text-secondary uppercase tracking-wider hover:text-main transition-colors py-2">
-                  {isRegister ? t('Already have an account? Login') : t('New here? Create account')}
-                </button>
+                {isRegister && signupStep > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => setSignupStep((signupStep - 1) as 1 | 2 | 3)}
+                    className="text-[11px] font-bold text-text-secondary uppercase tracking-wider hover:text-main transition-colors py-2"
+                  >
+                    ← {t('Înapoi')}
+                  </button>
+                )}
+                {!(isRegister && signupStep > 1) && (
+                  <button
+                    type="button"
+                    onClick={() => { setIsRegister(!isRegister); setError(''); setInfo(''); setStatusMsg(''); setConfirmPassword(''); setSignupStep(1); }}
+                    className="text-[11px] font-bold text-text-secondary uppercase tracking-wider hover:text-main transition-colors py-2"
+                  >
+                    {isRegister ? t('Already have an account? Login') : t('New here? Create account')}
+                  </button>
+                )}
               </div>
             ) : (
               <div className="flex flex-col gap-2 pt-4 text-center">

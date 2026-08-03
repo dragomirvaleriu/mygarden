@@ -64,7 +64,16 @@ const NotificationBell: React.FC<Props> = ({ uid }) => {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-80 max-w-[90vw] bg-bg-card border border-border-color rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-top-2 duration-200 z-[100]">
+        // Opens upward (bottom-full, not top-full): the only place this
+        // renders is the sidebar's bottom profile row, right above the
+        // Logout button — a downward dropdown had nowhere to go but off the
+        // bottom of the viewport.
+        // Anchored from the left (left-0, not right-0): the bell sits near
+        // the right edge of a narrow (~230px) sidebar, so a 320px-wide panel
+        // right-aligned to it extended ~85px past the left edge of the
+        // entire window. Left-aligned, it grows rightward into the (much
+        // wider) main content area instead, which is always there to grow into.
+        <div className="absolute bottom-full left-0 mb-2 w-80 max-w-[90vw] bg-bg-card border border-border-color rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-2 duration-200 z-[100]">
           <div className="p-3 border-b border-border-color">
             <p className="text-[11px] font-black text-main uppercase tracking-wider">Notificări</p>
           </div>

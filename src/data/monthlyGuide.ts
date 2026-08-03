@@ -89,7 +89,7 @@ export const monthlyGuide = [
     title: "Iulie",
     subtitle: "Supraviețuirea Caniculei",
     summary: "Gazon: Irigare profundă și rară (25-30 L/mp pe săptămână în 1-2 ședințe). Tunderi rare cu colectarea ierbii.\nPomi & Legume: Instalare plase de umbrire. Recoltare continuă.",
-    science: "TIP: Monitorizați apariția petelor galbene (Rhizoctonia). Stresul termic este la cote maxime.",
+    science: "TIP: Monitorizați apariția petelor galbene (Rhizoctonia), dar și Antracnoza, Sclerotinia, Pythium sau Laetisaria — toate active pe caniculă. Nu orice pată uscată e neapărat boală: verificați mai întâi zonele unde apa a băltit peste 48 de ore sau unde aspersorul nu ajunge uniform — de multe ori e doar stres termic/hidric, nu ciupercă. Stresul termic este la cote maxime.",
     warning: "Interdicție absolută pentru scarificare sau erbicidare! Stresul mecanic sau chimic pe fond de caniculă va arde iremediabil gazonul.",
     tasks: [
       { id: "iul-1", title: "Irigare profundă (25-30 L/mp/săpt)", category: "watering", important: true },
@@ -129,30 +129,33 @@ export const monthlyGuide = [
     month: 9,
     title: "Octombrie",
     subtitle: "Stocarea Energiei",
-    summary: "Gazon: Coborârea tăierii spre 5 cm. Adunarea frunzelor la max 2-3 zile.\nPomi: Plantarea noilor pomi fructiferi. Tratamente chimice la căderea masivă a frunzelor (spălare cuprice).\nSol: Săparea adâncă a grădinii (brazdă mare) peste iarnă.",
-    science: "Săparea adâncă reține zăpada și distruge dăunătorii prin îngheț. Prinderea noilor pomi este superioară celei de primăvară.",
+    summary: "Gazon: Coborârea tăierii spre 5 cm. Adunarea frunzelor la max 2-3 zile. Scarificare doar dacă gazonul e bine înrădăcinat (nu pe gazon semănat de curând).\nPomi: Plantarea noilor pomi fructiferi. Tratamente chimice la căderea masivă a frunzelor (spălare cuprice).\nSol: Săparea adâncă a grădinii (brazdă mare) peste iarnă.",
+    science: "Săparea adâncă reține zăpada și distruge dăunătorii prin îngheț. Prinderea noilor pomi este superioară celei de primăvară. Sub firele de iarbă se formează un strat de paie (resturi vegetale moarte) care blochează apa să ajungă la rădăcini și favorizează mușchiul — scarificarea îl elimină, dar are rost doar pe un gazon deja înrădăcinat de câteva luni bune; pe unul semănat de curând l-ar smulge din rădăcină.",
     warning: "Nu lăsați gazonul mai înalt de 6 cm (putrezire). Un strat gros de frunze ude provoacă asfixierea firelor în sub o săptămână.",
     tasks: [
       { id: "oct-1", title: "Adunarea frunzelor căzute", category: "other", important: true },
       { id: "oct-2", title: "Tratamente cuprice la căderea frunzelor", category: "treatment", important: true },
       { id: "oct-3", title: "Tundere gazon la 5 cm", category: "mowing" },
       { id: "oct-4", title: "Plantare noi pomi fructiferi", category: "other" },
-      { id: "oct-5", title: "Săpare adâncă a grădinii", category: "other" }
+      { id: "oct-5", title: "Săpare adâncă a grădinii", category: "other" },
+      { id: "oct-6", title: "Scarificare gazon matur (nu pe gazon nou semănat)", category: "other" }
     ]
   },
   {
     month: 10,
     title: "Noiembrie",
     subtitle: "Pregătirea de Iarnă",
-    summary: "Gazon: Fertilizare de iarnă (Potasiu) pentru efect 'antigel'. Ultima tundere. Tratament foliar pe bază de Fier.\nSisteme: Golirea completă a sistemului de irigație (compresor). Curățarea utilajelor.\nTratamente: Văruirea trunchiurilor și instalarea plaselor împotriva rozătoarelor.",
-    science: "TIP: Potasiul îngroașă pereții celulari, prevenind distrugerea țesuturilor la ciclurile repetate de îngheț-dezgheț.",
+    summary: "Gazon: Fertilizare de iarnă (Potasiu) pentru efect 'antigel'. Verifică pH-ul solului — sub 6,5 aplică carbonat de calciu 50g/mp. Ultima tundere. Tratament foliar pe bază de Fier.\nSisteme: Golirea completă a sistemului de irigație (compresor). Curățarea utilajelor.\nTratamente: Văruirea trunchiurilor și instalarea plaselor împotriva rozătoarelor.\nIarnă: Dacă tratezi aleile cu ceva antiderapant, nu folosi sare lângă gazon — alege rumeguș, cenușă sau nisip.",
+    science: "TIP: Potasiul îngroașă pereții celulari, prevenind distrugerea țesuturilor la ciclurile repetate de îngheț-dezgheț. Un pH sub 6,5 înseamnă sol acid — fără calcar acum, gazonul intră în iarnă slăbit și mai vulnerabil la mușchi și ciuperci primăvara. Sarea folosită la topit gheața pe alei arde rădăcinile gazonului din apropiere — o soluție simplă e să marchezi marginea aleilor cu țăruși sau steguleț colorat, mai înalte decât nivelul zăpezii, ca să nu calci sau să arunci sare peste gazon fără să vrei.",
     warning: "Pericol de îngheț al conductelor. Sistemul de irigație trebuie golit neapărat cu compresorul de aer.",
     tasks: [
-      { id: "nov-1", title: "Fertilizare de iarnă (Potasiu)", category: "fertilizing", important: true },
+      { id: "nov-1", title: "Fertilizare de iarnă (Potasiu, 3-3,5 kg/100mp), pe gazon uscat, apoi udat", category: "fertilizing", important: true },
       { id: "nov-2", title: "Golirea completă a sistemului de irigații", category: "other", important: true },
+      { id: "nov-6", title: "Verifică pH-ul solului; sub 6,5 aplică carbonat de calciu 50g/mp", category: "treatment", important: true },
       { id: "nov-3", title: "Tratament foliar pe bază de Fier", category: "treatment" },
       { id: "nov-4", title: "Văruire pomi și plase rozătoare", category: "other" },
-      { id: "nov-5", title: "Ultima tundere a anului", category: "mowing" }
+      { id: "nov-5", title: "Ultima tundere a anului", category: "mowing" },
+      { id: "nov-7", title: "Marchează marginea aleilor înainte de zăpadă (steguleț/țăruș)", category: "other" }
     ]
   },
   {

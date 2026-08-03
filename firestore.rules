@@ -134,11 +134,36 @@ service cloud.firestore {
     // --- REGULI COLECȚII ---
 
     // Profilul utilizatorului
+    //
+    // Fields nobody may set on themselves. `role` and `isSuperAdmin` decide
+    // who is an admin; `organizationId` decides whose data you can read; the
+    // subscription fields decide what you paid for. Self-update on users/{uid}
+    // is otherwise unrestricted, so without this list any account could write
+    // `isSuperAdmin: true` (or `role: 'admin'`) onto its own profile and take
+    // over the panel — list every user, mint gift codes, delete accounts.
+    // Only Cloud Functions (Admin SDK, which bypasses these rules) may set
+    // them. Keep this in sync with assertSuperAdmin() in functions/src/index.ts.
+    function protectedUserFields() {
+      return ['role', 'isSuperAdmin', 'organizationId', 'subscriptionProduct', 'subscriptionExpiresAt'];
+    }
+
     match /users/{userId} {
       allow read: if isSuperAdmin() || request.auth.uid == userId || isMemberOf(resource.data.organizationId);
       allow list: if isSuperAdmin();
-      allow create: if request.auth.uid == userId || isSuperAdmin();
-      allow update, delete: if request.auth.uid == userId || isSuperAdmin() || (isAdmin() && isMemberOf(resource.data.organizationId));
+      // Signup (pages/Login.tsx) legitimately writes organizationId and
+      // role:'admin' — every homeowner is admin of their own single-member
+      // org. What it must never write is 'superadmin', the isSuperAdmin flag,
+      // or an entitlement it granted itself.
+      allow create: if isSuperAdmin() || (
+        request.auth.uid == userId &&
+        !request.resource.data.keys().hasAny(['isSuperAdmin', 'subscriptionProduct', 'subscriptionExpiresAt']) &&
+        (!('role' in request.resource.data) || request.resource.data.role in ['user', 'admin', 'owner', 'employee'])
+      );
+      allow update: if isSuperAdmin() || (
+        (request.auth.uid == userId || (isAdmin() && isMemberOf(resource.data.organizationId))) &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(protectedUserFields())
+      );
+      allow delete: if request.auth.uid == userId || isSuperAdmin() || (isAdmin() && isMemberOf(resource.data.organizationId));
     }
 
     // Setări utilizator
@@ -296,6 +321,13 @@ service cloud.firestore {
       allow read: if isSuperAdmin() || (isSignedIn() && request.auth.uid == resource.data.uid);
       allow create: if isSignedIn() && request.auth.uid == request.resource.data.uid;
       allow update, delete: if isSuperAdmin() || (isSignedIn() && request.auth.uid == resource.data.uid);
+    }
+
+    // User Activities — garden activity management (per userId & organizationId)
+    match /user_activities/{docId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.auth.uid == request.resource.data.userId;
+      allow update, delete: if isSignedIn() && request.auth.uid == resource.data.userId;
     }
 
     // Community marketplace (GardenixMarketplace) — listings are browsable

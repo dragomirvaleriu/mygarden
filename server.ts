@@ -61,11 +61,14 @@ try {
     dbAdmin = firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== '(default)'
       ? getAdminFirestore(adminApp, firebaseConfig.firestoreDatabaseId)
       : getAdminFirestore(adminApp);
+    console.log("[FIRESTORE] Admin Firestore initialized with credentials");
   } else {
-    console.warn("[FIRESTORE] Admin Firestore NOT initialized (missing credentials). Some API routes may fail.");
+    console.warn("[FIRESTORE] Firestore Admin requires GOOGLE_APPLICATION_CREDENTIALS env var. API routes needing DB will fail gracefully.");
+    dbAdmin = null;
   }
 } catch (err: any) {
   console.warn("[FIRESTORE] Could not initialize Firestore Admin:", err.message);
+  dbAdmin = null;
 }
 
 // Firestore Health Check
@@ -410,69 +413,16 @@ async function startServer() {
     }
   });
 
-  // API Route to grant subscriptions (SuperAdmin only)
-  app.post("/api/admin/grant-subscription", async (req, res) => {
-    const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
-
-    if (!token) {
-      return res.status(401).json({ error: "Authentication required" });
-    }
-
-    try {
-      const decodedToken = await getAuth(adminApp).verifyIdToken(token);
-      const adminEmail = decodedToken.email?.toLowerCase();
-
-      // Only superadmin can grant subscriptions
-      if (adminEmail !== 'dragomirvaleriu@gmail.com') {
-        return res.status(403).json({ error: "Only superadmin can grant subscriptions" });
-      }
-
-      const { targetUid, tiers, durationMonths } = req.body;
-
-      if (!targetUid || !tiers || !Array.isArray(tiers) || tiers.length === 0) {
-        return res.status(400).json({ error: "Missing or invalid: targetUid, tiers (array)" });
-      }
-
-      if (![1, 3, 12, null].includes(durationMonths)) {
-        return res.status(400).json({ error: "durationMonths must be 1, 3, 12, or null (infinite)" });
-      }
-
-      if (!dbAdmin) {
-        return res.status(503).json({ error: "Database not available" });
-      }
-
-      // Calculate expiration date
-      let expiresAt = null;
-      if (durationMonths !== null) {
-        const date = new Date();
-        date.setMonth(date.getMonth() + durationMonths);
-        expiresAt = date;
-      }
-
-      // Update user with subscription
-      const updateData: any = {
-        subscriptionProduct: tiers.join('+'),
-        subscriptionExpiresAt: expiresAt,
-        updatedAt: new Date()
-      };
-
-      await dbAdmin.collection('users').doc(targetUid).update(updateData);
-
-      console.log(`✓ Subscription granted: ${tiers.join('+')} for ${durationMonths ? durationMonths + ' months' : 'infinite'} to user ${targetUid}`);
-      res.json({
-        success: true,
-        message: 'Subscription granted',
-        subscription: {
-          tiers,
-          expiresAt: expiresAt ? expiresAt.toISOString() : 'infinite'
-        }
-      });
-    } catch (err: any) {
-      console.error("Failed to grant subscription:", err);
-      res.status(500).json({ error: "Failed to grant subscription: " + err.message });
-    }
-  });
+  // Subscription grants and account deletion used to live here as
+  // /api/admin/grant-subscription and /api/admin/delete-user. Both were
+  // unfixable in this process: the dev server has no service-account
+  // credentials, so dbAdmin is null and the routes fell back to an
+  // *unauthenticated* client SDK write that Firestore rejected with
+  // PERMISSION_DENIED every time. They also wrote the entitlement to
+  // users/{uid}, which usePlan() never reads. They are now the
+  // grantSubscription / revokeSubscription / deleteUserAccount callables in
+  // functions/src/index.ts, which run with real Admin SDK credentials and
+  // write to organizations/{orgId} where the app actually looks.
 
   // API Route to test the setup locally
   app.get("/api/test-server", (req, res) => {

@@ -64,6 +64,7 @@ const GardenJournal: React.FC<Props> = ({ organizationId, onNavigate, userId, is
 
   const [editingItem, setEditingItem] = useState<any>(null);
   const [itemToDelete, setItemToDelete] = useState<any>(null);
+  const [userActivities, setUserActivities] = useState<any[]>([]);
 
   const pfClient = clients.length > 0 ? clients[0] : null;
 
@@ -185,6 +186,30 @@ const GardenJournal: React.FC<Props> = ({ organizationId, onNavigate, userId, is
   const [showCompare, setShowCompare] = useState(false);
   const [compareBeforeIdx, setCompareBeforeIdx] = useState(0);
   const [compareAfterIdx, setCompareAfterIdx] = useState(0);
+
+  // Load user activities from Firestore (for journal entry selection)
+  useEffect(() => {
+    if (!isPF || !userId) return;
+
+    const q = query(
+      collection(db, 'user_activities'),
+      where('userId', '==', userId),
+      where('organizationId', '==', organizationId)
+    );
+
+    const unsub = onSnapshot(q, (snapshot) => {
+      const activities = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })).sort((a: any, b: any) => a.order - b.order);
+      setUserActivities(activities);
+    }, () => {
+      // fallback if permission denied
+      setUserActivities([]);
+    });
+
+    return () => unsub();
+  }, [userId, organizationId, isPF]);
 
   // Auto-play effect for timelapse
   useEffect(() => {
@@ -907,22 +932,34 @@ const GardenJournal: React.FC<Props> = ({ organizationId, onNavigate, userId, is
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] font-black text-text-secondary uppercase tracking-wider ml-1">Tip Activitate</label>
-                  <select 
+                  <select
                     value={eventType}
                     onChange={e => setEventType(e.target.value)}
                     className="w-full bg-bg-main border border-border-color rounded-xl px-4 py-2.5 text-xs font-bold text-main outline-none focus:border-accent-color transition-all"
                     required
                   >
-                    <option value="treatment">🪲 Tratament Horticol</option>
-                    <option value="watering">💧 Udare</option>
-                    <option value="mowing">✂️ Tundere Gazon</option>
-                    <option value="fertilizing">🌱 Fertilizare</option>
-                    <option value="pruning">🌿 Tăiat / Curățat</option>
-                    <option value="planting">🌸 Plantare / Semănat</option>
-                    <option value="observation">👁️ Observație</option>
-                    <option value="pest">🐛 Dăunători</option>
-                    <option value="blooming">🌺 A Înflorit</option>
-                    <option value="other">📝 Alte activități</option>
+                    {isPF && userActivities.length > 0 ? (
+                      userActivities.map((activity: any) => (
+                        <option key={activity.id} value={activity.id}>
+                          {activity.icon} {activity.name}
+                        </option>
+                      ))
+                    ) : isPF ? (
+                      <option value="">Adaugă o activitate în Gestiune Activități</option>
+                    ) : (
+                      <>
+                        <option value="treatment">🪲 Tratament Horticol</option>
+                        <option value="watering">💧 Udare</option>
+                        <option value="mowing">✂️ Tundere Gazon</option>
+                        <option value="fertilizing">🌱 Fertilizare</option>
+                        <option value="pruning">🌿 Tăiat / Curățat</option>
+                        <option value="planting">🌸 Plantare / Semănat</option>
+                        <option value="observation">👁️ Observație</option>
+                        <option value="pest">🐛 Dăunători</option>
+                        <option value="blooming">🌺 A Înflorit</option>
+                        <option value="other">📝 Alte activități</option>
+                      </>
+                    )}
                   </select>
                 </div>
               </div>

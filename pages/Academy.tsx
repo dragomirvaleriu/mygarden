@@ -1,10 +1,10 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import {
   BookOpen, Lock, Crown, Zap, Star, Clock, ChevronRight,
   X, Sprout, AlertTriangle, CheckCircle2, ChevronDown, ChevronUp,
   Droplets, Sun, Scissors, FlaskConical, Tractor, Filter,
   GraduationCap, TrendingUp, Globe, ArrowLeft, Eye, BarChart3,
-  ShieldCheck
+  ShieldCheck, Search
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -372,6 +372,10 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
   const lang = i18n.language?.startsWith('en') ? 'en' : 'ro';
 
   const [activeCategory, setActiveCategory] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearchAutocomplete, setShowSearchAutocomplete] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
   const [paywallArticle, setPaywallArticle] = useState<ArticleMeta | null>(null);
   const [openArticle, setOpenArticle] = useState<ArticleMeta | null>(null);
   const [articleContent, setArticleContent] = useState('');
@@ -391,10 +395,33 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
   const totalCount = getTotalArticleCount(lang);
   const readCount = articles.filter(a => readArticles.has(a.id)).length;
 
-  const filteredArticles = useMemo(() =>
-    activeCategory === 'all' ? articles : articles.filter(a => a.category === activeCategory),
-    [articles, activeCategory]
-  );
+  // Full-text search with autocomplete
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    const query = searchQuery.toLowerCase();
+    return articles.filter(a =>
+      a.title.toLowerCase().includes(query) ||
+      a.excerpt.toLowerCase().includes(query) ||
+      a.tags.some(tag => tag.toLowerCase().includes(query)) ||
+      a.categoryLabel.toLowerCase().includes(query)
+    ).slice(0, 8); // Limit to 8 results for autocomplete
+  }, [articles, searchQuery]);
+
+  const filteredArticles = useMemo(() => {
+    let result = articles;
+    if (activeCategory !== 'all') {
+      result = result.filter(a => a.category === activeCategory);
+    }
+    if (searchQuery.trim()) {
+      result = result.filter(a =>
+        a.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        a.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        a.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        a.categoryLabel.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    return result;
+  }, [articles, activeCategory, searchQuery]);
 
   const availableCategories = useMemo(() => {
     const cats = [...new Set(articles.map(a => a.category))];
@@ -457,6 +484,17 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
   }, []);
 
   const progressPct = totalCount > 0 ? Math.round((readCount / totalCount) * 100) : 0;
+
+  // Close autocomplete on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
+        setShowSearchAutocomplete(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto pb-20 animate-in fade-in duration-500">
@@ -524,58 +562,76 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
         </div>
       </div>
 
-      {/* ── Interactive Tools Banners ── */}
-      <div className="mb-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Asistent Noua Peluză */}
-          <div className="relative overflow-hidden rounded-[2rem] border border-emerald-500/20 bg-gradient-to-br from-emerald-950/40 via-bg-card to-bg-card p-6 md:p-8 flex flex-col justify-between shadow-md hover:shadow-lg transition-all group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/0 via-emerald-500/5 to-emerald-500/0 rounded-[2rem] blur opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-            <div className="relative z-10">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0 shadow-inner">
-                  <Sprout size={24} className="group-hover:animate-bounce" />
-                </div>
-                <div>
-                  <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-[0.25em]">Ghidare Pas cu Pas</span>
-                  <h3 className="text-lg font-black text-text-main leading-tight mt-0.5">Asistent Noua Peluză</h3>
-                </div>
-              </div>
-              <p className="text-xs text-text-secondary font-medium leading-relaxed max-w-sm mb-6">
-                Calculează necesarul de semințe, protocolul de sol și timpii optimi de germinare personalizați pentru curtea ta.
-              </p>
-            </div>
-            <button
-              onClick={() => setShowAIAssistant(true)}
-              className="relative z-10 w-full sm:w-auto self-start px-5 py-3 bg-emerald-500 hover:bg-emerald-400 text-white font-black uppercase text-[10px] tracking-widest rounded-xl transition-all shadow-md shadow-emerald-950/20 active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
-            >
-              Lansează Asistentul <ChevronRight size={12} />
-            </button>
+
+      {/* ── Search with Autocomplete (desktop: inline near top; mobile: floating button below) ── */}
+      <div className="hidden md:block mb-8" ref={searchContainerRef}>
+        <div className="relative">
+          <div className="relative flex items-center">
+            <Search size={18} className="absolute left-4 text-text-secondary pointer-events-none" />
+            <input
+              type="text"
+              placeholder={lang === 'ro' ? 'Caută în articole...' : 'Search articles...'}
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setShowSearchAutocomplete(true);
+              }}
+              onFocus={() => setShowSearchAutocomplete(true)}
+              className="w-full pl-12 pr-4 py-3 bg-bg-card border border-border-color rounded-2xl text-text-main placeholder-text-secondary/50 focus:outline-none focus:border-accent-color transition-colors"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => {
+                  setSearchQuery('');
+                  setShowSearchAutocomplete(false);
+                }}
+                className="absolute right-4 p-1 hover:bg-bg-main rounded-lg transition-colors text-text-secondary hover:text-text-main"
+              >
+                <X size={16} />
+              </button>
+            )}
           </div>
 
-          {/* Doctorul Grădinii */}
-          <div className="relative overflow-hidden rounded-[2rem] border border-red-500/20 bg-gradient-to-br from-red-950/30 via-bg-card to-bg-card p-6 md:p-8 flex flex-col justify-between shadow-md hover:shadow-lg transition-all group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-red-500/0 via-red-500/5 to-red-500/0 rounded-[2rem] blur opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-            <div className="relative z-10">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-2xl bg-red-500/10 text-red-400 flex items-center justify-center shrink-0 shadow-inner">
-                  <AlertTriangle size={24} className="group-hover:animate-pulse" />
+          {/* Autocomplete Dropdown */}
+          {showSearchAutocomplete && searchQuery.trim() && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-bg-card border border-border-color rounded-2xl shadow-2xl z-50 max-h-[400px] overflow-y-auto">
+              {searchResults.length > 0 ? (
+                <div className="divide-y divide-border-color">
+                  {searchResults.map(article => (
+                    <button
+                      key={article.id}
+                      onClick={() => {
+                        handleArticleClick(article);
+                        setShowSearchAutocomplete(false);
+                        setSearchQuery('');
+                      }}
+                      className="w-full text-left p-4 hover:bg-bg-main transition-colors flex items-start gap-3 group"
+                    >
+                      <span className="text-2xl shrink-0">{article.coverEmoji}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-text-main group-hover:text-accent-color transition-colors line-clamp-1">
+                          {article.title}
+                        </p>
+                        <p className="text-xs text-text-secondary line-clamp-1 mt-1">{article.excerpt}</p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="text-[10px] font-bold text-text-secondary bg-bg-card px-2 py-0.5 rounded">
+                            {article.categoryLabel}
+                          </span>
+                          {article.isPremium && (
+                            <span className="text-[10px] font-black text-amber-600 dark:text-amber-400">👑 PRO</span>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
                 </div>
-                <div>
-                  <span className="text-[9px] font-black text-red-600 dark:text-red-400 uppercase tracking-[0.25em]">Diagnostic SOS</span>
-                  <h3 className="text-lg font-black text-text-main leading-tight mt-0.5">Doctorul Grădinii</h3>
+              ) : (
+                <div className="p-6 text-center">
+                  <p className="text-text-secondary text-sm">{lang === 'ro' ? 'Niciun rezultat găsit' : 'No results found'}</p>
                 </div>
-              </div>
-              <p className="text-xs text-text-secondary font-medium leading-relaxed max-w-sm mb-6">
-                Pete uscate sau galbene? Diagnostichează rapid problemele gazonului și obține tratamente bazate pe știință.
-              </p>
+              )}
             </div>
-            <button
-              onClick={() => setShowTroubleshooter(true)}
-              className="relative z-10 w-full sm:w-auto self-start px-5 py-3 bg-red-500 hover:bg-red-400 text-white font-black uppercase text-[10px] tracking-widest rounded-xl transition-all shadow-md shadow-red-950/20 active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
-            >
-              Diagnostichează Acum <ChevronRight size={12} />
-            </button>
-          </div>
+          )}
         </div>
       </div>
 
@@ -612,8 +668,8 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
         </div>
       )}
 
-      {/* ── Articles: Netflix (all) or Grid (category) ── */}
-      {activeCategory === 'all' ? (
+      {/* ── Articles: Netflix (all, no search) or Grid (category / search) ── */}
+      {activeCategory === 'all' && !searchQuery.trim() ? (
         <div className="space-y-12 mb-12">
           {availableCategories.map(cat => {
             const catArticles = articles.filter(a => a.category === cat.id);
@@ -647,25 +703,44 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
       ) : (
         <div className="mb-12">
           <div className="flex items-center gap-2 mb-6 px-1">
-            <span className="text-2xl select-none">{availableCategories.find(c => c.id === activeCategory)?.emoji || '📚'}</span>
-            <h2 className="text-xl font-black text-text-main">
-              {lang === 'ro'
-                ? availableCategories.find(c => c.id === activeCategory)?.labelRo
-                : availableCategories.find(c => c.id === activeCategory)?.labelEn
-              }
-            </h2>
+            {searchQuery.trim() ? (
+              <>
+                <Search size={20} className="text-accent-color" />
+                <h2 className="text-xl font-black text-text-main">
+                  {lang === 'ro' ? 'Rezultate căutare' : 'Search results'}
+                  <span className="text-text-secondary font-bold text-base ml-2">({filteredArticles.length})</span>
+                </h2>
+              </>
+            ) : (
+              <>
+                <span className="text-2xl select-none">{availableCategories.find(c => c.id === activeCategory)?.emoji || '📚'}</span>
+                <h2 className="text-xl font-black text-text-main">
+                  {lang === 'ro'
+                    ? availableCategories.find(c => c.id === activeCategory)?.labelRo
+                    : availableCategories.find(c => c.id === activeCategory)?.labelEn
+                  }
+                </h2>
+              </>
+            )}
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {filteredArticles.map(article => (
-              <ArticleCard
-                key={article.id}
-                article={article}
-                subscriptionTier={externalSubscriptionTier}
-                isRead={readArticles.has(article.id)}
-                onClick={() => handleArticleClick(article)}
-              />
-            ))}
-          </div>
+          {filteredArticles.length === 0 ? (
+            <div className="text-center py-16">
+              <Search size={40} className="mx-auto text-text-secondary/30 mb-3" />
+              <p className="text-text-secondary font-medium">{lang === 'ro' ? 'Niciun articol găsit' : 'No articles found'}</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {filteredArticles.map(article => (
+                <ArticleCard
+                  key={article.id}
+                  article={article}
+                  subscriptionTier={externalSubscriptionTier}
+                  isRead={readArticles.has(article.id)}
+                  onClick={() => handleArticleClick(article)}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -703,6 +778,84 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
           ))}
         </div>
       </div>
+
+      {/* ── Mobile Floating Search Button: always reachable near bottom dock ── */}
+      <button
+        onClick={() => setShowMobileSearch(true)}
+        className="md:hidden fixed z-40 w-14 h-14 rounded-full bg-accent-color text-white shadow-2xl shadow-accent-color/40 flex items-center justify-center active:scale-95 transition-transform"
+        style={{ bottom: 'calc(96px + env(safe-area-inset-bottom))', right: '16px' }}
+        aria-label={lang === 'ro' ? 'Caută în articole' : 'Search articles'}
+      >
+        <Search size={22} />
+      </button>
+
+      {/* ── Mobile Search Overlay ── */}
+      {showMobileSearch && (
+        <div className="md:hidden fixed inset-0 z-[110] bg-bg-main flex flex-col animate-in fade-in duration-200">
+          <div className="p-4 border-b border-border-color flex items-center gap-3 shrink-0">
+            <div className="relative flex-1 flex items-center">
+              <Search size={18} className="absolute left-4 text-text-secondary pointer-events-none" />
+              <input
+                autoFocus
+                type="text"
+                placeholder={lang === 'ro' ? 'Caută în articole...' : 'Search articles...'}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 bg-bg-card border border-border-color rounded-2xl text-text-main placeholder-text-secondary/50 focus:outline-none focus:border-accent-color transition-colors"
+              />
+            </div>
+            <button
+              onClick={() => { setShowMobileSearch(false); setSearchQuery(''); }}
+              className="p-2.5 text-text-secondary hover:text-text-main transition-colors shrink-0"
+              aria-label={lang === 'ro' ? 'Închide' : 'Close'}
+            >
+              <X size={22} />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto p-4">
+            {searchQuery.trim() ? (
+              filteredArticles.length > 0 ? (
+                <div className="space-y-3">
+                  {filteredArticles.map(article => (
+                    <button
+                      key={article.id}
+                      onClick={() => {
+                        handleArticleClick(article);
+                        setShowMobileSearch(false);
+                        setSearchQuery('');
+                      }}
+                      className="w-full text-left p-4 bg-bg-card border border-border-color rounded-2xl flex items-start gap-3"
+                    >
+                      <span className="text-2xl shrink-0">{article.coverEmoji}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-text-main line-clamp-1">{article.title}</p>
+                        <p className="text-xs text-text-secondary line-clamp-2 mt-1">{article.excerpt}</p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="text-[10px] font-bold text-text-secondary bg-bg-main px-2 py-0.5 rounded">
+                            {article.categoryLabel}
+                          </span>
+                          {article.isPremium && (
+                            <span className="text-[10px] font-black text-amber-600 dark:text-amber-400">👑 PRO</span>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-16">
+                  <Search size={40} className="mx-auto text-text-secondary/30 mb-3" />
+                  <p className="text-text-secondary font-medium">{lang === 'ro' ? 'Niciun articol găsit' : 'No articles found'}</p>
+                </div>
+              )
+            ) : (
+              <div className="text-center py-16 text-text-secondary/50 text-sm">
+                {lang === 'ro' ? 'Începe să scrii pentru a căuta...' : 'Start typing to search...'}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ── Modals ── */}
       {showAIAssistant && (

@@ -34,11 +34,22 @@ async function createNotification(
     }
 }
 
-// Initialize Stripe (User will need to set this config via firebase functions:config:set stripe.secret=...)
-const stripeSecret = functions.config().stripe?.secret || 'sk_test_placeholder';
-const stripe = new Stripe(stripeSecret, {
-    apiVersion: '2022-11-15',
-});
+// Stripe is constructed on first use, not at module load.
+//
+// Every function in this file shares one bundle, so anything done at module
+// scope is paid for on the cold start of *every* callable — including the
+// admin panel's, which never touch Stripe. Only createCheckoutSession and
+// stripeWebhook need it, so they pay for it and nobody else does.
+// Set the secret with: firebase functions:config:set stripe.secret=sk_live_...
+let stripeClient: Stripe | null = null;
+function getStripe(): Stripe {
+    if (!stripeClient) {
+        stripeClient = new Stripe(functions.config().stripe?.secret || 'sk_test_placeholder', {
+            apiVersion: '2022-11-15',
+        });
+    }
+    return stripeClient;
+}
 
 // usePlan() — the only thing the app actually reads to decide if someone is
 // PRO — resolves entirely from organizations/{orgId}, never from
@@ -52,6 +63,87 @@ async function getCallerOrgId(uid: string): Promise<string> {
         throw new functions.https.HttpsError('failed-precondition', 'No organization found for this account.');
     }
     return orgId;
+}
+
+// The one account that owns this product. Superadmin is deliberately a
+// constant and not a database flag: every privileged callable below trusts
+// this check, so whatever it reads must be something a client cannot write.
+export const SUPERADMIN_EMAIL = 'dragomirvaleriu@gmail.com';
+
+/**
+ * Verify the caller is the product owner.
+ *
+ * This reads `context.auth.token` — the decoded Firebase ID token, signed by
+ * Firebase Auth and verified by the Functions SDK before our code runs. It is
+ * the only superadmin signal in this codebase a client cannot forge.
+ *
+ * It used to read `users/{uid}.isSuperAdmin`, which was a privilege-escalation
+ * hole: firestore.rules lets a user write their own `users/{uid}` document, so
+ * any account could set `isSuperAdmin: true` on itself and then list every
+ * user, mint gift codes, and delete accounts. Never re-introduce a superadmin
+ * check that reads a client-writable field.
+ *
+ * A `superadmin` custom claim is also accepted so access can later be granted
+ * to another account without a redeploy — claims are set server-side via the
+ * Admin SDK and are likewise not client-writable.
+ *
+ * Deliberately NOT gated on `email_verified`. The owner's account signs in
+ * with the password provider and has never verified its address, so requiring
+ * it locked the only superadmin out of the panel. It buys nothing here either:
+ * Firebase Auth enforces one account per email per project, so the owner's
+ * address is already taken and cannot be claimed by an attacker. This also
+ * keeps the check consistent with isSuperAdmin() in firestore.rules, which
+ * matches on the token email alone — a stricter rule here just produces a
+ * half-working panel where reads succeed and every write is denied.
+ */
+function isSuperAdminContext(context: functions.https.CallableContext): boolean {
+    const token: any = context.auth?.token;
+    if (!token) return false;
+    if (token.superadmin === true) return true;
+    return typeof token.email === 'string'
+        && token.email.toLowerCase() === SUPERADMIN_EMAIL;
+}
+
+/**
+ * Throw the standard permission error unless the caller is the product owner.
+ * Every superadmin-only callable starts with this.
+ */
+function assertSuperAdmin(context: functions.https.CallableContext, action: string): void {
+    if (!context.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated.');
+    }
+    if (!isSuperAdminContext(context)) {
+        throw new functions.https.HttpsError('permission-denied', `Only the product owner can ${action}.`);
+    }
+}
+
+/**
+ * Record a privileged action to the admin audit trail.
+ *
+ * Lives at superadmin/data/audit_log/{autoId} — already covered by the
+ * `match /superadmin/{document=**}` catch-all in firestore.rules (superadmin
+ * read/write only), so no rules change was needed to expose it.
+ *
+ * Fire-and-forget on purpose: a logging failure must never fail the action
+ * it's describing (a successful deletion that throws afterward would read to
+ * the caller as a failed deletion, which it wasn't).
+ */
+async function logAudit(
+    context: functions.https.CallableContext,
+    action: string,
+    details: Record<string, unknown>
+): Promise<void> {
+    try {
+        await db.collection('superadmin').doc('data').collection('audit_log').add({
+            action,
+            actorUid: context.auth?.uid ?? null,
+            actorEmail: context.auth?.token?.email ?? null,
+            details,
+            at: admin.firestore.FieldValue.serverTimestamp(),
+        });
+    } catch (err) {
+        console.error(`logAudit failed for action=${action} (non-fatal):`, err);
+    }
 }
 
 /**
@@ -92,6 +184,9 @@ export const redeemGiftCode = functions.https.onCall(async (data, context) => {
         // original blanket subscriptionTier='pro' grant for backward compatibility.
         const orgUpdate: Record<string, any> = {
             planExpires: admin.firestore.Timestamp.fromDate(expires),
+            // Redeemed codes are given away, not sold — keep them out of the
+            // revenue figure. See subscriptionSource in grantSubscription.
+            subscriptionSource: 'gift',
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         };
         if (product) {
@@ -137,9 +232,10 @@ export const redeemGiftCode = functions.https.onCall(async (data, context) => {
  * that specific product on redemption instead of the legacy blanket 'pro'.
  */
 export const createGiftCode = functions.https.onCall(async (data, context) => {
-    if (!context.auth || context.auth.token.email !== 'dragomirvaleriu@gmail.com') {
-        throw new functions.https.HttpsError('permission-denied', 'Only the product owner can generate gift codes.');
+    if (!context.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated.');
     }
+    assertSuperAdmin(context, 'generate gift codes');
 
     const days = data.days || 30;
     const product = data.product as string | undefined;
@@ -154,7 +250,96 @@ export const createGiftCode = functions.https.onCall(async (data, context) => {
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
+    await logAudit(context, 'create_gift_code', { code, product: product ?? null, days });
     return { success: true, code };
+});
+
+/**
+ * SuperAdmin: list previously issued gift codes, newest first.
+ *
+ * gift_codes is readable by any signed-in user (redemption needs the lookup),
+ * but listing the whole collection would hand every user a pile of unredeemed
+ * codes — hence a superadmin-gated callable rather than a client-side query.
+ */
+export const listGiftCodes = functions.https.onCall(async (data, context) => {
+    assertSuperAdmin(context, 'list gift codes');
+
+    const limit = Math.min(Number(data?.limit) || 50, 200);
+    const snap = await db.collection('gift_codes')
+        .orderBy('createdAt', 'desc')
+        .limit(limit)
+        .get();
+
+    return {
+        success: true,
+        codes: snap.docs.map(d => {
+            const c = d.data();
+            return {
+                code: d.id,
+                product: c.product ?? null,
+                days: c.days ?? null,
+                used: c.used === true,
+                usedBy: c.usedBy ?? null,
+                createdAt: c.createdAt?.toDate ? c.createdAt.toDate().toISOString() : null,
+                usedAt: c.usedAt?.toDate ? c.usedAt.toDate().toISOString() : null,
+            };
+        }),
+    };
+});
+
+/**
+ * SuperAdmin: recent entries from the admin audit trail (see logAudit above).
+ */
+export const listAuditLog = functions.https.onCall(async (data, context) => {
+    assertSuperAdmin(context, 'view the audit log');
+
+    const limit = Math.min(Number(data?.limit) || 50, 200);
+    const snap = await db.collection('superadmin').doc('data').collection('audit_log')
+        .orderBy('at', 'desc')
+        .limit(limit)
+        .get();
+
+    return {
+        success: true,
+        entries: snap.docs.map(d => {
+            const e = d.data();
+            return {
+                id: d.id,
+                action: e.action,
+                actorEmail: e.actorEmail ?? null,
+                details: e.details ?? {},
+                at: e.at?.toDate ? e.at.toDate().toISOString() : null,
+            };
+        }),
+    };
+});
+
+/**
+ * SuperAdmin: delete a gift code that has not been redeemed yet.
+ */
+export const deleteGiftCode = functions.https.onCall(async (data, context) => {
+    assertSuperAdmin(context, 'delete gift codes');
+
+    const { code } = data as { code?: string };
+    if (!code || typeof code !== 'string') {
+        throw new functions.https.HttpsError('invalid-argument', 'code is required.');
+    }
+
+    const ref = db.collection('gift_codes').doc(code.toUpperCase());
+    const snap = await ref.get();
+    if (!snap.exists) {
+        throw new functions.https.HttpsError('not-found', 'That code does not exist.');
+    }
+    if (snap.data()?.used) {
+        throw new functions.https.HttpsError(
+            'failed-precondition',
+            'That code has already been redeemed and cannot be deleted.'
+        );
+    }
+
+    await ref.delete();
+    await logAudit(context, 'delete_gift_code', { code: code.toUpperCase() });
+    return { success: true };
 });
 
 /**
@@ -193,7 +378,7 @@ export const createCheckoutSession = functions.https.onCall(async (data, context
 
     const orgId = await getCallerOrgId(context.auth.uid);
 
-    const session = await stripe.checkout.sessions.create({
+    const session = await getStripe().checkout.sessions.create({
         mode: 'payment',
         payment_method_types: ['card'],
         line_items: [{ price: priceId, quantity: 1 }],
@@ -217,7 +402,7 @@ export const stripeWebhook = functions.https.onRequest(async (req, res) => {
     let event;
 
     try {
-        event = stripe.webhooks.constructEvent(req.rawBody, sig, endpointSecret);
+        event = getStripe().webhooks.constructEvent(req.rawBody, sig, endpointSecret);
     } catch (err: any) {
         res.status(400).send(`Webhook Error: ${err.message}`);
         return;
@@ -235,6 +420,9 @@ export const stripeWebhook = functions.https.onRequest(async (req, res) => {
 
             const updateData: Record<string, any> = {
                 subscriptionProduct: product,
+                // The only source that counts as revenue in getAdminAnalytics:
+                // real money, confirmed by a verified Stripe webhook.
+                subscriptionSource: 'purchase',
                 planExpires: admin.firestore.Timestamp.fromDate(expiresAt),
                 updatedAt: admin.firestore.FieldValue.serverTimestamp(),
             };
@@ -431,9 +619,10 @@ export const receiveTelemetry = functions.https.onCall(async (data, context) => 
  */
 export const listAllUsers = functions.https.onCall(async (data, context) => {
     // Verify superadmin
-    if (!context.auth || context.auth.token.email !== 'dragomirvaleriu@gmail.com') {
-        throw new functions.https.HttpsError('permission-denied', 'Only superadmin can list users.');
+    if (!context.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated.');
     }
+    assertSuperAdmin(context, 'list users');
 
     try {
         const usersSnap = await db.collection('users').get();
@@ -453,9 +642,10 @@ export const listAllUsers = functions.https.onCall(async (data, context) => {
  */
 export const createAd = functions.https.onCall(async (data, context) => {
     // Verify superadmin
-    if (!context.auth || context.auth.token.email !== 'dragomirvaleriu@gmail.com') {
-        throw new functions.https.HttpsError('permission-denied', 'Only superadmin can create ads.');
+    if (!context.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated.');
     }
+    assertSuperAdmin(context, 'create ads');
 
     const { title, imageUrl, link, company, discountPercent } = data;
     if (!title || !imageUrl || !link || !company) {
@@ -484,9 +674,10 @@ export const createAd = functions.https.onCall(async (data, context) => {
  * SuperAdmin: Update an existing advertisement (edit fields, toggle active state)
  */
 export const updateAd = functions.https.onCall(async (data, context) => {
-    if (!context.auth || context.auth.token.email !== 'dragomirvaleriu@gmail.com') {
-        throw new functions.https.HttpsError('permission-denied', 'Only superadmin can update ads.');
+    if (!context.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated.');
     }
+    assertSuperAdmin(context, 'update ads');
 
     const { adId, title, imageUrl, link, company, discountPercent, isActive } = data;
     if (!adId) {
@@ -514,9 +705,10 @@ export const updateAd = functions.https.onCall(async (data, context) => {
  */
 export const updateUserSubscription = functions.https.onCall(async (data, context) => {
     // Verify superadmin
-    if (!context.auth || context.auth.token.email !== 'dragomirvaleriu@gmail.com') {
-        throw new functions.https.HttpsError('permission-denied', 'Only superadmin can update subscriptions.');
+    if (!context.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated.');
     }
+    assertSuperAdmin(context, 'update subscriptions');
 
     const { userId, product, expiresAt } = data;
     if (!userId || !product) {
@@ -536,6 +728,251 @@ export const updateUserSubscription = functions.https.onCall(async (data, contex
     } catch (err: any) {
         throw new functions.https.HttpsError('internal', 'Failed to update subscription: ' + err.message);
     }
+});
+
+/** The three sellable products. Anything else is rejected. */
+const GRANTABLE_PRODUCTS = ['adFree', 'academyPro', 'bundle'] as const;
+type GrantableProduct = typeof GRANTABLE_PRODUCTS[number];
+
+/**
+ * SuperAdmin: grant a product to a user for a fixed term (or for life).
+ *
+ * This replaces the old `/api/admin/grant-subscription` Express route, which
+ * could never work: the dev server has no service-account credentials, so it
+ * fell back to an *unauthenticated* client SDK write and every call died with
+ * PERMISSION_DENIED.
+ *
+ * The write has to land on `organizations/{orgId}` — usePlan() resolves the
+ * app-wide tier from the org document and never looks at users/{uid}, so a
+ * grant written only to the user profile is invisible to every feature gate
+ * in the app no matter how successful the write looks. We write both: the org
+ * for entitlement, the user profile so the admin table can display it.
+ */
+export const grantSubscription = functions.https.onCall(async (data, context) => {
+    assertSuperAdmin(context, 'grant subscriptions');
+
+    const { userId, product, durationMonths } = data as {
+        userId?: string;
+        product?: GrantableProduct;
+        durationMonths?: number | null;
+    };
+
+    if (!userId || typeof userId !== 'string') {
+        throw new functions.https.HttpsError('invalid-argument', 'userId is required.');
+    }
+    if (!product || !GRANTABLE_PRODUCTS.includes(product)) {
+        throw new functions.https.HttpsError(
+            'invalid-argument',
+            `product must be one of: ${GRANTABLE_PRODUCTS.join(', ')}.`
+        );
+    }
+    // null means lifetime.
+    if (durationMonths !== null && ![1, 3, 12].includes(durationMonths as number)) {
+        throw new functions.https.HttpsError('invalid-argument', 'durationMonths must be 1, 3, 12, or null for lifetime.');
+    }
+
+    const userSnap = await db.collection('users').doc(userId).get();
+    if (!userSnap.exists) {
+        throw new functions.https.HttpsError('not-found', 'That user no longer exists.');
+    }
+    const orgId: string | undefined = userSnap.data()?.organizationId;
+    if (!orgId) {
+        throw new functions.https.HttpsError(
+            'failed-precondition',
+            'That account has no organization, so there is nothing to attach the plan to.'
+        );
+    }
+
+    const isLifetime = durationMonths === null;
+    let expires: Date | null = null;
+    if (!isLifetime) {
+        expires = new Date();
+        expires.setMonth(expires.getMonth() + (durationMonths as number));
+    }
+
+    // academyPro and bundle unlock the Pro feature set; adFree only removes
+    // ads and deliberately leaves the tier alone. Lifetime uses the tier
+    // usePlan() treats as never-expiring rather than a far-future date.
+    const orgUpdate: Record<string, any> = {
+        subscriptionProduct: product,
+        // How this entitlement was obtained. Analytics counts revenue from
+        // 'purchase' only — a plan the owner handed out for free is not money
+        // in the bank, and counting it inflated the revenue figure.
+        subscriptionSource: 'admin_grant',
+        planExpires: expires ? admin.firestore.Timestamp.fromDate(expires) : null,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+    if (product === 'academyPro' || product === 'bundle') {
+        orgUpdate.subscriptionTier = isLifetime ? 'lifetime' : 'pro';
+    }
+
+    const batch = db.batch();
+    batch.set(db.collection('organizations').doc(orgId), orgUpdate, { merge: true });
+    batch.update(db.collection('users').doc(userId), {
+        subscriptionProduct: product,
+        subscriptionExpiresAt: expires ? admin.firestore.Timestamp.fromDate(expires) : null,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    await batch.commit();
+
+    const label = product === 'adFree' ? 'Fără reclame' : product === 'academyPro' ? 'Academy Pro' : 'Pachet complet';
+    await createNotification(
+        userId,
+        'giftcode',
+        '🎉 Abonament activat!',
+        isLifetime
+            ? `Ai primit ${label} pe viață. Bucură-te de acces complet!`
+            : `Ai primit ${label} până la ${expires!.toLocaleDateString('ro-RO')}.`
+    );
+
+    console.log(`✓ Granted ${product} (${isLifetime ? 'lifetime' : durationMonths + 'mo'}) to ${userId} / org ${orgId}`);
+    await logAudit(context, 'grant_subscription', {
+        targetUid: userId,
+        targetEmail: userSnap.data()?.email ?? null,
+        product,
+        durationMonths,
+    });
+    return {
+        success: true,
+        product,
+        orgId,
+        expiresAt: expires ? expires.toISOString() : null,
+    };
+});
+
+/**
+ * SuperAdmin: revoke whatever plan a user has, returning them to free.
+ * Clears both the org entitlement and the mirrored user-profile fields.
+ */
+export const revokeSubscription = functions.https.onCall(async (data, context) => {
+    assertSuperAdmin(context, 'revoke subscriptions');
+
+    const { userId } = data as { userId?: string };
+    if (!userId || typeof userId !== 'string') {
+        throw new functions.https.HttpsError('invalid-argument', 'userId is required.');
+    }
+
+    const userSnap = await db.collection('users').doc(userId).get();
+    if (!userSnap.exists) {
+        throw new functions.https.HttpsError('not-found', 'That user no longer exists.');
+    }
+    const orgId: string | undefined = userSnap.data()?.organizationId;
+
+    const batch = db.batch();
+    if (orgId) {
+        batch.set(db.collection('organizations').doc(orgId), {
+            subscriptionTier: 'free',
+            subscriptionProduct: admin.firestore.FieldValue.delete(),
+            planExpires: null,
+            isLifetime: false,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
+    }
+    batch.update(db.collection('users').doc(userId), {
+        subscriptionProduct: admin.firestore.FieldValue.delete(),
+        subscriptionExpiresAt: null,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    await batch.commit();
+
+    console.log(`✓ Revoked subscription for ${userId} / org ${orgId ?? 'none'}`);
+    await logAudit(context, 'revoke_subscription', {
+        targetUid: userId,
+        targetEmail: userSnap.data()?.email ?? null,
+    });
+    return { success: true, orgId: orgId ?? null };
+});
+
+/**
+ * SuperAdmin: aggregate counts for the Analytics tab, computed server-side
+ * over the org documents that actually hold entitlements. Doing this on the
+ * client meant reading every organization doc just to render six numbers.
+ */
+export const getAdminAnalytics = functions.https.onCall(async (_data, context) => {
+    assertSuperAdmin(context, 'view analytics');
+
+    const [usersSnap, orgsSnap, codesSnap] = await Promise.all([
+        db.collection('users').get(),
+        db.collection('organizations').get(),
+        db.collection('gift_codes').get(),
+    ]);
+
+    const orgById = new Map(orgsSnap.docs.map(d => [d.id, d.data()]));
+    const now = Date.now();
+
+    const counts: Record<string, number> = { adFree: 0, academyPro: 0, bundle: 0, legacyPaid: 0, free: 0 };
+    // Same product split again, but only for entitlements that were actually
+    // paid for. Everything the owner gave away (gift codes, manual grants)
+    // is a real active user but zero revenue.
+    const purchased: Record<string, number> = { adFree: 0, academyPro: 0, bundle: 0 };
+    const bySource: Record<string, number> = { purchase: 0, gift: 0, admin_grant: 0 };
+    // Signups over the last 12 months, oldest bucket first.
+    const signupBuckets: { month: string; count: number }[] = [];
+    for (let i = 11; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(1);
+        d.setMonth(d.getMonth() - i);
+        signupBuckets.push({ month: d.toISOString().slice(0, 7), count: 0 });
+    }
+    const bucketIndex = new Map(signupBuckets.map((b, i) => [b.month, i]));
+
+    for (const doc of usersSnap.docs) {
+        const u = doc.data();
+        const org = u.organizationId ? orgById.get(u.organizationId) : undefined;
+
+        const createdAt = u.createdAt?.toDate ? u.createdAt.toDate() : (u.createdAt ? new Date(u.createdAt) : null);
+        if (createdAt && !isNaN(createdAt.getTime())) {
+            const idx = bucketIndex.get(createdAt.toISOString().slice(0, 7));
+            if (idx !== undefined) signupBuckets[idx].count++;
+        }
+
+        if (u.email?.toLowerCase() === SUPERADMIN_EMAIL) continue;
+
+        const expires = org?.planExpires?.toDate ? org.planExpires.toDate().getTime() : Infinity;
+        const tier = org?.subscriptionTier;
+        const expired = tier !== 'lifetime' && tier !== 'enterprise' && now > expires;
+        const product = !expired ? (org?.subscriptionProduct ?? u.subscriptionProduct) : undefined;
+
+        if (product && counts[product] !== undefined) {
+            counts[product]++;
+            // Anything predating subscriptionSource has no recorded origin.
+            // Treat it as unpaid rather than inventing revenue for it.
+            const source = org?.subscriptionSource ?? u.subscriptionSource;
+            if (source && bySource[source] !== undefined) bySource[source]++;
+            if (source === 'purchase') purchased[product]++;
+        } else if (!expired && (tier === 'pro' || tier === 'enterprise' || tier === 'lifetime')) {
+            counts.legacyPaid++;
+        } else {
+            counts.free++;
+        }
+    }
+
+    // One-time prices, matching the pricing copy shown to customers.
+    const PRICES: Record<string, number> = { adFree: 2, academyPro: 2, bundle: 3 };
+    const revenue = Object.entries(purchased).reduce((sum, [k, n]) => sum + n * PRICES[k], 0);
+    const paidCount = purchased.adFree + purchased.academyPro + purchased.bundle;
+    // Active paid-tier accounts, however they got there — the audience number,
+    // as opposed to the money number.
+    const activePlans = counts.adFree + counts.academyPro + counts.bundle;
+
+    return {
+        success: true,
+        totalUsers: usersSnap.size,
+        ...counts,
+        // Money actually collected, from verified Stripe purchases only.
+        totalRevenue: revenue,
+        paidCount,
+        arpu: paidCount > 0 ? Number((revenue / paidCount).toFixed(2)) : 0,
+        conversionRate: usersSnap.size > 0 ? Number(((paidCount / usersSnap.size) * 100).toFixed(1)) : 0,
+        // Given away, not sold.
+        activePlans,
+        giftedCount: bySource.gift,
+        grantedCount: bySource.admin_grant,
+        purchasedByProduct: purchased,
+        giftCodesTotal: codesSnap.size,
+        giftCodesRedeemed: codesSnap.docs.filter(d => d.data().used).length,
+        signups: signupBuckets,
+    };
 });
 
 // Every collection a My Garden account can write into, and the field that
@@ -587,9 +1024,13 @@ async function deleteWhere(collectionName: string, field: string, value: string)
  * only ever sees a real HttpsError with a message that says what failed.
  */
 export const deleteUserAccount = functions.https.onCall(async (data, context) => {
-    if (!context.auth || context.auth.token.email !== 'dragomirvaleriu@gmail.com') {
-        throw new functions.https.HttpsError('permission-denied', 'Only superadmin can delete users.');
+    if (!context.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated.');
     }
+
+    // This used to look for a doc in a `superadmins` collection that was never
+    // created, so deletion failed for everyone, superadmin included.
+    assertSuperAdmin(context, 'delete users');
 
     const { userId } = data;
     if (!userId || typeof userId !== 'string') {
@@ -616,13 +1057,17 @@ export const deleteUserAccount = functions.https.onCall(async (data, context) =>
         }
 
         if (orgId && isSoleOwner) {
-            for (const collectionName of ORG_SCOPED_COLLECTIONS) {
+            // Fan out rather than awaiting 14 sweeps in series — each is an
+            // independent query + batch round-trip, and sequentially they were
+            // the bulk of a 15s deletion. Failures stay isolated per
+            // collection: one missing index must not abort the rest.
+            await Promise.all(ORG_SCOPED_COLLECTIONS.map(async collectionName => {
                 try {
                     deletedCounts[collectionName] = await deleteWhere(collectionName, 'organizationId', orgId);
                 } catch (err) {
                     console.error(`deleteUserAccount: failed to sweep ${collectionName} for org ${orgId} (continuing):`, err);
                 }
-            }
+            }));
 
             try {
                 await db.collection('organizations').doc(orgId).delete();
@@ -631,13 +1076,13 @@ export const deleteUserAccount = functions.https.onCall(async (data, context) =>
             }
         }
 
-        for (const { name, field } of UID_SCOPED_COLLECTIONS) {
+        await Promise.all(UID_SCOPED_COLLECTIONS.map(async ({ name, field }) => {
             try {
                 deletedCounts[name] = await deleteWhere(name, field, userId);
             } catch (err) {
                 console.error(`deleteUserAccount: failed to sweep ${name} for ${userId} (continuing):`, err);
             }
-        }
+        }));
 
         try {
             const notifsSnap = await db.collection('users').doc(userId).collection('notifications').get();
@@ -680,6 +1125,11 @@ export const deleteUserAccount = functions.https.onCall(async (data, context) =>
             }
         }
 
+        await logAudit(context, 'delete_user', {
+            targetUid: userId,
+            targetEmail: userSnap.data()?.email ?? null,
+            deletedOrganization: !!(orgId && isSoleOwner),
+        });
         return { success: true, deletedOrganization: !!(orgId && isSoleOwner), deletedCounts };
     } catch (err: any) {
         throw new functions.https.HttpsError('internal', 'Failed to delete user: ' + (err?.message || String(err)));
@@ -690,9 +1140,10 @@ export const deleteUserAccount = functions.https.onCall(async (data, context) =>
  * SuperAdmin: Seed default Romanian ads (one-time setup)
  */
 export const seedDefaultAds = functions.https.onCall(async (data, context) => {
-    if (!context.auth || context.auth.token.email !== 'dragomirvaleriu@gmail.com') {
-        throw new functions.https.HttpsError('permission-denied', 'Only superadmin can seed ads.');
+    if (!context.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated.');
     }
+    assertSuperAdmin(context, 'seed ads');
 
     const defaultAds = [
         {
@@ -806,26 +1257,25 @@ export const trackAdClick = functions.https.onCall(async (data, context) => {
 });
 
 /**
- * Restore superadmin role for dragomirvaleriu@gmail.com user.
- * Called when superadmin loses role after password reset.
+ * Re-sync the owner account's `role: 'superadmin'` field.
+ *
+ * Authorization no longer depends on this field — every privileged callable
+ * checks the signed token email via assertSuperAdmin — but firestore.rules
+ * still accepts `role == 'superadmin'` as one way to satisfy isSuperAdmin(),
+ * and a password reset can recreate the profile without it. Keeping the two
+ * in sync avoids a confusing half-working panel.
  */
 export const restoreSuperAdminRole = functions.https.onCall(async (data, context) => {
-    const uid = context.auth?.uid;
-    const email = context.auth?.token?.email;
-
-    // Only the superadmin email can call this
-    if (email !== 'dragomirvaleriu@gmail.com') {
-        throw new functions.https.HttpsError('permission-denied', 'Only dragomirvaleriu@gmail.com can use this function');
-    }
+    assertSuperAdmin(context, 'restore the superadmin role');
+    const uid = context.auth!.uid;
 
     try {
-        // Update user document with superadmin role
-        await db.collection('users').doc(uid!).update({
+        await db.collection('users').doc(uid).update({
             role: 'superadmin',
             updatedAt: admin.firestore.FieldValue.serverTimestamp()
         });
 
-        console.log(`✓ Superadmin role restored for ${email} (uid: ${uid})`);
+        console.log(`✓ Superadmin role restored for ${context.auth!.token.email} (uid: ${uid})`);
         return { success: true, message: 'Superadmin role restored' };
     } catch (err: any) {
         console.error('Failed to restore superadmin role:', err);

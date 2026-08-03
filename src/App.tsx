@@ -139,8 +139,7 @@ const App: React.FC = () => {
             }
           } else {
             // ALWAYS reset session creation time on new login (handles password resets via email link)
-            const now = new Date().toISOString();
-            localStorage.setItem('ls_session_created_at', now.toISOString());
+            localStorage.setItem('ls_session_created_at', new Date().toISOString());
           }
 
           // Update last login and check for password change invalidation

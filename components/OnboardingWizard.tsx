@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import {
@@ -16,7 +16,7 @@ import {
   Waves,
   Bug
 } from 'lucide-react';
-import { db, updateDoc, doc } from '../services/firebase';
+import { db, updateDoc, doc, auth, getDoc } from '../services/firebase';
 import { toast } from 'react-hot-toast';
 
 interface Props {
@@ -36,10 +36,32 @@ const CONCERN_LABELS: Record<string, string> = Object.fromEntries(CONCERN_OPTION
 
 const OnboardingWizard: React.FC<Props> = ({ organizationId, onComplete }) => {
   const { t } = useTranslation();
-  const [step, setStep] = useState(1);
+  const [hasExistingName, setHasExistingName] = useState(true);
+  const [startingStep, setStartingStep] = useState(2);
+  const [step, setStep] = useState(2);
   const [isProcessing, setIsProcessing] = useState(false);
   const [displayName, setDisplayName] = useState('');
   const [primaryConcern, setPrimaryConcern] = useState<string | null>(null);
+
+  useEffect(() => {
+    const uid = auth.currentUser?.uid;
+    if (uid) {
+      getDoc(doc(db, 'users', uid)).then(snap => {
+        if (snap.exists()) {
+          const name = snap.data().displayName;
+          if (name) {
+            setHasExistingName(true);
+            setStep(2);
+            setStartingStep(2);
+          } else {
+            setHasExistingName(false);
+            setStep(1);
+            setStartingStep(1);
+          }
+        }
+      }).catch(() => {});
+    }
+  }, []);
 
   const finishOnboarding = async () => {
     setIsProcessing(true);
@@ -91,6 +113,9 @@ const OnboardingWizard: React.FC<Props> = ({ organizationId, onComplete }) => {
     }
   ];
 
+  const totalSteps = hasExistingName ? 2 : 3;
+  const currentStepNum = hasExistingName ? (step === 1 ? 1 : step - 1) : step;
+
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
       <motion.div
@@ -102,12 +127,15 @@ const OnboardingWizard: React.FC<Props> = ({ organizationId, onComplete }) => {
 
         {/* Progress Bar */}
         <div className="flex h-1.5 w-full bg-border-color/20">
-            {[1, 2, 3].map((s) => (
+            {Array.from({length: totalSteps}).map((_, idx) => {
+              const progressStep = hasExistingName ? idx + 2 : idx + 1;
+              return (
                 <div
-                    key={s}
-                    className={`flex-1 transition-all duration-500 ${s <= step ? 'bg-accent-color' : ''}`}
+                    key={idx}
+                    className={`flex-1 transition-all duration-500 ${progressStep <= step ? 'bg-accent-color' : ''}`}
                 />
-            ))}
+              );
+            })}
         </div>
 
         <div className="p-4 sm:p-8 md:p-12">
@@ -119,7 +147,7 @@ const OnboardingWizard: React.FC<Props> = ({ organizationId, onComplete }) => {
                     </div>
                     <div>
                         <p className="text-[11px] font-black text-accent-color uppercase tracking-[0.2em] mb-1">
-                            {t('Step')} {step} {t('of')} 3
+                            {t('Step')} {currentStepNum} {t('of')} {totalSteps}
                         </p>
                         <h2 className="text-2xl font-black text-main tracking-tight">{steps[step-1].title}</h2>
                     </div>
@@ -226,11 +254,19 @@ const OnboardingWizard: React.FC<Props> = ({ organizationId, onComplete }) => {
             {/* Footer Actions */}
             <div className="flex items-center justify-between mt-12 pt-8 border-t border-border-color">
                 <button
-                    onClick={() => step > 1 ? setStep(step - 1) : finishOnboarding()}
+                    onClick={() => {
+                      if (hasExistingName && step === 2) {
+                        finishOnboarding();
+                      } else if (step > startingStep) {
+                        setStep(step - 1);
+                      } else {
+                        finishOnboarding();
+                      }
+                    }}
                     className="flex items-center gap-2 text-sm font-bold text-text-secondary hover:text-main transition-colors px-4 py-2"
                 >
                     <ChevronLeft size={20} />
-                    {step === 1 ? t('Skip Tutorial') : t('Back')}
+                    {(hasExistingName && step === 2) || (!hasExistingName && step === 1) ? t('Skip Tutorial') : t('Back')}
                 </button>
 
                 {step === 3 ? (

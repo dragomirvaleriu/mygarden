@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Page, UserProfile } from '../src/types';
 import { auth, logout, db, doc, updateDoc } from '../services/firebase';
-import { Sun, Moon, LogOut, Calendar, LayoutDashboard, ShieldCheck, Shield, User, Camera, BookOpen, ShieldAlert } from 'lucide-react';
+import { Sun, Moon, LogOut, Calendar, LayoutDashboard, ShieldCheck, Shield, User, Camera, BookOpen, ShieldAlert, Compass } from 'lucide-react';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import { useTranslation } from 'react-i18next';
 import { APP_NAME } from '../src/config/appVariant';
@@ -45,14 +45,18 @@ const DesktopSidebar: React.FC<Props> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Same 5 tabs on every screen size (see MobileDock for the mobile
-  // counterpart — keep both lists in sync). Tools/GardenSetup/Explore live
-  // under "Eu" (AccountSettings' Quick Links) instead of being separate tabs.
+  // Same 6 tabs on every screen size (see MobileDock for the mobile
+  // counterpart — keep both lists in sync). Tools/GardenSetup still live
+  // under "Eu" (AccountSettings) instead of being separate tabs — Explore
+  // used to as well, but its plant catalog grew rich enough (26+ entries,
+  // filterable by category/height/water/light) that it earned its own tab
+  // instead of being one card buried in Account Settings.
   const navItems: { id: Page; label: string; icon: any; hasNotification?: boolean }[] = [
     { id: Page.Dashboard, label: t('Acasă'), icon: LayoutDashboard },
     { id: Page.GardenJournal, label: t('Jurnal'), icon: Camera },
     { id: Page.CareCalendar, label: t('Calendar'), icon: Calendar },
     { id: Page.Academy, label: t('Academie'), icon: BookOpen },
+    { id: Page.Explore, label: 'Explorează', icon: Compass },
     { id: Page.Administration, label: t('Contul meu'), icon: User },
   ];
 

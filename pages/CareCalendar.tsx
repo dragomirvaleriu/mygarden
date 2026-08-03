@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useData } from '../src/context/DataContext';
 import { GardenTask, Property, UserProfile } from '../src/types';
@@ -50,12 +50,106 @@ interface CareCalendarProps {
   userProfile?: UserProfile | null;
 }
 
+type CarouselWindowSize = 3 | 5 | 7 | 9 | 11 | 13;
+
+// How many month tiles the Protocol Timeline carousel shows at once, scaling
+// with viewport width. Never fewer than 3 — one month back, the current one,
+// one ahead — even on the narrowest phone, since a single bare tile loses the
+// "what's coming up" context the carousel exists for. Tile size itself is
+// capped (see CAROUSEL_GRID_CLASS below) — on a wide monitor the carousel
+// used to stretch to `container-width / 5`, and since tiles are aspect-square
+// that made them (and the whole section) far too tall. Instead of letting
+// tiles grow, we keep them at a fixed max size and add more of them as space
+// allows — up to 13 (six months back, six ahead) on very large/ultrawide
+// displays, since there's genuinely room to show that much context there.
+function computeCarouselWindowSize(width: number): CarouselWindowSize {
+  if (width < 640) return 3;
+  if (width < 900) return 5;
+  if (width < 1200) return 7;
+  if (width < 1500) return 9;
+  if (width < 1800) return 11;
+  return 13;
+}
+
+function useCarouselWindowSize(): CarouselWindowSize {
+  const [size, setSize] = useState<CarouselWindowSize>(() =>
+    typeof window !== 'undefined' ? computeCarouselWindowSize(window.innerWidth) : 5
+  );
+  useEffect(() => {
+    const onResize = () => setSize(computeCarouselWindowSize(window.innerWidth));
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+  return size;
+}
+
+// Tailwind can't resolve a class built from a variable (`grid-cols-${n}`) —
+// its scanner only sees literal strings in the source, so each option here
+// must be spelled out in full rather than interpolated (same rule that bit
+// the season colors earlier in this file). `minmax(0,92px)` is the actual
+// size cap: 92px is roughly the tile size already in use, so this is a
+// ceiling, not a change, on screens where 5 tiles were already comfortable.
+const CAROUSEL_GRID_CLASS: Record<CarouselWindowSize, string> = {
+  3: 'grid-cols-[repeat(3,minmax(0,92px))] justify-center',
+  5: 'grid-cols-[repeat(5,minmax(0,92px))] justify-center',
+  7: 'grid-cols-[repeat(7,minmax(0,92px))] justify-center',
+  9: 'grid-cols-[repeat(9,minmax(0,92px))] justify-center',
+  11: 'grid-cols-[repeat(11,minmax(0,92px))] justify-center',
+  13: 'grid-cols-[repeat(13,minmax(0,92px))] justify-center',
+};
+
+// Given a window size N, returns offsets such as [-1,0,1] centered on
+// whatever "active" index the caller adds them to — biased to include one
+// extra item on the future side when N is even. Shared by the month
+// carousel above and the season-legend window below so "centered on the
+// active thing, N wide" means the same math in both places.
+function centeredOffsets(windowSize: number): number[] {
+  const before = Math.floor((windowSize - 1) / 2);
+  return Array.from({ length: windowSize }, (_, i) => i - before);
+}
+
+// The season legend has only 4 possible values, so instead of scrolling to
+// reveal the ones that don't fit, it shows a smaller centered window —
+// just the active season on the narrowest phones, growing to all 4 once
+// there's room. Mirrors the month carousel's approach for the same reason:
+// dropping text was the alternative, and centering keeps "which season am I
+// looking at" answerable at a glance rather than a swipe away.
+function computeSeasonWindowSize(width: number): 1 | 2 | 3 | 4 {
+  if (width < 400) return 1;
+  if (width < 520) return 2;
+  if (width < 700) return 3;
+  return 4;
+}
+
+function useSeasonWindowSize(): 1 | 2 | 3 | 4 {
+  const [size, setSize] = useState<1 | 2 | 3 | 4>(() =>
+    typeof window !== 'undefined' ? computeSeasonWindowSize(window.innerWidth) : 4
+  );
+  useEffect(() => {
+    const onResize = () => setSize(computeSeasonWindowSize(window.innerWidth));
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+  return size;
+}
+
 const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
   const { t } = useTranslation();
   const { gardenTasks, properties, loading, organization, globalSystemConfig, serviceTypes } = useData();
   const [showAddModal, setShowAddModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(getMonth(new Date()));
+  // Windowed carousel center — separate from selectedMonth so the arrows can
+  // browse the timeline (e.g. peek ahead to next season) without yanking the
+  // guide details below to a different month on every click. Selecting a
+  // tile syncs the two back up.
+  const [carouselCenter, setCarouselCenter] = useState(getMonth(new Date()));
+  const carouselWindowSize = useCarouselWindowSize();
+  // Bias any leftover tile toward the future rather than the past — knowing
+  // what's coming next matters more here than what already happened. For an
+  // even count (6) this yields e.g. 2 before + 3 after instead of 3 + 2.
+  const carouselOffsets = centeredOffsets(carouselWindowSize);
+  const seasonWindowSize = useSeasonWindowSize();
   const [taskToComplete, setTaskToComplete] = useState<GardenTask | null>(null);
   const [completionNote, setCompletionNote] = useState('');
   const [completionPhoto, setCompletionPhoto] = useState<File | null>(null);
@@ -72,6 +166,77 @@ const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
     "Ianuarie", "Februarie", "Martie", "Aprilie", "Mai", "Iunie",
     "Iulie", "August", "Septembrie", "Octombrie", "Noiembrie", "Decembrie"
   ];
+
+  // Meteorological seasons (Northern hemisphere) — one lookup shared by the
+  // carousel tiles and the legend, so "which season am I looking at" always
+  // agrees between the two.
+  //
+  // Every className below is written out in full, not built with
+  // `${color}` interpolation. Tailwind's scanner matches literal substrings
+  // in the source file — a class assembled at runtime from a variable is
+  // invisible to it unless that exact string happens to appear elsewhere,
+  // which is exactly the bug this replaced (autumn's `orange-600` combos
+  // never appeared literally anywhere else in the app, so they were being
+  // silently dropped from the CSS build).
+  const SEASON_STYLES = {
+    Winter: {
+      icon: Wind,
+      dot: 'bg-blue-500',
+      iconActive: 'bg-blue-500/10 text-blue-500',
+      topBarActive: 'bg-blue-500',
+      borderActive: 'border-blue-500/30',
+      legendActive: 'bg-blue-500/10 text-blue-500',
+      legendIcon: 'text-blue-500',
+      panelBorder: 'border-blue-500/20',
+      panelGradient: 'from-blue-500/5 via-transparent to-blue-500/5',
+    },
+    Spring: {
+      icon: Sprout,
+      dot: 'bg-emerald-500',
+      iconActive: 'bg-emerald-500/10 text-emerald-500',
+      topBarActive: 'bg-emerald-500',
+      borderActive: 'border-emerald-500/30',
+      legendActive: 'bg-emerald-500/10 text-emerald-500',
+      legendIcon: 'text-emerald-500',
+      panelBorder: 'border-emerald-500/20',
+      panelGradient: 'from-emerald-500/5 via-transparent to-emerald-500/5',
+    },
+    Summer: {
+      icon: ThermometerSun,
+      dot: 'bg-amber-500',
+      iconActive: 'bg-amber-500/10 text-amber-500',
+      topBarActive: 'bg-amber-500',
+      borderActive: 'border-amber-500/30',
+      legendActive: 'bg-amber-500/10 text-amber-500',
+      legendIcon: 'text-amber-500',
+      panelBorder: 'border-amber-500/20',
+      panelGradient: 'from-amber-500/5 via-transparent to-amber-500/5',
+    },
+    Autumn: {
+      icon: Droplets,
+      dot: 'bg-orange-600',
+      iconActive: 'bg-orange-600/10 text-orange-600',
+      topBarActive: 'bg-orange-600',
+      borderActive: 'border-orange-600/30',
+      legendActive: 'bg-orange-600/10 text-orange-600',
+      legendIcon: 'text-orange-600',
+      panelBorder: 'border-orange-600/20',
+      panelGradient: 'from-orange-600/5 via-transparent to-orange-600/5',
+    },
+  } as const;
+  type SeasonKey = keyof typeof SEASON_STYLES;
+  const SEASON_ORDER: SeasonKey[] = ['Winter', 'Spring', 'Summer', 'Autumn'];
+  const seasonKeyOf = (monthIdx: number): SeasonKey => {
+    if (monthIdx === 0 || monthIdx === 1 || monthIdx === 11) return 'Winter';
+    if (monthIdx >= 2 && monthIdx <= 4) return 'Spring';
+    if (monthIdx >= 5 && monthIdx <= 7) return 'Summer';
+    return 'Autumn';
+  };
+  const activeSeasonKey = seasonKeyOf(carouselCenter);
+  const activeSeason = SEASON_STYLES[activeSeasonKey];
+  const activeSeasonIndex = SEASON_ORDER.indexOf(activeSeasonKey);
+  const visibleSeasons = centeredOffsets(seasonWindowSize)
+    .map(offset => SEASON_ORDER[((activeSeasonIndex + offset) % 4 + 4) % 4]);
 
   const currentMonthGuide = useMemo(() => {
     const guideToUse = globalSystemConfig?.gardenGuide || monthlyGuide;
@@ -291,82 +456,122 @@ const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
         </div>
       {/* ELITE TIMELINE SELECTOR */}
       <section className="space-y-3">
-        <div className="flex items-center justify-between px-2">
-           <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-text-secondary flex items-center gap-2">
+        <div className="flex items-center justify-between gap-2 px-2">
+           <h2 className="shrink-0 text-[10px] font-black uppercase tracking-[0.2em] text-text-secondary flex items-center gap-2 whitespace-nowrap">
               <div className="w-1 h-1 bg-accent-color rounded-full animate-ping"></div>
               {t('Protocol Timeline')}
            </h2>
-           <div className="flex gap-3">
-              {[
-                { label: 'Winter', color: 'blue-500' },
-                { label: 'Spring', color: 'emerald-500' },
-                { label: 'Summer', color: 'amber-500' },
-                { label: 'Autumn', color: 'orange-600' }
-              ].map(s => (
-                <div key={s.label} className="flex items-center gap-1">
-                   <div className={`w-1.5 h-1.5 rounded-full bg-${s.color} opacity-40`}></div>
-                   <span className="text-[9px] font-black text-text-secondary uppercase tracking-widest opacity-40">{t(s.label)}</span>
-                </div>
-              ))}
+           {/* All 4 season labels never fit next to the title on a narrow
+               phone. Rather than dropping text or making the user swipe to
+               see the rest, this shows a smaller centered window — just the
+               active season when space is tightest, growing to all 4 once
+               there's room — the same windowing idea as the month carousel
+               below, sized for what 1-2 words of Romanian actually need. */}
+           <div className="flex items-center gap-3 shrink-0">
+              {visibleSeasons.map(key => {
+                  const style = SEASON_STYLES[key];
+                  const Icon = style.icon;
+                  const isActive = activeSeasonKey === key;
+                  return (
+                    <div
+                      key={key}
+                      className={`flex items-center gap-1 rounded-full shrink-0 transition-all duration-300 ${
+                        isActive ? `px-1.5 py-0.5 -my-0.5 ${style.legendActive}` : 'px-0 py-0'
+                      }`}
+                    >
+                       <Icon
+                         size={9}
+                         strokeWidth={3}
+                         className={`shrink-0 transition-opacity duration-300 ${isActive ? `${style.legendIcon} opacity-100` : 'text-text-secondary opacity-30'}`}
+                       />
+                       <span className={`text-[9px] font-black uppercase tracking-widest whitespace-nowrap transition-opacity duration-300
+                         ${isActive ? 'opacity-100' : 'text-text-secondary opacity-30'}
+                       `}>
+                         {t(key)}
+                       </span>
+                    </div>
+                  );
+                })}
            </div>
         </div>
 
-        <div className="relative group/timeline px-1">
-          <div className="absolute -inset-1 bg-gradient-to-r from-accent-color/5 via-transparent to-accent-color/5 md:min-h-[104px] rounded-2xl blur-xl opacity-0 group-hover/timeline:opacity-100 transition-opacity duration-1000"></div>
-          
-          <div className="relative flex items-center gap-2 overflow-x-auto pb-4 pt-2 px-1 no-scrollbar scroll-smooth">
-            {months.map((monthName, idx) => {
-              const isWinter = idx === 0 || idx === 1 || idx === 11;
-              const isSpring = idx >= 2 && idx <= 4;
-              const isSummer = idx >= 5 && idx <= 7;
-              const isAutumn = idx >= 8 && idx <= 10;
-              
-              let seasonColor = 'emerald-500';
-              let SeasonIcon = Sprout;
+        <div className={`relative rounded-2xl border ${activeSeason.panelBorder} bg-gradient-to-r ${activeSeason.panelGradient} transition-colors duration-500 px-2 py-3`}>
+          <div className="flex items-center gap-2">
+            {/* Prev — steps the window back one month without disturbing which month is selected below */}
+            <button
+              onClick={() => setCarouselCenter(prev => (prev === 0 ? 11 : prev - 1))}
+              aria-label={t('Previous month') as string}
+              className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-bg-card border border-border-color text-text-secondary hover:text-main hover:border-accent-color/30 transition-colors"
+            >
+              <ChevronLeft size={16} />
+            </button>
 
-              if (isWinter) { seasonColor = 'blue-500'; SeasonIcon = Wind; }
-              else if (isSpring) { seasonColor = 'emerald-500'; SeasonIcon = Sprout; }
-              else if (isSummer) { seasonColor = 'amber-500'; SeasonIcon = ThermometerSun; }
-              else if (isAutumn) { seasonColor = 'orange-600'; SeasonIcon = Droplets; }
+            {/* Windowed carousel centered on carouselCenter — 1 to 6 tiles
+                depending on viewport width — instead of a 12-wide scroller
+                nobody wants to drag through on mobile, or a 5-wide grid that
+                stretched tiles (and the whole section) too tall on desktop. */}
+            <div className={`flex-1 grid gap-2 ${CAROUSEL_GRID_CLASS[carouselWindowSize]}`}>
+              {carouselOffsets.map(offset => {
+                const idx = ((carouselCenter + offset) % 12 + 12) % 12;
+                const monthName = months[idx];
+                const seasonKey = seasonKeyOf(idx);
+                const season = SEASON_STYLES[seasonKey];
+                const SeasonIcon = season.icon;
+                const isSelected = selectedMonth === idx;
+                const isCenter = offset === 0;
 
-              const isSelected = selectedMonth === idx;
-
-              return (
-                <button
-                  key={idx}
-                  onClick={() => {
-                    setSelectedMonth(idx);
-                    setTimeout(() => {
-                      document.getElementById('guide-details')?.scrollIntoView({ behavior: 'smooth' });
-                    }, 50);
-                  }}
-                  className={`relative flex-shrink-0 w-20 h-20 rounded-xl border transition-all duration-300 flex flex-col items-center justify-center p-2 group/month
-                    ${isSelected 
-                      ? `bg-bg-card border-${seasonColor}/30 shadow-md scale-105 z-10` 
-                      : 'bg-bg-card/40 border-border-color hover:border-border-color/80 hover:bg-bg-card/60'
-                    }`}
-                >
-                  <div className={`absolute top-0 inset-x-4 h-0.5 rounded-b-full transition-all duration-300
-                    ${isSelected ? `bg-${seasonColor} opacity-100` : `bg-${seasonColor} opacity-0 group-hover/month:opacity-30`}
-                  `}></div>
-
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center mb-1 transition-all duration-300
-                    ${isSelected 
-                      ? `bg-${seasonColor}/10 text-${seasonColor}` 
-                      : `bg-bg-main text-text-secondary opacity-30 group-hover/month:opacity-100`
-                    }`}
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setSelectedMonth(idx);
+                      setCarouselCenter(idx);
+                      setTimeout(() => {
+                        document.getElementById('guide-details')?.scrollIntoView({ behavior: 'smooth' });
+                      }, 50);
+                    }}
+                    className={`relative aspect-square rounded-xl border transition-all duration-300 flex flex-col items-center justify-center p-2 group/month
+                      ${isSelected
+                        ? `bg-bg-card ${season.borderActive} shadow-md z-10`
+                        : 'bg-bg-card/40 border-border-color hover:border-border-color/80 hover:bg-bg-card/60'
+                      }
+                      ${isCenter ? 'scale-105' : 'scale-95 opacity-80'}
+                    `}
                   >
-                    <SeasonIcon size={14} strokeWidth={2.5} />
-                  </div>
+                    <div className={`absolute top-0 inset-x-4 h-0.5 rounded-b-full transition-all duration-300
+                      ${isSelected ? `${season.topBarActive} opacity-100` : `${season.topBarActive} opacity-0 group-hover/month:opacity-30`}
+                    `}></div>
 
-                  <span className={`text-[10px] font-black uppercase tracking-wider transition-all
-                    ${isSelected ? 'text-main' : 'text-text-secondary opacity-60'}
-                  `}>
-                    {monthName.substring(0, 3)}
-                  </span>
-                </button>
-              );
-            })}
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center mb-1 transition-all duration-300
+                      ${isSelected
+                        ? season.iconActive
+                        : 'bg-bg-main text-text-secondary opacity-30 group-hover/month:opacity-100'
+                      }`}
+                    >
+                      <SeasonIcon size={14} strokeWidth={2.5} />
+                    </div>
+
+                    <span className={`text-[10px] font-black uppercase tracking-wider transition-all
+                      ${isSelected ? 'text-main' : 'text-text-secondary opacity-60'}
+                    `}>
+                      {monthName.substring(0, 3)}
+                    </span>
+
+                    {isCenter && !isSelected && (
+                      <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-accent-color" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              onClick={() => setCarouselCenter(prev => (prev === 11 ? 0 : prev + 1))}
+              aria-label={t('Next month') as string}
+              className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-bg-card border border-border-color text-text-secondary hover:text-main hover:border-accent-color/30 transition-colors"
+            >
+              <ChevronRight size={16} />
+            </button>
           </div>
         </div>
       </section>
@@ -374,25 +579,31 @@ const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
       {/* MONTHLY GUIDE DETAILS */}
       <div id="guide-details" className="grid grid-cols-1 lg:grid-cols-12 gap-12 pt-10">
         {/* Left: Expert Content */}
-        <div className="lg:col-span-8 space-y-10">
+        {/* min-w-0 is load-bearing: a grid item defaults to min-width:auto, so
+            without it the title row below (icon + long month title + nav
+            pill, all in one unwrapped flex row) refuses to shrink and instead
+            overflows past this column straight into the col-span-4 sidebar at
+            mid-desktop widths — that was the visual overlap with the
+            Schedule card. */}
+        <div className="lg:col-span-8 min-w-0 space-y-10">
            {currentMonthGuide ? (
               <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
-                 <div className="flex items-center justify-between mb-8">
-                    <div className="flex items-center gap-6">
-                       <div className="w-20 h-20 rounded-[2rem] bg-accent-color text-white flex items-center justify-center shadow-2xl shadow-accent-color/30 rotate-3 transition-transform hover:rotate-0">
+                 <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 mb-8">
+                    <div className="flex items-center gap-6 min-w-0">
+                       <div className="w-20 h-20 shrink-0 rounded-[2rem] bg-accent-color text-white flex items-center justify-center shadow-2xl shadow-accent-color/30 rotate-3 transition-transform hover:rotate-0">
                           <CalendarIcon size={32} />
                        </div>
-                       <div>
-                          <h2 className="text-4xl font-black text-main uppercase tracking-tighter leading-none mb-2">
+                       <div className="min-w-0">
+                          <h2 className="text-4xl font-black text-main uppercase tracking-tighter leading-none mb-2 truncate">
                              {currentMonthGuide.title}
                           </h2>
-                          <p className="text-lg font-bold text-text-secondary opacity-60">
+                          <p className="text-lg font-bold text-text-secondary opacity-60 truncate">
                              {currentMonthGuide.subtitle}
                           </p>
                        </div>
                     </div>
 
-                    <div className="hidden md:flex items-center gap-2 bg-bg-card border border-border-color rounded-2xl p-1.5 shadow-sm">
+                    <div className="hidden md:flex items-center gap-2 bg-bg-card border border-border-color rounded-2xl p-1.5 shadow-sm shrink-0">
                        <button 
                          onClick={() => setSelectedMonth(prev => prev === 0 ? 11 : prev - 1)}
                          className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-bg-main transition-colors text-text-secondary"

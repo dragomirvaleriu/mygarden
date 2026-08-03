@@ -1,7 +1,19 @@
 import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X, Check, Sprout, Sun, Droplets, Gauge } from 'lucide-react';
-import { plantCatalog, plantDifficulties, PlantCatalogEntry } from '../src/data/plantCatalog';
+import { Search, X, Check, Sprout, Sun, Droplets, Gauge, Ruler, SlidersHorizontal } from 'lucide-react';
+import {
+  plantCatalog,
+  plantDifficulties,
+  plantCategories,
+  plantHeights,
+  plantWaterNeeds,
+  plantLightNeeds,
+  PLANT_CATEGORY_LABELS,
+  PLANT_HEIGHT_LABELS,
+  PLANT_WATER_LABELS,
+  PLANT_LIGHT_LABELS,
+  PlantCatalogEntry,
+} from '../src/data/plantCatalog';
 import { db, collection, addDoc, serverTimestamp } from '../services/firebase';
 import { auth } from '../services/firebase';
 import toast from 'react-hot-toast';
@@ -12,11 +24,20 @@ interface Props {
 
 type TypeFilter = 'toate' | 'interior' | 'exterior';
 type DifficultyFilter = 'toate' | PlantCatalogEntry['difficulty'];
+type CategoryFilter = 'toate' | PlantCatalogEntry['category'];
+type HeightFilter = 'toate' | PlantCatalogEntry['heightCategory'];
+type WaterFilter = 'toate' | PlantCatalogEntry['waterNeed'];
+type LightFilter = 'toate' | PlantCatalogEntry['lightNeed'];
 
 const Explore: React.FC<Props> = ({ organizationId }) => {
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('toate');
   const [difficultyFilter, setDifficultyFilter] = useState<DifficultyFilter>('toate');
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('toate');
+  const [heightFilter, setHeightFilter] = useState<HeightFilter>('toate');
+  const [waterFilter, setWaterFilter] = useState<WaterFilter>('toate');
+  const [lightFilter, setLightFilter] = useState<LightFilter>('toate');
+  const [showMoreFilters, setShowMoreFilters] = useState(false);
   const [selectedPlant, setSelectedPlant] = useState<PlantCatalogEntry | null>(null);
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
   const [addingId, setAddingId] = useState<string | null>(null);
@@ -26,10 +47,16 @@ const Explore: React.FC<Props> = ({ organizationId }) => {
     return plantCatalog.filter((plant) => {
       if (typeFilter !== 'toate' && plant.type !== typeFilter) return false;
       if (difficultyFilter !== 'toate' && plant.difficulty !== difficultyFilter) return false;
+      if (categoryFilter !== 'toate' && plant.category !== categoryFilter) return false;
+      if (heightFilter !== 'toate' && plant.heightCategory !== heightFilter) return false;
+      if (waterFilter !== 'toate' && plant.waterNeed !== waterFilter) return false;
+      if (lightFilter !== 'toate' && plant.lightNeed !== lightFilter) return false;
       if (term && !plant.name.toLowerCase().includes(term) && !plant.scientificName.toLowerCase().includes(term)) return false;
       return true;
     });
-  }, [search, typeFilter, difficultyFilter]);
+  }, [search, typeFilter, difficultyFilter, categoryFilter, heightFilter, waterFilter, lightFilter]);
+
+  const activeExtraFilterCount = [categoryFilter, heightFilter, waterFilter, lightFilter].filter(f => f !== 'toate').length;
 
   const handleAddToGarden = async (plant: PlantCatalogEntry) => {
     const uid = auth.currentUser?.uid;
@@ -114,7 +141,107 @@ const Explore: React.FC<Props> = ({ organizationId }) => {
             {option === 'toate' ? 'Orice dificultate' : option}
           </button>
         ))}
+        <span className="w-px bg-border-color mx-1" />
+        <button
+          onClick={() => setShowMoreFilters(v => !v)}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider border transition ${
+            showMoreFilters || activeExtraFilterCount > 0
+              ? 'bg-accent-color/10 border-accent-color/40 text-accent-color'
+              : 'bg-bg-card border-border-color text-text-secondary hover:border-accent-color/30 hover:text-text-main'
+          }`}
+        >
+          <SlidersHorizontal className="w-3.5 h-3.5" />
+          Mai multe filtre
+          {activeExtraFilterCount > 0 && (
+            <span className="bg-accent-color text-white rounded-full w-4 h-4 flex items-center justify-center text-[9px]">
+              {activeExtraFilterCount}
+            </span>
+          )}
+        </button>
       </div>
+
+      {showMoreFilters && (
+        <div className="bg-bg-card border border-border-color rounded-2xl p-4 space-y-4">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-wider text-text-secondary mb-2">Categorie</p>
+            <div className="flex flex-wrap gap-2">
+              {(['toate', ...plantCategories] as CategoryFilter[]).map((option) => (
+                <button
+                  key={option}
+                  onClick={() => setCategoryFilter(option)}
+                  className={`px-3 py-1.5 rounded-full text-[11px] font-bold border transition ${
+                    categoryFilter === option
+                      ? 'bg-accent-color text-white border-accent-color'
+                      : 'bg-bg-main border-border-color text-text-secondary hover:border-accent-color/30 hover:text-text-main'
+                  }`}
+                >
+                  {option === 'toate' ? 'Toate' : PLANT_CATEGORY_LABELS[option]}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-wider text-text-secondary mb-2 flex items-center gap-1.5">
+              <Ruler className="w-3 h-3" /> Înălțime
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {(['toate', ...plantHeights] as HeightFilter[]).map((option) => (
+                <button
+                  key={option}
+                  onClick={() => setHeightFilter(option)}
+                  className={`px-3 py-1.5 rounded-full text-[11px] font-bold border transition ${
+                    heightFilter === option
+                      ? 'bg-accent-color text-white border-accent-color'
+                      : 'bg-bg-main border-border-color text-text-secondary hover:border-accent-color/30 hover:text-text-main'
+                  }`}
+                >
+                  {option === 'toate' ? 'Orice înălțime' : PLANT_HEIGHT_LABELS[option]}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-wider text-text-secondary mb-2 flex items-center gap-1.5">
+              <Droplets className="w-3 h-3" /> Nevoie de apă
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {(['toate', ...plantWaterNeeds] as WaterFilter[]).map((option) => (
+                <button
+                  key={option}
+                  onClick={() => setWaterFilter(option)}
+                  className={`px-3 py-1.5 rounded-full text-[11px] font-bold border transition ${
+                    waterFilter === option
+                      ? 'bg-accent-color text-white border-accent-color'
+                      : 'bg-bg-main border-border-color text-text-secondary hover:border-accent-color/30 hover:text-text-main'
+                  }`}
+                >
+                  {option === 'toate' ? 'Orice nevoie' : PLANT_WATER_LABELS[option]}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-wider text-text-secondary mb-2 flex items-center gap-1.5">
+              <Sun className="w-3 h-3" /> Lumină / zonă de plantare
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {(['toate', ...plantLightNeeds] as LightFilter[]).map((option) => (
+                <button
+                  key={option}
+                  onClick={() => setLightFilter(option)}
+                  className={`px-3 py-1.5 rounded-full text-[11px] font-bold border transition ${
+                    lightFilter === option
+                      ? 'bg-accent-color text-white border-accent-color'
+                      : 'bg-bg-main border-border-color text-text-secondary hover:border-accent-color/30 hover:text-text-main'
+                  }`}
+                >
+                  {option === 'toate' ? 'Orice lumină' : PLANT_LIGHT_LABELS[option]}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {filteredPlants.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-text-secondary">

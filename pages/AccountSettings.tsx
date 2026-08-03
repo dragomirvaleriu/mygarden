@@ -6,22 +6,21 @@ import {
   Mail,
   Lock,
   Globe,
-  Sparkles,
   LogOut,
   Loader2,
   Eye,
   EyeOff,
   ShieldCheck,
-  ChevronRight,
   Wrench,
   Sprout,
-  Search,
   Gift,
   Copy,
   Share2,
-  Phone
+  CheckCircle,
+  Download
 } from 'lucide-react';
-import { Card } from '../components/ui/primitives';
+import { Card, Pill } from '../components/ui/primitives';
+import { ActivityManagement } from '../components/ActivityManagement';
 import {
   auth,
   db,
@@ -42,12 +41,35 @@ interface Props {
   subscriptionTier: 'free' | 'pro' | 'enterprise' | 'lifetime';
 }
 
-const TIER_LABEL: Record<Props['subscriptionTier'], string> = {
-  free: 'Free',
-  pro: 'PRO',
-  enterprise: 'Enterprise',
-  lifetime: 'Lifetime'
+const TIER_META: Record<Props['subscriptionTier'], { label: string; tone: 'neutral' | 'accent' | 'success' }> = {
+  free: { label: 'Free', tone: 'neutral' },
+  pro: { label: 'PRO', tone: 'accent' },
+  enterprise: { label: 'Enterprise', tone: 'accent' },
+  lifetime: { label: 'Lifetime', tone: 'success' },
 };
+
+const inputCls =
+  'w-full px-4 py-3 rounded-xl bg-bg-main border border-border-color text-sm font-medium text-main placeholder:text-text-secondary/60 outline-none focus:border-accent-color focus:ring-2 focus:ring-accent-color/20 transition';
+
+const primaryBtnCls =
+  'px-6 py-3 rounded-xl bg-accent-color text-accent-text font-bold text-sm hover:opacity-90 disabled:opacity-50 transition flex items-center justify-center gap-2';
+
+const SectionCard: React.FC<{
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  title: string;
+  children: React.ReactNode;
+  className?: string;
+}> = ({ icon: Icon, title, children, className }) => (
+  <Card padding="lg" className={className}>
+    <div className="flex items-center gap-3 mb-6">
+      <div className="w-9 h-9 rounded-xl bg-accent-color/10 flex items-center justify-center shrink-0">
+        <Icon size={18} className="text-accent-color" />
+      </div>
+      <h2 className="text-lg font-black text-main">{title}</h2>
+    </div>
+    {children}
+  </Card>
+);
 
 const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptionTier }) => {
   const { t, i18n } = useTranslation();
@@ -172,10 +194,6 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
     }
   };
 
-  const handleLogout = async () => {
-    await logout();
-  };
-
   const handlePurchaseProduct = async (product: 'adFree' | 'academyPro' | 'bundle') => {
     setIsPurchasing(true);
     try {
@@ -254,194 +272,182 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
   };
 
   const currentLang = (userProfile.language || 'ro') as 'ro' | 'en';
+  const tierMeta = TIER_META[subscriptionTier];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-bg-main via-bg-main to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
-      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8 animate-in fade-in duration-700">
-        {/* ── HEADER SECTION ── */}
-        <div className="mb-10">
-          <div className="flex items-center gap-4 mb-2">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-sky-400 to-sky-600 flex items-center justify-center text-white shadow-lg shadow-sky-500/40">
-              <User size={28} strokeWidth={2} />
-            </div>
-            <div>
-              <h1 className="text-4xl font-black text-main tracking-tight">Contul Meu</h1>
-              <p className="text-text-secondary text-sm font-semibold mt-1">Gestionează datele, securitatea și preferințele</p>
-            </div>
+    <div className="min-h-screen bg-bg-main">
+      <div className="max-w-6xl mx-auto px-4 lg:px-8 py-8">
+        {/* Header */}
+        <div className="flex items-center gap-4 mb-8">
+          <div className="w-12 h-12 rounded-2xl bg-accent-color/10 flex items-center justify-center shrink-0">
+            <User size={24} className="text-accent-color" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-black text-main tracking-tight">Contul Meu</h1>
+            <p className="text-text-secondary text-xs font-semibold mt-0.5">Gestionează datele, securitatea și preferințele</p>
           </div>
         </div>
 
         {/* MAIN LAYOUT: Sidebar + Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* ── LEFT SIDEBAR: Profile Card ── */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-8 space-y-6">
-              {/* Profile Card */}
-              <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
-                <div className="flex flex-col items-center text-center">
-                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-400 to-sky-500 flex items-center justify-center text-white text-2xl font-black mb-4 shadow-lg">
-                    {displayName.charAt(0).toUpperCase() || 'G'}
-                  </div>
-                  <h3 className="text-xl font-black text-main">{displayName || 'Grădinar'}</h3>
-                  <p className="text-xs text-text-secondary font-semibold mt-1 truncate">{userProfile.email}</p>
+        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6 items-start">
+          {/* ── SIDEBAR: Profile summary ── */}
+          <div className="lg:sticky lg:top-8 space-y-5">
+            <Card padding="lg">
+              <div className="flex flex-col items-center text-center">
+                <div className="w-16 h-16 rounded-2xl bg-accent-color text-accent-text flex items-center justify-center text-xl font-black mb-3">
+                  {displayName.charAt(0).toUpperCase() || 'G'}
+                </div>
+                <h3 className="text-base font-black text-main truncate max-w-full">{displayName || 'Grădinar'}</h3>
+                <p className="text-xs text-text-secondary font-medium mt-0.5 truncate max-w-full">{userProfile.email}</p>
 
-                  <div className="w-full mt-5 pt-5 border-t border-slate-200 dark:border-slate-700">
-                    <span className="inline-block px-3 py-1.5 bg-gradient-to-r from-emerald-500 to-sky-600 text-white text-xs font-black uppercase rounded-full shadow-md">
-                      {TIER_LABEL[subscriptionTier]}
-                    </span>
-                    {userProfile.subscriptionExpiresAt && (
-                      <p className="text-xs text-text-secondary font-medium mt-3">
-                        Expirare: {new Date(userProfile.subscriptionExpiresAt).toLocaleDateString('ro-RO')}
-                      </p>
-                    )}
-                  </div>
+                <div className="w-full mt-4 pt-4 border-t border-border-color flex flex-col items-center gap-2">
+                  <Pill tone={tierMeta.tone}>{tierMeta.label}</Pill>
+                  {userProfile.subscriptionExpiresAt && (
+                    <p className="text-[11px] text-text-secondary font-medium">
+                      Expiră: {(
+                        (userProfile.subscriptionExpiresAt as any)?.toDate
+                          ? (userProfile.subscriptionExpiresAt as any).toDate()
+                          : new Date(userProfile.subscriptionExpiresAt as any)
+                      ).toLocaleDateString('ro-RO')}
+                    </p>
+                  )}
                 </div>
               </div>
+            </Card>
 
-              {/* Quick Stats */}
-              <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-lg border border-slate-200 dark:border-slate-700">
-                <p className="text-xs font-black text-text-secondary uppercase tracking-wide mb-3">Progres</p>
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-sm font-bold text-main mb-1">Level {userProfile.level || 1}</p>
-                    <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
-                      <div
-                        className="bg-gradient-to-r from-emerald-500 to-sky-500 h-2 rounded-full"
-                        style={{width: `${((userProfile.exp || 0) % 100)}%`}}
-                      ></div>
-                    </div>
-                  </div>
-                </div>
+            <Card padding="lg">
+              <p className="text-[10px] font-black text-text-secondary uppercase tracking-wider mb-3">Progres</p>
+              <div className="flex items-baseline justify-between mb-1.5">
+                <span className="text-sm font-bold text-main">Nivel {userProfile.level || 1}</span>
+                <span className="text-[10px] text-text-secondary tabular-nums">{(userProfile.exp || 0) % 100}/100 XP</span>
               </div>
-            </div>
+              <div className="w-full bg-bg-main rounded-full h-2 overflow-hidden">
+                <div
+                  className="bg-accent-color h-2 rounded-full transition-all"
+                  style={{ width: `${(userProfile.exp || 0) % 100}%` }}
+                />
+              </div>
+            </Card>
+
+            <button
+              onClick={() => {
+                logout();
+                onNavigate(Page.Dashboard);
+              }}
+              className="hidden lg:flex w-full px-4 py-3 rounded-xl bg-red-500/10 text-red-500 font-bold text-sm hover:bg-red-500/20 transition items-center justify-center gap-2"
+            >
+              <LogOut size={16} />
+              Deconectare
+            </button>
           </div>
 
-          {/* ── RIGHT CONTENT: Settings Sections ── */}
-          <div className="lg:col-span-3 space-y-6">
-            {/* 1. IDENTITY SECTION */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-lg border border-slate-200 dark:border-slate-700">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center">
-                  <User size={20} className="text-sky-600 dark:text-sky-400" />
-                </div>
-                <h2 className="text-2xl font-black text-main">Date Personale</h2>
-              </div>
-
-              <div className="space-y-6">
-                {/* Name */}
-                <form onSubmit={handleSaveName} className="space-y-3">
-                  <label className="block text-xs font-black text-text-secondary uppercase tracking-wide">
-                    Cum te cheamă?
-                  </label>
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <input
-                      type="text"
-                      placeholder="Exemplu: Ion Popescu"
-                      value={displayName}
-                      onChange={(e) => setDisplayName(e.target.value)}
-                      className="flex-1 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 text-sm font-medium outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition"
-                    />
-                    <button
-                      type="submit"
-                      disabled={isSavingName || !displayName.trim()}
-                      className="sm:w-auto w-full px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold text-sm rounded-lg hover:shadow-lg disabled:opacity-50 transition flex items-center justify-center gap-2"
-                    >
-                      {isSavingName ? <Loader2 size={18} className="animate-spin" /> : 'Salvează'}
-                    </button>
-                  </div>
-                  <p className="text-xs text-text-secondary font-medium">Salut personalizat pe pagina principală</p>
-                </form>
-
-                {/* Email Display */}
-                <div className="space-y-3">
-                  <label className="block text-xs font-black text-text-secondary uppercase tracking-wide">
-                    Email
-                  </label>
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <Mail size={18} className="text-sky-500 flex-shrink-0" />
-                      <span className="font-medium text-sm text-main truncate">{userProfile.email}</span>
+          {/* ── CONTENT: Settings sections ── */}
+          <div className="space-y-5 min-w-0">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
+              {/* Identity */}
+              <SectionCard icon={User} title="Date Personale">
+                <div className="space-y-5">
+                  <form onSubmit={handleSaveName} className="space-y-2.5">
+                    <label className="block text-[11px] font-black text-text-secondary uppercase tracking-wide">
+                      Cum te cheamă?
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Exemplu: Ion Popescu"
+                        value={displayName}
+                        onChange={(e) => setDisplayName(e.target.value)}
+                        className={`flex-1 min-w-0 ${inputCls}`}
+                      />
+                      <button
+                        type="submit"
+                        disabled={isSavingName || !displayName.trim()}
+                        className={primaryBtnCls}
+                      >
+                        {isSavingName ? <Loader2 size={16} className="animate-spin" /> : 'Salvează'}
+                      </button>
                     </div>
-                    <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-xs bg-emerald-100 dark:bg-emerald-900/30 px-3 py-1.5 rounded-full w-fit shrink-0">
-                      <CheckCircle size={14} />
-                      <span className="hidden sm:inline">Verificat</span>
+                  </form>
+
+                  <div className="space-y-2.5">
+                    <label className="block text-[11px] font-black text-text-secondary uppercase tracking-wide">
+                      Email
+                    </label>
+                    <div className="flex items-center justify-between gap-3 bg-bg-main border border-border-color rounded-xl px-4 py-3">
+                      <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                        <Mail size={16} className="text-accent-color shrink-0" />
+                        <span className="font-medium text-sm text-main truncate">{userProfile.email}</span>
+                      </div>
+                      <Pill tone="success" icon={CheckCircle}>Verificat</Pill>
                     </div>
                   </div>
-                </div>
 
-                {/* Phone */}
-                <form onSubmit={handleSavePhone} className="space-y-3">
-                  <label className="block text-xs font-black text-text-secondary uppercase tracking-wide">
-                    Telefon
-                  </label>
-                  <div className="flex flex-col sm:flex-row gap-3">
+                  <form onSubmit={handleSavePhone} className="space-y-2.5">
+                    <label className="block text-[11px] font-black text-text-secondary uppercase tracking-wide">
+                      Telefon
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="tel"
+                        placeholder="+40 7XX XXX XXX"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className={`flex-1 min-w-0 ${inputCls}`}
+                      />
+                      <button
+                        type="submit"
+                        disabled={isSavingPhone}
+                        className={primaryBtnCls}
+                      >
+                        {isSavingPhone ? <Loader2 size={16} className="animate-spin" /> : 'Salvează'}
+                      </button>
+                    </div>
+                    <p className="text-[11px] text-text-secondary font-medium">
+                      Folosit pentru mesaje WhatsApp (ex: „e timpul să uzi", „tunde gazonul")
+                    </p>
+                  </form>
+                </div>
+              </SectionCard>
+
+              {/* Security */}
+              <SectionCard icon={Lock} title="Securitate">
+                <form onSubmit={handleChangePassword} className="space-y-3.5">
+                  <div>
+                    <label className="block text-[11px] font-black text-text-secondary uppercase tracking-wide mb-2">
+                      Parola curentă
+                    </label>
                     <input
-                      type="tel"
-                      placeholder="+40 7XX XXX XXX"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      className="flex-1 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 text-sm font-medium outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition"
+                      type={showPasswords ? 'text' : 'password'}
+                      placeholder="••••••••"
+                      autoComplete="current-password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      required
+                      className={inputCls}
                     />
-                    <button
-                      type="submit"
-                      disabled={isSavingPhone}
-                      className="sm:w-auto w-full px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold text-sm rounded-lg hover:shadow-lg disabled:opacity-50 transition flex items-center justify-center gap-2"
-                    >
-                      {isSavingPhone ? <Loader2 size={18} className="animate-spin" /> : 'Salvează'}
-                    </button>
                   </div>
-                  <p className="text-xs text-text-secondary font-medium">Pentru contactare urgență (viitor)</p>
-                </form>
-              </div>
-            </div>
 
-            {/* 2. SECURITY SECTION */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-lg border border-slate-200 dark:border-slate-700">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                  <Lock size={20} className="text-red-600 dark:text-red-400" />
-                </div>
-                <h2 className="text-2xl font-black text-main">Securitate</h2>
-              </div>
+                  <div>
+                    <label className="block text-[11px] font-black text-text-secondary uppercase tracking-wide mb-2">
+                      Parola nouă
+                    </label>
+                    <input
+                      type={showPasswords ? 'text' : 'password'}
+                      placeholder="••••••••"
+                      autoComplete="new-password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      required
+                      minLength={6}
+                      className={inputCls}
+                    />
+                  </div>
 
-              <form onSubmit={handleChangePassword} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-black text-text-secondary uppercase tracking-wide mb-3">
-                    Parola curentă
-                  </label>
-                  <input
-                    type={showPasswords ? 'text' : 'password'}
-                    placeholder="••••••••"
-                    autoComplete="current-password"
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    required
-                    className="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 text-sm font-medium outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-black text-text-secondary uppercase tracking-wide mb-3">
-                    Parola nouă
-                  </label>
-                  <input
-                    type={showPasswords ? 'text' : 'password'}
-                    placeholder="••••••••"
-                    autoComplete="new-password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    required
-                    minLength={6}
-                    className="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 text-sm font-medium outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-black text-text-secondary uppercase tracking-wide mb-3">
-                    Confirmă parola nouă
-                  </label>
-                  <div className="flex gap-3 items-end">
-                    <div className="flex-1">
+                  <div>
+                    <label className="block text-[11px] font-black text-text-secondary uppercase tracking-wide mb-2">
+                      Confirmă parola nouă
+                    </label>
+                    <div className="flex gap-2">
                       <input
                         type={showPasswords ? 'text' : 'password'}
                         placeholder="••••••••"
@@ -450,160 +456,145 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         required
                         minLength={6}
-                        className="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 text-sm font-medium outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition"
+                        className={`flex-1 min-w-0 ${inputCls}`}
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowPasswords(v => !v)}
+                        className="p-3 rounded-xl bg-bg-main border border-border-color hover:border-accent-color/30 transition text-text-secondary shrink-0"
+                        title={showPasswords ? 'Ascunde' : 'Arată'}
+                      >
+                        {showPasswords ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => setShowPasswords(v => !v)}
-                      className="p-3 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition text-text-secondary"
-                      title={showPasswords ? 'Ascunde' : 'Arată'}
-                    >
-                      {showPasswords ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
                   </div>
-                </div>
 
-                <button
-                  type="submit"
-                  disabled={isSavingPassword}
-                  className="w-full mt-6 px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white font-bold rounded-lg hover:shadow-lg disabled:opacity-50 transition flex items-center justify-center gap-2"
-                >
-                  {isSavingPassword ? <Loader2 size={18} className="animate-spin" /> : <ShieldCheck size={18} />}
-                  Schimbă Parola
-                </button>
-              </form>
+                  <button
+                    type="submit"
+                    disabled={isSavingPassword}
+                    className={`w-full ${primaryBtnCls}`}
+                  >
+                    {isSavingPassword ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
+                    Schimbă Parola
+                  </button>
+                </form>
+              </SectionCard>
             </div>
 
-            {/* 3. PREFERENCES SECTION */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-lg border border-slate-200 dark:border-slate-700">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                  <Globe size={20} className="text-purple-600 dark:text-purple-400" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
+              {/* Preferences */}
+              <SectionCard icon={Globe} title="Preferințe">
+                <label className="block text-[11px] font-black text-text-secondary uppercase tracking-wide mb-2">
+                  Limbă
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleChangeLanguage('ro')}
+                    className={`py-3 px-4 rounded-xl font-bold text-sm transition ${
+                      currentLang === 'ro'
+                        ? 'bg-accent-color text-accent-text'
+                        : 'bg-bg-main border border-border-color text-main hover:border-accent-color/30'
+                    }`}
+                  >
+                    🇷🇴 Română
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleChangeLanguage('en')}
+                    className={`py-3 px-4 rounded-xl font-bold text-sm transition ${
+                      currentLang === 'en'
+                        ? 'bg-accent-color text-accent-text'
+                        : 'bg-bg-main border border-border-color text-main hover:border-accent-color/30'
+                    }`}
+                  >
+                    🇬🇧 English
+                  </button>
                 </div>
-                <h2 className="text-2xl font-black text-main">Preferințe</h2>
-              </div>
+              </SectionCard>
 
-              <form onSubmit={handleChangeLanguage} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-black text-text-secondary uppercase tracking-wide mb-3">
-                    Limbă
-                  </label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        i18n.changeLanguage('ro');
-                        setIsSavingLanguage(true);
-                      }}
-                      className={`py-3 px-4 rounded-lg font-bold text-sm transition ${
-                        currentLang === 'ro'
-                          ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg'
-                          : 'bg-slate-100 dark:bg-slate-700 text-main hover:bg-slate-200 dark:hover:bg-slate-600'
-                      }`}
-                    >
-                      🇷🇴 Română
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        i18n.changeLanguage('en');
-                        setIsSavingLanguage(true);
-                      }}
-                      className={`py-3 px-4 rounded-lg font-bold text-sm transition ${
-                        currentLang === 'en'
-                          ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg'
-                          : 'bg-slate-100 dark:bg-slate-700 text-main hover:bg-slate-200 dark:hover:bg-slate-600'
-                      }`}
-                    >
-                      🇬🇧 English
-                    </button>
-                  </div>
-                </div>
-              </form>
+              {/* Gift code */}
+              <SectionCard icon={Gift} title="Cod Cadou">
+                <p className="text-sm text-text-secondary font-medium mb-4">
+                  Ai un cod cadou? Activează-l aici pentru a primi Pro gratis!
+                </p>
+                <form onSubmit={handleRedeemGiftCode} className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Introdu codul cadou..."
+                    value={giftCode}
+                    onChange={(e) => setGiftCode(e.target.value)}
+                    className={`flex-1 min-w-0 ${inputCls}`}
+                    maxLength={50}
+                  />
+                  <button
+                    type="submit"
+                    disabled={isRedeeming || !giftCode.trim()}
+                    className={primaryBtnCls}
+                  >
+                    {isRedeeming ? <Loader2 size={16} className="animate-spin" /> : 'Activează'}
+                  </button>
+                </form>
+              </SectionCard>
             </div>
 
-            {/* 4. REFERRAL SECTION */}
+            {/* Referral */}
             {referralCode && (
-              <div className="bg-gradient-to-br from-emerald-50 to-sky-50 dark:from-emerald-900/20 dark:to-sky-900/20 rounded-2xl p-8 shadow-lg border border-emerald-200 dark:border-emerald-800">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center">
-                    <Share2 size={20} className="text-emerald-600 dark:text-emerald-400" />
+              <Card padding="lg" className="border-accent-color/20 bg-accent-color/5">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-9 h-9 rounded-xl bg-accent-color/10 flex items-center justify-center shrink-0">
+                    <Share2 size={18} className="text-accent-color" />
                   </div>
-                  <h2 className="text-2xl font-black text-main">Recomandă & Câștigă</h2>
+                  <h2 className="text-lg font-black text-main">Recomandă & Câștigă</h2>
                 </div>
                 <p className="text-sm text-text-secondary font-medium mb-4">
                   Trimite link-ul tău și ambii primiți +7 zile PRO gratuit!
                 </p>
-                <div className="flex gap-3">
+                <div className="flex gap-2">
                   <input
                     type="text"
                     readOnly
                     value={`${window.location.origin}/?ref=${referralCode}`}
-                    className="flex-1 bg-white dark:bg-slate-700 border border-emerald-300 dark:border-emerald-700 rounded-lg px-4 py-3 text-sm font-mono text-main select-all"
+                    className={`flex-1 min-w-0 ${inputCls} font-mono select-all`}
                   />
                   <button
                     onClick={handleCopyReferralLink}
-                    className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold rounded-lg hover:shadow-lg transition flex items-center gap-2"
+                    className={primaryBtnCls}
                   >
-                    <Copy size={18} />
+                    <Copy size={16} />
                     Copiază
                   </button>
                 </div>
-              </div>
+              </Card>
             )}
 
-            {/* 5. GIFT CODE SECTION */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-lg border border-slate-200 dark:border-slate-700">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-lg bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
-                  <Gift size={20} className="text-yellow-600 dark:text-yellow-400" />
-                </div>
-                <h2 className="text-2xl font-black text-main">Cod Cadou</h2>
-              </div>
-              <p className="text-sm text-text-secondary font-medium mb-4">
-                Ai un cod cadou? Activează-l aici pentru a primi Pro gratis!
-              </p>
-              <form onSubmit={handleRedeemGiftCode} className="flex gap-3">
-                <input
-                  type="text"
-                  placeholder="Introdu codul cadou..."
-                  value={giftCode}
-                  onChange={(e) => setGiftCode(e.target.value)}
-                  className="flex-1 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 text-sm font-medium outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition"
-                  maxLength={50}
-                />
-                <button
-                  type="submit"
-                  disabled={isRedeeming || !giftCode.trim()}
-                  className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white font-bold rounded-lg hover:shadow-lg disabled:opacity-50 transition"
-                >
-                  {isRedeeming ? <Loader2 size={18} className="animate-spin" /> : 'Activează'}
-                </button>
-              </form>
-            </div>
+            {/* Activity management */}
+            <SectionCard icon={Sprout} title="Activități Grădină">
+              <ActivityManagement
+                userId={userProfile.uid}
+                organizationId={userProfile.organizationId || 'default'}
+              />
+            </SectionCard>
 
-            {/* 6. DATA & LOGOUT SECTION */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-lg border border-slate-200 dark:border-slate-700">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <button
-                  onClick={handleExportData}
-                  className="px-6 py-3 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-bold rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition flex items-center justify-center gap-2"
-                >
-                  <Wrench size={18} />
-                  Export Date
-                </button>
-                <button
-                  onClick={() => {
-                    logout();
-                    onNavigate(Page.Dashboard);
-                  }}
-                  className="px-6 py-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 font-bold rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition flex items-center justify-center gap-2"
-                >
-                  <LogOut size={18} />
-                  Deconectare
-                </button>
-              </div>
+            {/* Data & logout */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                onClick={handleExportData}
+                className="px-6 py-3 rounded-xl bg-bg-card border border-border-color text-main font-bold text-sm hover:border-accent-color/30 transition flex items-center justify-center gap-2"
+              >
+                <Download size={16} />
+                Export Date
+              </button>
+              <button
+                onClick={() => {
+                  logout();
+                  onNavigate(Page.Dashboard);
+                }}
+                className="lg:hidden px-6 py-3 rounded-xl bg-red-500/10 text-red-500 font-bold text-sm hover:bg-red-500/20 transition flex items-center justify-center gap-2"
+              >
+                <LogOut size={16} />
+                Deconectare
+              </button>
             </div>
           </div>
         </div>

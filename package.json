@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "tsx server.ts",
+    "dev": "tsx watch --clear-screen=false server.ts",
     "prebuild": "node -e \"require('fs').writeFileSync('public/version.json', JSON.stringify({version: Date.now()}))\"",
     "build": "vite build",
     "preview": "vite preview",

@@ -8,7 +8,7 @@ import { IrrigationWidget } from '../components/iot/IrrigationWidget';
 import { TreatmentCalculator } from '../components/TreatmentCalculator';
 import { AILensScanner } from '../components/vision/AILensScanner';
 import { GardenVitalityRing } from '../components/gamification/GardenVitalityRing';
-import { SmartTroubleshooter } from '../components/SmartTroubleshooter';
+import { DoctorulGradiniiDashboard } from '../components/DoctorulGradiniiDashboard';
 import OnboardingWizard from '../components/OnboardingWizard';
 import AdBanner from '../components/AdBanner';
 import NotificationBell from '../components/NotificationBell';
@@ -611,12 +611,13 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
         </motion.div>
       )}
 
+
       {/* ── MAIN GRID ── */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
 
         {/* LEFT (3 cols): "ce problemă am?" — the core beginner diagnostic tools, given the most room */}
         <div className="lg:col-span-3 space-y-4">
-          <SmartTroubleshooter onNavigate={onNavigate} />
+          <DoctorulGradiniiDashboard onNavigate={onNavigate} />
 
           {/* AI LENS */}
           {userProfile?.uid && (

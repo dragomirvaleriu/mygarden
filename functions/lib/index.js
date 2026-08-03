@@ -28,9 +28,8 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.restoreSuperAdminRole = exports.trackAdClick = exports.trackAdImpression = exports.seedDefaultAds = exports.deleteUserAccount = exports.updateUserSubscription = exports.updateAd = exports.createAd = exports.listAllUsers = exports.receiveTelemetry = exports.weatherAlert = exports.stripeWebhook = exports.createCheckoutSession = exports.createGiftCode = exports.redeemGiftCode = exports.generateReferralCode = void 0;
+exports.restoreSuperAdminRole = exports.trackAdClick = exports.trackAdImpression = exports.seedDefaultAds = exports.deleteUserAccount = exports.getAdminAnalytics = exports.revokeSubscription = exports.grantSubscription = exports.updateUserSubscription = exports.updateAd = exports.createAd = exports.listAllUsers = exports.receiveTelemetry = exports.weatherAlert = exports.stripeWebhook = exports.createCheckoutSession = exports.deleteGiftCode = exports.listAuditLog = exports.listGiftCodes = exports.createGiftCode = exports.redeemGiftCode = exports.SUPERADMIN_EMAIL = exports.generateReferralCode = void 0;
 const functions = __importStar(require("firebase-functions"));
 const admin = __importStar(require("firebase-admin"));
 const stripe_1 = __importDefault(require("stripe"));
@@ -55,10 +54,16 @@ async function createNotification(uid, type, title, message) {
         console.error('createNotification failed (non-fatal):', err);
     }
 }
-const stripeSecret = ((_a = functions.config().stripe) === null || _a === void 0 ? void 0 : _a.secret) || 'sk_test_placeholder';
-const stripe = new stripe_1.default(stripeSecret, {
-    apiVersion: '2022-11-15',
-});
+let stripeClient = null;
+function getStripe() {
+    var _a;
+    if (!stripeClient) {
+        stripeClient = new stripe_1.default(((_a = functions.config().stripe) === null || _a === void 0 ? void 0 : _a.secret) || 'sk_test_placeholder', {
+            apiVersion: '2022-11-15',
+        });
+    }
+    return stripeClient;
+}
 async function getCallerOrgId(uid) {
     var _a;
     const userSnap = await db.collection('users').doc(uid).get();
@@ -67,6 +72,40 @@ async function getCallerOrgId(uid) {
         throw new functions.https.HttpsError('failed-precondition', 'No organization found for this account.');
     }
     return orgId;
+}
+exports.SUPERADMIN_EMAIL = 'dragomirvaleriu@gmail.com';
+function isSuperAdminContext(context) {
+    var _a;
+    const token = (_a = context.auth) === null || _a === void 0 ? void 0 : _a.token;
+    if (!token)
+        return false;
+    if (token.superadmin === true)
+        return true;
+    return typeof token.email === 'string'
+        && token.email.toLowerCase() === exports.SUPERADMIN_EMAIL;
+}
+function assertSuperAdmin(context, action) {
+    if (!context.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated.');
+    }
+    if (!isSuperAdminContext(context)) {
+        throw new functions.https.HttpsError('permission-denied', `Only the product owner can ${action}.`);
+    }
+}
+async function logAudit(context, action, details) {
+    var _a, _b, _c, _d, _e;
+    try {
+        await db.collection('superadmin').doc('data').collection('audit_log').add({
+            action,
+            actorUid: (_b = (_a = context.auth) === null || _a === void 0 ? void 0 : _a.uid) !== null && _b !== void 0 ? _b : null,
+            actorEmail: (_e = (_d = (_c = context.auth) === null || _c === void 0 ? void 0 : _c.token) === null || _d === void 0 ? void 0 : _d.email) !== null && _e !== void 0 ? _e : null,
+            details,
+            at: admin.firestore.FieldValue.serverTimestamp(),
+        });
+    }
+    catch (err) {
+        console.error(`logAudit failed for action=${action} (non-fatal):`, err);
+    }
 }
 exports.redeemGiftCode = functions.https.onCall(async (data, context) => {
     if (!context.auth) {
@@ -92,6 +131,7 @@ exports.redeemGiftCode = functions.https.onCall(async (data, context) => {
         const product = giftData === null || giftData === void 0 ? void 0 : giftData.product;
         const orgUpdate = {
             planExpires: admin.firestore.Timestamp.fromDate(expires),
+            subscriptionSource: 'gift',
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         };
         if (product) {
@@ -116,15 +156,82 @@ exports.redeemGiftCode = functions.https.onCall(async (data, context) => {
     return { success: true, expiresAt };
 });
 exports.createGiftCode = functions.https.onCall(async (data, context) => {
-    if (!context.auth || context.auth.token.email !== 'dragomirvaleriu@gmail.com') {
-        throw new functions.https.HttpsError('permission-denied', 'Only the product owner can generate gift codes.');
+    if (!context.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated.');
     }
+    assertSuperAdmin(context, 'generate gift codes');
     const days = data.days || 30;
     const product = data.product;
     const code = Math.random().toString(36).substring(2, 10).toUpperCase();
     await db.collection('gift_codes').doc(code).set(Object.assign(Object.assign({ code,
         days, used: false }, (product ? { product } : {})), { createdBy: context.auth.uid, createdAt: admin.firestore.FieldValue.serverTimestamp() }));
+    await logAudit(context, 'create_gift_code', { code, product: product !== null && product !== void 0 ? product : null, days });
     return { success: true, code };
+});
+exports.listGiftCodes = functions.https.onCall(async (data, context) => {
+    assertSuperAdmin(context, 'list gift codes');
+    const limit = Math.min(Number(data === null || data === void 0 ? void 0 : data.limit) || 50, 200);
+    const snap = await db.collection('gift_codes')
+        .orderBy('createdAt', 'desc')
+        .limit(limit)
+        .get();
+    return {
+        success: true,
+        codes: snap.docs.map(d => {
+            var _a, _b, _c, _d, _e;
+            const c = d.data();
+            return {
+                code: d.id,
+                product: (_a = c.product) !== null && _a !== void 0 ? _a : null,
+                days: (_b = c.days) !== null && _b !== void 0 ? _b : null,
+                used: c.used === true,
+                usedBy: (_c = c.usedBy) !== null && _c !== void 0 ? _c : null,
+                createdAt: ((_d = c.createdAt) === null || _d === void 0 ? void 0 : _d.toDate) ? c.createdAt.toDate().toISOString() : null,
+                usedAt: ((_e = c.usedAt) === null || _e === void 0 ? void 0 : _e.toDate) ? c.usedAt.toDate().toISOString() : null,
+            };
+        }),
+    };
+});
+exports.listAuditLog = functions.https.onCall(async (data, context) => {
+    assertSuperAdmin(context, 'view the audit log');
+    const limit = Math.min(Number(data === null || data === void 0 ? void 0 : data.limit) || 50, 200);
+    const snap = await db.collection('superadmin').doc('data').collection('audit_log')
+        .orderBy('at', 'desc')
+        .limit(limit)
+        .get();
+    return {
+        success: true,
+        entries: snap.docs.map(d => {
+            var _a, _b, _c;
+            const e = d.data();
+            return {
+                id: d.id,
+                action: e.action,
+                actorEmail: (_a = e.actorEmail) !== null && _a !== void 0 ? _a : null,
+                details: (_b = e.details) !== null && _b !== void 0 ? _b : {},
+                at: ((_c = e.at) === null || _c === void 0 ? void 0 : _c.toDate) ? e.at.toDate().toISOString() : null,
+            };
+        }),
+    };
+});
+exports.deleteGiftCode = functions.https.onCall(async (data, context) => {
+    var _a;
+    assertSuperAdmin(context, 'delete gift codes');
+    const { code } = data;
+    if (!code || typeof code !== 'string') {
+        throw new functions.https.HttpsError('invalid-argument', 'code is required.');
+    }
+    const ref = db.collection('gift_codes').doc(code.toUpperCase());
+    const snap = await ref.get();
+    if (!snap.exists) {
+        throw new functions.https.HttpsError('not-found', 'That code does not exist.');
+    }
+    if ((_a = snap.data()) === null || _a === void 0 ? void 0 : _a.used) {
+        throw new functions.https.HttpsError('failed-precondition', 'That code has already been redeemed and cannot be deleted.');
+    }
+    await ref.delete();
+    await logAudit(context, 'delete_gift_code', { code: code.toUpperCase() });
+    return { success: true };
 });
 exports.createCheckoutSession = functions.https.onCall(async (data, context) => {
     var _a, _b, _c, _d;
@@ -145,7 +252,7 @@ exports.createCheckoutSession = functions.https.onCall(async (data, context) => 
         throw new functions.https.HttpsError('failed-precondition', 'Payments are not configured yet.');
     }
     const orgId = await getCallerOrgId(context.auth.uid);
-    const session = await stripe.checkout.sessions.create({
+    const session = await getStripe().checkout.sessions.create({
         mode: 'payment',
         payment_method_types: ['card'],
         line_items: [{ price: priceId, quantity: 1 }],
@@ -163,7 +270,7 @@ exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
     const endpointSecret = (_a = functions.config().stripe) === null || _a === void 0 ? void 0 : _a.webhook_secret;
     let event;
     try {
-        event = stripe.webhooks.constructEvent(req.rawBody, sig, endpointSecret);
+        event = getStripe().webhooks.constructEvent(req.rawBody, sig, endpointSecret);
     }
     catch (err) {
         res.status(400).send(`Webhook Error: ${err.message}`);
@@ -179,6 +286,7 @@ exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
             expiresAt.setFullYear(expiresAt.getFullYear() + 1);
             const updateData = {
                 subscriptionProduct: product,
+                subscriptionSource: 'purchase',
                 planExpires: admin.firestore.Timestamp.fromDate(expiresAt),
                 updatedAt: admin.firestore.FieldValue.serverTimestamp(),
             };
@@ -305,9 +413,10 @@ exports.receiveTelemetry = functions.https.onCall(async (data, context) => {
     return { success: true, status: 'buffered', reason: 'No state change or threshold crossed, within 4 hour heartbeat buffer.' };
 });
 exports.listAllUsers = functions.https.onCall(async (data, context) => {
-    if (!context.auth || context.auth.token.email !== 'dragomirvaleriu@gmail.com') {
-        throw new functions.https.HttpsError('permission-denied', 'Only superadmin can list users.');
+    if (!context.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated.');
     }
+    assertSuperAdmin(context, 'list users');
     try {
         const usersSnap = await db.collection('users').get();
         const users = usersSnap.docs.map(doc => (Object.assign({ uid: doc.id }, doc.data())));
@@ -318,9 +427,10 @@ exports.listAllUsers = functions.https.onCall(async (data, context) => {
     }
 });
 exports.createAd = functions.https.onCall(async (data, context) => {
-    if (!context.auth || context.auth.token.email !== 'dragomirvaleriu@gmail.com') {
-        throw new functions.https.HttpsError('permission-denied', 'Only superadmin can create ads.');
+    if (!context.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated.');
     }
+    assertSuperAdmin(context, 'create ads');
     const { title, imageUrl, link, company, discountPercent } = data;
     if (!title || !imageUrl || !link || !company) {
         throw new functions.https.HttpsError('invalid-argument', 'title, imageUrl, link, and company are required.');
@@ -343,9 +453,10 @@ exports.createAd = functions.https.onCall(async (data, context) => {
     }
 });
 exports.updateAd = functions.https.onCall(async (data, context) => {
-    if (!context.auth || context.auth.token.email !== 'dragomirvaleriu@gmail.com') {
-        throw new functions.https.HttpsError('permission-denied', 'Only superadmin can update ads.');
+    if (!context.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated.');
     }
+    assertSuperAdmin(context, 'update ads');
     const { adId, title, imageUrl, link, company, discountPercent, isActive } = data;
     if (!adId) {
         throw new functions.https.HttpsError('invalid-argument', 'adId is required.');
@@ -372,9 +483,10 @@ exports.updateAd = functions.https.onCall(async (data, context) => {
     }
 });
 exports.updateUserSubscription = functions.https.onCall(async (data, context) => {
-    if (!context.auth || context.auth.token.email !== 'dragomirvaleriu@gmail.com') {
-        throw new functions.https.HttpsError('permission-denied', 'Only superadmin can update subscriptions.');
+    if (!context.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated.');
     }
+    assertSuperAdmin(context, 'update subscriptions');
     const { userId, product, expiresAt } = data;
     if (!userId || !product) {
         throw new functions.https.HttpsError('invalid-argument', 'userId and product are required.');
@@ -391,6 +503,161 @@ exports.updateUserSubscription = functions.https.onCall(async (data, context) =>
     catch (err) {
         throw new functions.https.HttpsError('internal', 'Failed to update subscription: ' + err.message);
     }
+});
+const GRANTABLE_PRODUCTS = ['adFree', 'academyPro', 'bundle'];
+exports.grantSubscription = functions.https.onCall(async (data, context) => {
+    var _a, _b, _c;
+    assertSuperAdmin(context, 'grant subscriptions');
+    const { userId, product, durationMonths } = data;
+    if (!userId || typeof userId !== 'string') {
+        throw new functions.https.HttpsError('invalid-argument', 'userId is required.');
+    }
+    if (!product || !GRANTABLE_PRODUCTS.includes(product)) {
+        throw new functions.https.HttpsError('invalid-argument', `product must be one of: ${GRANTABLE_PRODUCTS.join(', ')}.`);
+    }
+    if (durationMonths !== null && ![1, 3, 12].includes(durationMonths)) {
+        throw new functions.https.HttpsError('invalid-argument', 'durationMonths must be 1, 3, 12, or null for lifetime.');
+    }
+    const userSnap = await db.collection('users').doc(userId).get();
+    if (!userSnap.exists) {
+        throw new functions.https.HttpsError('not-found', 'That user no longer exists.');
+    }
+    const orgId = (_a = userSnap.data()) === null || _a === void 0 ? void 0 : _a.organizationId;
+    if (!orgId) {
+        throw new functions.https.HttpsError('failed-precondition', 'That account has no organization, so there is nothing to attach the plan to.');
+    }
+    const isLifetime = durationMonths === null;
+    let expires = null;
+    if (!isLifetime) {
+        expires = new Date();
+        expires.setMonth(expires.getMonth() + durationMonths);
+    }
+    const orgUpdate = {
+        subscriptionProduct: product,
+        subscriptionSource: 'admin_grant',
+        planExpires: expires ? admin.firestore.Timestamp.fromDate(expires) : null,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+    if (product === 'academyPro' || product === 'bundle') {
+        orgUpdate.subscriptionTier = isLifetime ? 'lifetime' : 'pro';
+    }
+    const batch = db.batch();
+    batch.set(db.collection('organizations').doc(orgId), orgUpdate, { merge: true });
+    batch.update(db.collection('users').doc(userId), {
+        subscriptionProduct: product,
+        subscriptionExpiresAt: expires ? admin.firestore.Timestamp.fromDate(expires) : null,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    await batch.commit();
+    const label = product === 'adFree' ? 'Fără reclame' : product === 'academyPro' ? 'Academy Pro' : 'Pachet complet';
+    await createNotification(userId, 'giftcode', '🎉 Abonament activat!', isLifetime
+        ? `Ai primit ${label} pe viață. Bucură-te de acces complet!`
+        : `Ai primit ${label} până la ${expires.toLocaleDateString('ro-RO')}.`);
+    console.log(`✓ Granted ${product} (${isLifetime ? 'lifetime' : durationMonths + 'mo'}) to ${userId} / org ${orgId}`);
+    await logAudit(context, 'grant_subscription', {
+        targetUid: userId,
+        targetEmail: (_c = (_b = userSnap.data()) === null || _b === void 0 ? void 0 : _b.email) !== null && _c !== void 0 ? _c : null,
+        product,
+        durationMonths,
+    });
+    return {
+        success: true,
+        product,
+        orgId,
+        expiresAt: expires ? expires.toISOString() : null,
+    };
+});
+exports.revokeSubscription = functions.https.onCall(async (data, context) => {
+    var _a, _b, _c;
+    assertSuperAdmin(context, 'revoke subscriptions');
+    const { userId } = data;
+    if (!userId || typeof userId !== 'string') {
+        throw new functions.https.HttpsError('invalid-argument', 'userId is required.');
+    }
+    const userSnap = await db.collection('users').doc(userId).get();
+    if (!userSnap.exists) {
+        throw new functions.https.HttpsError('not-found', 'That user no longer exists.');
+    }
+    const orgId = (_a = userSnap.data()) === null || _a === void 0 ? void 0 : _a.organizationId;
+    const batch = db.batch();
+    if (orgId) {
+        batch.set(db.collection('organizations').doc(orgId), {
+            subscriptionTier: 'free',
+            subscriptionProduct: admin.firestore.FieldValue.delete(),
+            planExpires: null,
+            isLifetime: false,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
+    }
+    batch.update(db.collection('users').doc(userId), {
+        subscriptionProduct: admin.firestore.FieldValue.delete(),
+        subscriptionExpiresAt: null,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    await batch.commit();
+    console.log(`✓ Revoked subscription for ${userId} / org ${orgId !== null && orgId !== void 0 ? orgId : 'none'}`);
+    await logAudit(context, 'revoke_subscription', {
+        targetUid: userId,
+        targetEmail: (_c = (_b = userSnap.data()) === null || _b === void 0 ? void 0 : _b.email) !== null && _c !== void 0 ? _c : null,
+    });
+    return { success: true, orgId: orgId !== null && orgId !== void 0 ? orgId : null };
+});
+exports.getAdminAnalytics = functions.https.onCall(async (_data, context) => {
+    var _a, _b, _c, _d, _e;
+    assertSuperAdmin(context, 'view analytics');
+    const [usersSnap, orgsSnap, codesSnap] = await Promise.all([
+        db.collection('users').get(),
+        db.collection('organizations').get(),
+        db.collection('gift_codes').get(),
+    ]);
+    const orgById = new Map(orgsSnap.docs.map(d => [d.id, d.data()]));
+    const now = Date.now();
+    const counts = { adFree: 0, academyPro: 0, bundle: 0, legacyPaid: 0, free: 0 };
+    const purchased = { adFree: 0, academyPro: 0, bundle: 0 };
+    const bySource = { purchase: 0, gift: 0, admin_grant: 0 };
+    const signupBuckets = [];
+    for (let i = 11; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(1);
+        d.setMonth(d.getMonth() - i);
+        signupBuckets.push({ month: d.toISOString().slice(0, 7), count: 0 });
+    }
+    const bucketIndex = new Map(signupBuckets.map((b, i) => [b.month, i]));
+    for (const doc of usersSnap.docs) {
+        const u = doc.data();
+        const org = u.organizationId ? orgById.get(u.organizationId) : undefined;
+        const createdAt = ((_a = u.createdAt) === null || _a === void 0 ? void 0 : _a.toDate) ? u.createdAt.toDate() : (u.createdAt ? new Date(u.createdAt) : null);
+        if (createdAt && !isNaN(createdAt.getTime())) {
+            const idx = bucketIndex.get(createdAt.toISOString().slice(0, 7));
+            if (idx !== undefined)
+                signupBuckets[idx].count++;
+        }
+        if (((_b = u.email) === null || _b === void 0 ? void 0 : _b.toLowerCase()) === exports.SUPERADMIN_EMAIL)
+            continue;
+        const expires = ((_c = org === null || org === void 0 ? void 0 : org.planExpires) === null || _c === void 0 ? void 0 : _c.toDate) ? org.planExpires.toDate().getTime() : Infinity;
+        const tier = org === null || org === void 0 ? void 0 : org.subscriptionTier;
+        const expired = tier !== 'lifetime' && tier !== 'enterprise' && now > expires;
+        const product = !expired ? ((_d = org === null || org === void 0 ? void 0 : org.subscriptionProduct) !== null && _d !== void 0 ? _d : u.subscriptionProduct) : undefined;
+        if (product && counts[product] !== undefined) {
+            counts[product]++;
+            const source = (_e = org === null || org === void 0 ? void 0 : org.subscriptionSource) !== null && _e !== void 0 ? _e : u.subscriptionSource;
+            if (source && bySource[source] !== undefined)
+                bySource[source]++;
+            if (source === 'purchase')
+                purchased[product]++;
+        }
+        else if (!expired && (tier === 'pro' || tier === 'enterprise' || tier === 'lifetime')) {
+            counts.legacyPaid++;
+        }
+        else {
+            counts.free++;
+        }
+    }
+    const PRICES = { adFree: 2, academyPro: 2, bundle: 3 };
+    const revenue = Object.entries(purchased).reduce((sum, [k, n]) => sum + n * PRICES[k], 0);
+    const paidCount = purchased.adFree + purchased.academyPro + purchased.bundle;
+    const activePlans = counts.adFree + counts.academyPro + counts.bundle;
+    return Object.assign(Object.assign({ success: true, totalUsers: usersSnap.size }, counts), { totalRevenue: revenue, paidCount, arpu: paidCount > 0 ? Number((revenue / paidCount).toFixed(2)) : 0, conversionRate: usersSnap.size > 0 ? Number(((paidCount / usersSnap.size) * 100).toFixed(1)) : 0, activePlans, giftedCount: bySource.gift, grantedCount: bySource.admin_grant, purchasedByProduct: purchased, giftCodesTotal: codesSnap.size, giftCodesRedeemed: codesSnap.docs.filter(d => d.data().used).length, signups: signupBuckets });
 });
 const ORG_SCOPED_COLLECTIONS = [
     'clients', 'visits', 'properties', 'service_types', 'products',
@@ -421,10 +688,11 @@ async function deleteWhere(collectionName, field, value) {
     return snap.size;
 }
 exports.deleteUserAccount = functions.https.onCall(async (data, context) => {
-    var _a, _b;
-    if (!context.auth || context.auth.token.email !== 'dragomirvaleriu@gmail.com') {
-        throw new functions.https.HttpsError('permission-denied', 'Only superadmin can delete users.');
+    var _a, _b, _c, _d;
+    if (!context.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated.');
     }
+    assertSuperAdmin(context, 'delete users');
     const { userId } = data;
     if (!userId || typeof userId !== 'string') {
         throw new functions.https.HttpsError('invalid-argument', 'userId is required.');
@@ -447,14 +715,14 @@ exports.deleteUserAccount = functions.https.onCall(async (data, context) => {
             }
         }
         if (orgId && isSoleOwner) {
-            for (const collectionName of ORG_SCOPED_COLLECTIONS) {
+            await Promise.all(ORG_SCOPED_COLLECTIONS.map(async (collectionName) => {
                 try {
                     deletedCounts[collectionName] = await deleteWhere(collectionName, 'organizationId', orgId);
                 }
                 catch (err) {
                     console.error(`deleteUserAccount: failed to sweep ${collectionName} for org ${orgId} (continuing):`, err);
                 }
-            }
+            }));
             try {
                 await db.collection('organizations').doc(orgId).delete();
             }
@@ -462,14 +730,14 @@ exports.deleteUserAccount = functions.https.onCall(async (data, context) => {
                 console.error(`deleteUserAccount: failed to remove organization ${orgId} for ${userId} (continuing):`, err);
             }
         }
-        for (const { name, field } of UID_SCOPED_COLLECTIONS) {
+        await Promise.all(UID_SCOPED_COLLECTIONS.map(async ({ name, field }) => {
             try {
                 deletedCounts[name] = await deleteWhere(name, field, userId);
             }
             catch (err) {
                 console.error(`deleteUserAccount: failed to sweep ${name} for ${userId} (continuing):`, err);
             }
-        }
+        }));
         try {
             const notifsSnap = await db.collection('users').doc(userId).collection('notifications').get();
             await Promise.all(notifsSnap.docs.map(d => d.ref.delete()));
@@ -507,6 +775,11 @@ exports.deleteUserAccount = functions.https.onCall(async (data, context) => {
                 throw err;
             }
         }
+        await logAudit(context, 'delete_user', {
+            targetUid: userId,
+            targetEmail: (_d = (_c = userSnap.data()) === null || _c === void 0 ? void 0 : _c.email) !== null && _d !== void 0 ? _d : null,
+            deletedOrganization: !!(orgId && isSoleOwner),
+        });
         return { success: true, deletedOrganization: !!(orgId && isSoleOwner), deletedCounts };
     }
     catch (err) {
@@ -514,9 +787,10 @@ exports.deleteUserAccount = functions.https.onCall(async (data, context) => {
     }
 });
 exports.seedDefaultAds = functions.https.onCall(async (data, context) => {
-    if (!context.auth || context.auth.token.email !== 'dragomirvaleriu@gmail.com') {
-        throw new functions.https.HttpsError('permission-denied', 'Only superadmin can seed ads.');
+    if (!context.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated.');
     }
+    assertSuperAdmin(context, 'seed ads');
     const defaultAds = [
         {
             title: 'Semințe Premium pentru Gazon',
@@ -611,18 +885,14 @@ exports.trackAdClick = functions.https.onCall(async (data, context) => {
     }
 });
 exports.restoreSuperAdminRole = functions.https.onCall(async (data, context) => {
-    var _a, _b, _c;
-    const uid = (_a = context.auth) === null || _a === void 0 ? void 0 : _a.uid;
-    const email = (_c = (_b = context.auth) === null || _b === void 0 ? void 0 : _b.token) === null || _c === void 0 ? void 0 : _c.email;
-    if (email !== 'dragomirvaleriu@gmail.com') {
-        throw new functions.https.HttpsError('permission-denied', 'Only dragomirvaleriu@gmail.com can use this function');
-    }
+    assertSuperAdmin(context, 'restore the superadmin role');
+    const uid = context.auth.uid;
     try {
         await db.collection('users').doc(uid).update({
             role: 'superadmin',
             updatedAt: admin.firestore.FieldValue.serverTimestamp()
         });
-        console.log(`✓ Superadmin role restored for ${email} (uid: ${uid})`);
+        console.log(`✓ Superadmin role restored for ${context.auth.token.email} (uid: ${uid})`);
         return { success: true, message: 'Superadmin role restored' };
     }
     catch (err) {

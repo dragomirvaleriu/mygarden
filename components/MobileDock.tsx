@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Page } from '../src/types';
-import { LayoutDashboard, Calendar, Camera, BookOpen, User, WifiOff } from 'lucide-react';
+import { LayoutDashboard, Calendar, Camera, BookOpen, User, WifiOff, Compass } from 'lucide-react';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 
 interface Props {
@@ -11,9 +11,11 @@ interface Props {
   subscriptionTier: 'free' | 'pro' | 'enterprise' | 'lifetime';
 }
 
-// The 5 tabs every screen size shares (see DesktopSidebar for the desktop
-// counterpart — keep both lists in sync). Tools/GardenSetup/Explore live
-// under "Eu" (AccountSettings' Quick Links) instead of being separate tabs.
+// The 6 tabs every screen size shares (see DesktopSidebar for the desktop
+// counterpart — keep both lists in sync). Tools/GardenSetup still live
+// under "Eu" (AccountSettings) instead of being separate tabs — Explore
+// used to as well, but its plant catalog earned its own tab once it grew
+// past 25 filterable entries.
 const MobileDock: React.FC<Props> = ({ activePage, onNavigate, profile }) => {
   const { t } = useTranslation();
   const isOnline = useOnlineStatus();
@@ -23,6 +25,7 @@ const MobileDock: React.FC<Props> = ({ activePage, onNavigate, profile }) => {
     { id: Page.GardenJournal, icon: Camera },
     { id: Page.CareCalendar, icon: Calendar },
     { id: Page.Academy, icon: BookOpen },
+    { id: Page.Explore, icon: Compass },
     { id: Page.Administration, icon: User },
   ];
 
@@ -31,6 +34,7 @@ const MobileDock: React.FC<Props> = ({ activePage, onNavigate, profile }) => {
     if (id === Page.CareCalendar) return t('Calendar');
     if (id === Page.Academy) return t('Academie');
     if (id === Page.GardenJournal) return t('Jurnal');
+    if (id === Page.Explore) return 'Explorează';
     if (id === Page.Administration) return t('Contul meu');
     return '';
   };
