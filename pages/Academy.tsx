@@ -17,6 +17,7 @@ import toast from 'react-hot-toast';
 import { SmartTroubleshooter } from '../components/SmartTroubleshooter';
 import AIAssistantModal from '../components/academy/AIAssistantModal';
 import { useData } from '../src/context/DataContext';
+import { useModalBackNavigation } from '../src/hooks/useModalBackNavigation';
 
 // ─── Types ────────────────────────────────────────────
 interface Props {
@@ -314,17 +315,25 @@ const ArticleReader: React.FC<{
   content: string;
   onClose: () => void;
 }> = ({ article, content, onClose }) => (
-  <div className="fixed inset-0 z-[90] flex items-end sm:items-center justify-center">
+  <div className="fixed inset-0 z-[90] flex items-end sm:items-center justify-center overflow-x-hidden">
     <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={onClose} />
-    <div className="relative w-full sm:max-w-3xl max-h-[92vh] bg-bg-card rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col animate-in slide-in-from-bottom-8 sm:zoom-in-95 duration-400 overflow-hidden">
+    {/* Full screen on mobile (a real "page", not a shrunken dialog) —
+        `100dvh`/`rounded-none` edge to edge; back to a centered card from
+        `sm:` up. `overflow-x-hidden` on top of the inner scroller rules out
+        any stray horizontal scroll from long lines/tables in article body. */}
+    <div className="relative w-full h-[100dvh] max-h-[100dvh] sm:h-auto sm:max-w-3xl sm:max-h-[92vh] bg-bg-card rounded-none sm:rounded-3xl shadow-2xl flex flex-col animate-in slide-in-from-bottom-8 sm:zoom-in-95 duration-400 overflow-hidden overflow-x-hidden">
       {/* Header */}
-      <div className={`relative p-6 bg-gradient-to-br ${article.coverGradient} flex-shrink-0 dark:!bg-none`}>
+      <div className={`relative p-4 sm:p-6 pt-[max(env(safe-area-inset-top),16px)] sm:pt-6 bg-gradient-to-br ${article.coverGradient} flex-shrink-0 dark:!bg-none`}>
         {/* Light mode specific background */}
         <div className={`absolute inset-0 bg-gradient-to-br ${article.coverGradient} opacity-10 dark:opacity-100 transition-opacity`} />
         <div className="absolute inset-0 bg-white/60 dark:bg-black/50 backdrop-blur-[2px] dark:backdrop-blur-none" />
         <div className="relative z-10">
-          <button onClick={onClose} className="absolute top-0 right-0 z-50 flex items-center gap-2 px-3 py-1.5 bg-black/5 hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/20 rounded-xl text-text-secondary dark:text-white/70 text-xs font-bold transition-all cursor-pointer">
-            <ArrowLeft size={14} /> Înapoi
+          <button
+            onClick={onClose}
+            aria-label="Înapoi"
+            className="flex items-center gap-1.5 -ml-2 min-w-[44px] min-h-[44px] px-3 mb-2 rounded-full bg-black/5 hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/20 text-text-secondary dark:text-white/70 text-sm font-bold transition-all cursor-pointer"
+          >
+            <ArrowLeft size={18} className="shrink-0" /> Înapoi
           </button>
           <div className="text-4xl mb-3 drop-shadow-md">{article.coverEmoji}</div>
           <span className="text-[10px] font-black uppercase tracking-widest text-text-secondary dark:text-white/60">{article.categoryLabel}</span>
@@ -339,7 +348,10 @@ const ArticleReader: React.FC<{
         </div>
       </div>
       {/* Content */}
-      <div className="overflow-y-auto flex-1 p-6 md:p-8">
+      <div
+        className="overflow-y-auto overflow-x-hidden overscroll-contain flex-1 min-h-0 p-4 sm:p-6 md:p-8 pb-[max(env(safe-area-inset-bottom),16px)]"
+        style={{ WebkitOverflowScrolling: 'touch' }}
+      >
         <div className="prose prose-sm max-w-none text-text-main space-y-4">
           {content.split('\n').map((line, i) => {
             if (line.startsWith('## ')) return <h2 key={i} className="text-xl font-black text-text-main mt-8 mb-3 border-b border-border-color pb-2">{line.slice(3)}</h2>;
@@ -382,6 +394,8 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
   const [loadingArticleId, setLoadingArticleId] = useState<string | null>(null);
   const [showTroubleshooter, setShowTroubleshooter] = useState(false);
   const [showAIAssistant, setShowAIAssistant] = useState(false);
+
+  const { requestClose: closeArticleReader } = useModalBackNavigation(!!openArticle, () => setOpenArticle(null));
 
   const [readArticles, setReadArticles] = useState<Set<string>>(() => {
     try {
@@ -917,7 +931,7 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
       )}
 
       {openArticle && (
-        <ArticleReader article={openArticle} content={articleContent} onClose={() => setOpenArticle(null)} />
+        <ArticleReader article={openArticle} content={articleContent} onClose={closeArticleReader} />
       )}
 
       {/* Loading Overlay */}

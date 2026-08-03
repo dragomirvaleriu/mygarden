@@ -1,6 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X, Check, Sprout, Sun, Droplets, Gauge, Ruler, SlidersHorizontal, MapPin, Layers, Flower2, Scissors, Bug, Shuffle } from 'lucide-react';
+import { Search, ArrowLeft, Check, Sprout, Sun, Droplets, Gauge, Ruler, SlidersHorizontal, MapPin, Layers, Flower2, Scissors, Bug, Shuffle } from 'lucide-react';
+import { useModalBackNavigation } from '../src/hooks/useModalBackNavigation';
 import {
   plantCatalog,
   plantDifficulties,
@@ -41,6 +42,17 @@ const Explore: React.FC<Props> = ({ organizationId }) => {
   const [selectedPlant, setSelectedPlant] = useState<PlantCatalogEntry | null>(null);
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
   const [addingId, setAddingId] = useState<string | null>(null);
+
+  const { requestClose: closePlantDetail } = useModalBackNavigation(!!selectedPlant, () => setSelectedPlant(null));
+
+  // Lock the page behind the modal. Without this the background keeps
+  // scrolling under the overlay, which reads as the modal itself "jumping".
+  useEffect(() => {
+    if (!selectedPlant) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = previous; };
+  }, [selectedPlant]);
 
   const filteredPlants = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -276,29 +288,45 @@ const Explore: React.FC<Props> = ({ organizationId }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4"
-            onClick={() => setSelectedPlant(null)}
+            className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-x-hidden"
+            onClick={closePlantDetail}
           >
             <motion.div
               initial={{ y: 40, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 40, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative w-full sm:max-w-lg max-h-[92vh] overflow-y-auto bg-bg-card rounded-t-3xl sm:rounded-3xl shadow-2xl p-6"
+              // Full screen on mobile (a real "page", not a shrunken desktop
+              // dialog with a gap at the top) — `100dvh`/`rounded-none` edge
+              // to edge. From `sm:` up it's back to the centered card dialog.
+              // Three-part flex column: fixed header, scrolling body, fixed
+              // footer. `overflow-hidden` clips the scroll area to the
+              // (rounded, on desktop) corners; `overflow-x-hidden` on top of
+              // that rules out any stray horizontal scroll from long content.
+              className="relative w-full h-[100dvh] max-h-[100dvh] sm:h-auto sm:max-h-[92dvh] sm:max-w-lg flex flex-col overflow-hidden overflow-x-hidden bg-bg-card rounded-none sm:rounded-3xl shadow-2xl"
             >
-              <button
-                onClick={() => setSelectedPlant(null)}
-                className="absolute top-4 right-4 p-2 rounded-full bg-bg-main text-text-secondary hover:text-text-main transition"
-              >
-                <X className="w-4 h-4" />
-              </button>
+              <div className="shrink-0 px-4 sm:px-6 pt-[max(env(safe-area-inset-top),16px)] sm:pt-6 pb-4 border-b border-border-color">
+                <button
+                  onClick={closePlantDetail}
+                  aria-label="Înapoi"
+                  className="flex items-center gap-1.5 -ml-2 min-w-[44px] min-h-[44px] px-3 rounded-full text-text-secondary hover:text-text-main hover:bg-bg-main active:bg-bg-main transition mb-2"
+                >
+                  <ArrowLeft className="w-5 h-5 shrink-0" />
+                  <span className="text-sm font-bold">Înapoi</span>
+                </button>
 
-              <div className="w-16 h-16 rounded-2xl bg-bg-main flex items-center justify-center text-3xl shadow-inner mb-4">
-                {selectedPlant.emoji}
+                <div className="w-16 h-16 rounded-2xl bg-bg-main flex items-center justify-center text-3xl shadow-inner mb-4">
+                  {selectedPlant.emoji}
+                </div>
+                <h2 className="text-xl font-black text-text-main leading-tight">{selectedPlant.name}</h2>
+                <p className="text-sm text-text-secondary italic">{selectedPlant.scientificName}</p>
               </div>
-              <h2 className="text-xl font-black text-text-main leading-tight">{selectedPlant.name}</h2>
-              <p className="text-sm text-text-secondary italic mb-4">{selectedPlant.scientificName}</p>
 
+              {/* `min-h-0` is required: a flex child defaults to min-height:auto,
+                  which refuses to shrink below its content and breaks the scroll.
+                  `-webkit-overflow-scrolling: touch` gives old iOS Safari
+                  momentum/inertia scrolling inside the panel. */}
+              <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain px-4 sm:px-6 py-5" style={{ WebkitOverflowScrolling: 'touch' }}>
               <p className="text-sm text-text-main leading-relaxed mb-5">{selectedPlant.description}</p>
 
               <div className="grid grid-cols-1 gap-3 mb-6">
@@ -376,7 +404,9 @@ const Explore: React.FC<Props> = ({ organizationId }) => {
                   </div>
                 </div>
               </div>
+              </div>
 
+              <div className="shrink-0 px-4 sm:px-6 pt-4 pb-[max(env(safe-area-inset-bottom),16px)] sm:pb-4 border-t border-border-color bg-bg-card">
               <button
                 onClick={() => handleAddToGarden(selectedPlant)}
                 disabled={addingId === selectedPlant.id || addedIds.has(selectedPlant.id)}
@@ -396,6 +426,7 @@ const Explore: React.FC<Props> = ({ organizationId }) => {
                   '+ Adaugă în grădina mea'
                 )}
               </button>
+              </div>
             </motion.div>
           </motion.div>
         )}
