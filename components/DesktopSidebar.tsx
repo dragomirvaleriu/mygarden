@@ -56,7 +56,7 @@ const DesktopSidebar: React.FC<Props> = ({
     { id: Page.GardenJournal, label: t('Jurnal'), icon: Camera },
     { id: Page.CareCalendar, label: t('Calendar'), icon: Calendar },
     { id: Page.Academy, label: t('Academie'), icon: BookOpen },
-    { id: Page.Explore, label: 'Explorează', icon: Compass },
+    { id: Page.Explore, label: t('Explorează'), icon: Compass },
     { id: Page.Administration, label: t('Contul meu'), icon: User },
   ];
 

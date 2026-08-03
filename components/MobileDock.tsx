@@ -34,7 +34,7 @@ const MobileDock: React.FC<Props> = ({ activePage, onNavigate, profile }) => {
     if (id === Page.CareCalendar) return t('Calendar');
     if (id === Page.Academy) return t('Academie');
     if (id === Page.GardenJournal) return t('Jurnal');
-    if (id === Page.Explore) return 'Explorează';
+    if (id === Page.Explore) return t('Explorează');
     if (id === Page.Administration) return t('Contul meu');
     return '';
   };

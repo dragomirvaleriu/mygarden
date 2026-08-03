@@ -26,26 +26,29 @@ interface Props {
 }
 
 // ─── Buy Button ────────────────────────────────────────
-const BuyButton: React.FC<{ onClick: () => void; loading: boolean }> = ({ onClick, loading }) => (
-  <button
-    onClick={onClick}
-    disabled={loading}
-    className="relative w-full group overflow-hidden"
-    aria-label="Cumpără abonament anual My Garden PRO"
-  >
-    <div className="absolute -inset-1 bg-gradient-to-r from-emerald-400 via-amber-300 to-emerald-500 md:min-h-[104px] rounded-3xl blur opacity-60 group-hover:opacity-90 animate-pulse transition-opacity" />
-    <div className="relative flex items-center justify-center gap-3 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-black py-5 px-8 md:min-h-[104px] rounded-2xl transition-all duration-300 active:scale-95 shadow-xl shadow-emerald-500/30">
-      {loading ? (
-        <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-      ) : (
-        <>
-          <Zap size={22} className="shrink-0 fill-current" />
-          <span className="text-base uppercase tracking-widest leading-tight text-center">Începe Acum — 29 RON / An 🚀</span>
-        </>
-      )}
-    </div>
-  </button>
-);
+const BuyButton: React.FC<{ onClick: () => void; loading: boolean }> = ({ onClick, loading }) => {
+  const { t } = useTranslation();
+  return (
+    <button
+      onClick={onClick}
+      disabled={loading}
+      className="relative w-full group overflow-hidden"
+      aria-label={t('Cumpără abonament anual My Garden PRO')}
+    >
+      <div className="absolute -inset-1 bg-gradient-to-r from-emerald-400 via-amber-300 to-emerald-500 md:min-h-[104px] rounded-3xl blur opacity-60 group-hover:opacity-90 animate-pulse transition-opacity" />
+      <div className="relative flex items-center justify-center gap-3 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-black py-5 px-8 md:min-h-[104px] rounded-2xl transition-all duration-300 active:scale-95 shadow-xl shadow-emerald-500/30">
+        {loading ? (
+          <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+        ) : (
+          <>
+            <Zap size={22} className="shrink-0 fill-current" />
+            <span className="text-base uppercase tracking-widest leading-tight text-center">{t('Începe Acum — 29 RON / An 🚀')}</span>
+          </>
+        )}
+      </div>
+    </button>
+  );
+};
 
 // ─── Benefit Row ───────────────────────────────────────
 const BenefitRow: React.FC<{ text: string; subtext?: string }> = ({ text, subtext }) => (
@@ -66,6 +69,7 @@ const PremiumUpgradeModal: React.FC<{
   onClose: () => void;
   onUpgrade: () => Promise<void>;
 }> = ({ triggerArticle, onClose, onUpgrade }) => {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [visible, setVisible] = useState(false);
 
@@ -90,10 +94,10 @@ const PremiumUpgradeModal: React.FC<{
   };
 
   const benefits = [
-    { text: 'Peste 50 de ghiduri și protocoale de sezon', subtext: 'Actualizate lunar cu conținut nou de la agronomi' },
-    { text: 'Calculatoare precise pentru tratamente horticole', subtext: 'Doze, volume de apă și costuri estimate instant' },
-    { text: 'Modul SOS: Diagnoză imediată pentru boli și dăunători', subtext: 'Brown Patch, Pythium, dăunători subterani și mai mult' },
-    { text: 'Fără reclame, 100% știință aplicată', subtext: 'Zero marketing. Doar informații verificate agronomic' },
+    { text: t('Peste 50 de ghiduri și protocoale de sezon'), subtext: t('Actualizate lunar cu conținut nou de la agronomi') },
+    { text: t('Calculatoare precise pentru tratamente horticole'), subtext: t('Doze, volume de apă și costuri estimate instant') },
+    { text: t('Modul SOS: Diagnoză imediată pentru boli și dăunători'), subtext: t('Brown Patch, Pythium, dăunători subterani și mai mult') },
+    { text: t('Fără reclame, 100% știință aplicată'), subtext: t('Zero marketing. Doar informații verificate agronomic') },
   ];
 
   return (
@@ -112,7 +116,7 @@ const PremiumUpgradeModal: React.FC<{
         <div className="absolute top-0 left-0 right-0 h-[2px] rounded-full bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
 
         <div className="relative p-6 sm:p-8 md:p-10">
-          <button onClick={onClose} className="absolute top-5 right-5 w-9 h-9 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white/40 hover:text-white/70 transition-all" aria-label="Închide">
+          <button onClick={onClose} className="absolute top-5 right-5 w-9 h-9 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white/40 hover:text-white/70 transition-all" aria-label={t('Închide')}>
             <X size={16} />
           </button>
 
@@ -139,13 +143,13 @@ const PremiumUpgradeModal: React.FC<{
             </div>
 
             <h2 id="paywall-title" className="text-2xl sm:text-3xl font-black text-white tracking-tighter leading-tight mb-3">
-              Deblochează{' '}
+              {t('Deblochează')}{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-amber-400">Master Academy.</span>
-              <br />Devino expertul propriei grădini.
+              <br />{t('Devino expertul propriei grădini.')}
             </h2>
             <p className="text-sm text-white/75 leading-relaxed max-w-md">
-              Acces nelimitat la toate protocoalele secrete, diagnosticele AI și calculatoarele avansate pentru un an întreg.{' '}
-              <span className="text-white/80 font-bold">Totul pentru prețul unei cafele în oraș.</span>
+              {t('Acces nelimitat la toate protocoalele secrete, diagnosticele AI și calculatoarele avansate pentru un an întreg.')}{' '}
+              <span className="text-white/80 font-bold">{t('Totul pentru prețul unei cafele în oraș.')}</span>
             </p>
           </div>
 
@@ -156,7 +160,7 @@ const PremiumUpgradeModal: React.FC<{
               <div className="flex justify-center mb-3">
                 <div className="flex items-center gap-2 bg-amber-500/20 border border-amber-500/30 rounded-full px-4 py-1.5">
                   <Star size={12} className="text-amber-400" />
-                  <span className="text-[10px] font-black text-amber-400 uppercase tracking-[0.2em]">Cel mai ales plan</span>
+                  <span className="text-[10px] font-black text-amber-400 uppercase tracking-[0.2em]">{t('Cel mai ales plan')}</span>
                 </div>
               </div>
               <div className="relative bg-white/5 border border-white/10 rounded-3xl p-6 text-center overflow-hidden">
@@ -165,25 +169,25 @@ const PremiumUpgradeModal: React.FC<{
                 </div>
                 <div className="relative flex items-center justify-center gap-3 mb-1">
                   <span className="text-white/30 line-through text-lg font-black">119 RON</span>
-                  <span className="px-2 py-0.5 bg-red-500/20 border border-red-500/30 rounded-full text-[9px] font-black text-red-400 uppercase tracking-widest">−76% azi</span>
+                  <span className="px-2 py-0.5 bg-red-500/20 border border-red-500/30 rounded-full text-[9px] font-black text-red-400 uppercase tracking-widest">{t('−76% azi')}</span>
                 </div>
                 <div className="relative flex items-end justify-center gap-2">
                   <span className="text-6xl font-black text-white leading-none tracking-tighter">29</span>
                   <div className="flex flex-col items-start mb-2">
                     <span className="text-xl font-black text-emerald-400">RON</span>
-                    <span className="text-xs font-bold text-white/40 uppercase tracking-wider">/ an</span>
+                    <span className="text-xs font-bold text-white/40 uppercase tracking-wider">{t('/ an')}</span>
                   </div>
                 </div>
-                <p className="relative text-[12px] text-emerald-300/80 font-bold mt-2">≈ 0.08 RON pe zi • Mai puțin decât o cafea pe lună</p>
+                <p className="relative text-[12px] text-emerald-300/80 font-bold mt-2">{t('≈ 0.08 RON pe zi • Mai puțin decât o cafea pe lună')}</p>
                 <div className="relative mt-3 pt-3 border-t border-white/5">
-                  <span className="text-[10px] font-black text-white/70 uppercase tracking-widest">Facturat anual · O singură plată</span>
+                  <span className="text-[10px] font-black text-white/70 uppercase tracking-widest">{t('Facturat anual · O singură plată')}</span>
                 </div>
               </div>
             </div>
 
             {/* Benefits */}
             <div className="flex flex-col gap-4 justify-center">
-              <p className="text-[10px] font-black text-white/30 uppercase tracking-widest">Ce deblochezi instant</p>
+              <p className="text-[10px] font-black text-white/30 uppercase tracking-widest">{t('Ce deblochezi instant')}</p>
               {benefits.map((b, i) => <BenefitRow key={i} text={b.text} subtext={b.subtext} />)}
             </div>
           </div>
@@ -194,28 +198,28 @@ const PremiumUpgradeModal: React.FC<{
             <div className="flex items-start gap-3 bg-white/3 border border-white/5 rounded-2xl px-5 py-4">
               <ShieldCheck size={18} className="text-emerald-400 shrink-0 mt-0.5" />
               <p className="text-xs text-white/75 leading-relaxed">
-                <span className="font-black text-white/80">Fără reînnoire automată ascunsă.</span>{' '}
-                Plătești o dată, ai acces complet <span className="font-black text-emerald-400">365 de zile</span>. Nicio surpriză pe card.
+                <span className="font-black text-white/80">{t('Fără reînnoire automată ascunsă.')}</span>{' '}
+                {t('Plătești o dată, ai acces complet')} <span className="font-black text-emerald-400">{t('365 de zile')}</span>. {t('Nicio surpriză pe card.')}
               </p>
             </div>
             <button onClick={onClose} className="w-full text-center text-[11px] text-white/70 hover:text-white/90 font-medium py-2 transition-colors">
-              Continuă cu conținut gratuit
+              {t('Continuă cu conținut gratuit')}
             </button>
           </div>
 
           {/* Comparison table */}
           <div className="mt-8 pt-6 border-t border-white/5">
-            <p className="text-[10px] font-black text-white/20 uppercase tracking-widest text-center mb-4">Gratuit vs. PRO</p>
+            <p className="text-[10px] font-black text-white/20 uppercase tracking-widest text-center mb-4">{t('Gratuit vs. PRO')}</p>
             <div className="grid grid-cols-3 gap-2 text-center text-xs">
-              <div className="text-white/30 font-black uppercase tracking-wider text-[9px] text-left">Funcție</div>
-              <div className="text-white/30 font-black uppercase tracking-wider text-[9px]">Gratuit</div>
+              <div className="text-white/30 font-black uppercase tracking-wider text-[9px] text-left">{t('Funcție')}</div>
+              <div className="text-white/30 font-black uppercase tracking-wider text-[9px]">{t('Gratuit')}</div>
               <div className="text-amber-400 font-black uppercase tracking-wider text-[9px]">PRO 👑</div>
               {[
-                ['Ghiduri de bază', '4', '50+'],
-                ['Calculatoare tratamente', '✓', '✓ Avansat'],
-                ['Modul SOS / Diagnoze', '—', '✓'],
-                ['Calendar Sezonier complet', '—', '✓'],
-                ['Fără reclame', '—', '✓'],
+                [t('Ghiduri de bază'), '4', '50+'],
+                [t('Calculatoare tratamente'), '✓', t('✓ Avansat')],
+                [t('Modul SOS / Diagnoze'), '—', '✓'],
+                [t('Calendar Sezonier complet'), '—', '✓'],
+                [t('Fără reclame'), '—', '✓'],
               ].map(([feat, free, pro], i) => (
                 <React.Fragment key={i}>
                   <div className="text-left py-2 border-t border-white/5 text-white/50 text-[11px]">{feat}</div>
@@ -252,6 +256,7 @@ const ArticleCard: React.FC<{
   isRead: boolean;
   onClick: () => void;
 }> = ({ article, subscriptionTier, isRead, onClick }) => {
+  const { t } = useTranslation();
   const isLocked = article.isPremium && subscriptionTier === 'free';
   return (
     <button
@@ -270,7 +275,7 @@ const ArticleCard: React.FC<{
               ? 'bg-amber-100/80 border-amber-200 text-amber-700 dark:bg-amber-500/20 dark:border-amber-500/40 dark:text-amber-300'
               : 'bg-emerald-100/80 border-emerald-200 text-emerald-700 dark:bg-emerald-500/20 dark:border-emerald-500/40 dark:text-emerald-300'
             }`}>
-            {article.isPremium ? '👑 Premium' : '✓ Gratuit'}
+            {article.isPremium ? '👑 Premium' : `✓ ${t('Gratuit')}`}
           </span>
           <div className="flex items-center gap-2">
             {isRead && (
@@ -298,7 +303,7 @@ const ArticleCard: React.FC<{
             <span className="text-[10px] font-bold text-text-secondary dark:text-white/50">{article.difficulty}</span>
             {!isLocked && (
               <span className="ml-auto flex items-center gap-1 text-[10px] font-black text-text-main dark:text-white/70 group-hover:text-accent-color dark:group-hover:text-white transition-colors uppercase tracking-widest">
-                Citește <ChevronRight size={12} />
+                {t('Citește')} <ChevronRight size={12} />
               </span>
             )}
           </div>
@@ -415,7 +420,9 @@ const ArticleReader: React.FC<{
   article: ArticleMeta;
   content: string;
   onClose: () => void;
-}> = ({ article, content, onClose }) => (
+}> = ({ article, content, onClose }) => {
+  const { t } = useTranslation();
+  return (
   <div className="fixed inset-0 z-[90] flex items-end sm:items-center justify-center overflow-x-hidden">
     <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={onClose} />
     {/* Full screen on mobile (a real "page", not a shrunken dialog) —
@@ -431,10 +438,10 @@ const ArticleReader: React.FC<{
         <div className="relative z-10">
           <button
             onClick={onClose}
-            aria-label="Înapoi"
+            aria-label={t('Înapoi')}
             className="flex items-center gap-1.5 -ml-2 min-w-[44px] min-h-[44px] px-3 mb-2 rounded-full bg-black/5 hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/20 text-text-secondary dark:text-white/70 text-sm font-bold transition-all cursor-pointer"
           >
-            <ArrowLeft size={18} className="shrink-0" /> Înapoi
+            <ArrowLeft size={18} className="shrink-0" /> {t('Înapoi')}
           </button>
           <div className="text-4xl mb-3 drop-shadow-md">{article.coverEmoji}</div>
           <span className="text-[10px] font-black uppercase tracking-widest text-text-secondary dark:text-white/60">{article.categoryLabel}</span>
@@ -442,7 +449,7 @@ const ArticleReader: React.FC<{
           <div className="flex items-center gap-3 mt-3">
             <span className="text-xs text-text-secondary dark:text-white/60 font-bold">✍️ {article.author}</span>
             <span className="w-1 h-1 bg-border-color dark:bg-white/30 rounded-full" />
-            <span className="text-xs text-text-secondary dark:text-white/60 font-bold">{article.readTime} min citire</span>
+            <span className="text-xs text-text-secondary dark:text-white/60 font-bold">{article.readTime} {t('min citire')}</span>
             <span className="w-1 h-1 bg-border-color dark:bg-white/30 rounded-full" />
             <span className="text-xs text-text-secondary dark:text-white/60 font-bold">{article.difficulty}</span>
           </div>
@@ -464,12 +471,13 @@ const ArticleReader: React.FC<{
       </div>
     </div>
   </div>
-);
+  );
+};
 
 // ─── Main Academy Component ────────────────────────────
 export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptionTier = 'free', onNavigateToUpgrade }) => {
   const isPro = externalSubscriptionTier !== 'free';
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { organization } = useData();
   const lang = i18n.language?.startsWith('en') ? 'en' : 'ro';
 
@@ -555,7 +563,7 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
       }
       const res = await fetch(`/api/academy/article?id=${article.id}`, { headers });
       if (!res.ok) {
-        if (res.status === 403) { toast.error('Acces refuzat: Necesită abonament PRO'); setPaywallArticle(article); return; }
+        if (res.status === 403) { toast.error(t('Acces refuzat: Necesită abonament PRO')); setPaywallArticle(article); return; }
         throw new Error(`Failed to load article: ${res.statusText}`);
       }
       const text = await res.text();
@@ -564,8 +572,8 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
       markRead(article.id);
     } catch (err) {
       console.error(err);
-      toast.error('Eroare la încărcarea articolului');
-      const fallback = `# ${article.title}\n\n${article.excerpt}\n\n## Conținut indisponibil momentan\n\nNu am putut încărca articolul de pe server. Te rugăm să verifici conexiunea la internet și să încerci din nou.`;
+      toast.error(t('Eroare la încărcarea articolului'));
+      const fallback = `# ${article.title}\n\n${article.excerpt}\n\n## ${t('Conținut indisponibil momentan')}\n\n${t('Nu am putut încărca articolul de pe server. Te rugăm să verifici conexiunea la internet și să încerci din nou.')}`;
       setArticleContent(fallback);
       setOpenArticle(article);
     } finally {
@@ -621,24 +629,24 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
               </div>
               <div>
                 <p className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-[0.3em]">My Garden</p>
-                <h1 className="text-2xl md:text-3xl font-black text-emerald-950 dark:text-white tracking-tighter leading-none">Master Academy</h1>
+                <h1 className="text-2xl md:text-3xl font-black text-emerald-950 dark:text-white tracking-tighter leading-none">{t('Academie')}</h1>
               </div>
             </div>
             <p className="text-emerald-900/70 dark:text-white/60 text-sm font-medium max-w-lg leading-relaxed">
-              Enciclopedie Horticolă. Protocoale scrise de agronomi cu experiență de teren, bazate pe știință, nu pe intuiție.
+              {t('Enciclopedie Horticolă. Protocoale scrise de agronomi cu experiență de teren, bazate pe știință, nu pe intuiție.')}
             </p>
             <div className="flex flex-wrap items-center gap-4 mt-5">
               <div className="flex items-center gap-2 bg-emerald-900/5 dark:bg-white/5 border border-emerald-900/10 dark:border-white/10 rounded-xl px-3 py-2">
                 <BookOpen size={14} className="text-emerald-600 dark:text-emerald-400" />
-                <span className="text-xs font-black text-emerald-950 dark:text-white">{totalCount} Ghiduri</span>
+                <span className="text-xs font-black text-emerald-950 dark:text-white">{totalCount} {t('Ghiduri')}</span>
               </div>
               <div className="flex items-center gap-2 bg-emerald-900/5 dark:bg-white/5 border border-emerald-900/10 dark:border-white/10 rounded-xl px-3 py-2">
                 <CheckCircle2 size={14} className="text-cyan-600 dark:text-cyan-400" />
-                <span className="text-xs font-black text-emerald-950 dark:text-white">{freeCount} Gratuite</span>
+                <span className="text-xs font-black text-emerald-950 dark:text-white">{freeCount} {t('Gratuite')}</span>
               </div>
               <div className="flex items-center gap-2 bg-emerald-900/5 dark:bg-white/5 border border-emerald-900/10 dark:border-white/10 rounded-xl px-3 py-2">
                 <Globe size={14} className="text-purple-600 dark:text-purple-400" />
-                <span className="text-xs font-black text-emerald-950 dark:text-white">10+ Limbi</span>
+                <span className="text-xs font-black text-emerald-950 dark:text-white">10+ {t('Limbi')}</span>
               </div>
             </div>
           </div>
@@ -647,16 +655,16 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
           <div className="shrink-0 bg-white/60 dark:bg-white/5 border border-emerald-900/10 dark:border-white/10 rounded-3xl p-6 backdrop-blur-md min-w-[200px] shadow-sm dark:shadow-none">
             <div className="flex items-center gap-2 mb-3">
               <TrendingUp size={16} className="text-emerald-600 dark:text-emerald-400" />
-              <span className="text-xs font-black text-emerald-900/70 dark:text-white/70 uppercase tracking-widest">Progresul Tău</span>
+              <span className="text-xs font-black text-emerald-900/70 dark:text-white/70 uppercase tracking-widest">{t('Progresul Tău')}</span>
             </div>
             <div className="text-4xl font-black text-emerald-950 dark:text-white mb-1">
               {readCount}<span className="text-xl text-emerald-900/40 dark:text-white/40">/{totalCount}</span>
             </div>
-            <p className="text-xs text-emerald-900/50 dark:text-white/40 font-bold mb-4">ghiduri citite</p>
+            <p className="text-xs text-emerald-900/50 dark:text-white/40 font-bold mb-4">{t('ghiduri citite')}</p>
             <div className="w-full h-2 bg-emerald-900/10 dark:bg-white/10 rounded-full overflow-hidden">
               <div className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 dark:to-cyan-400 rounded-full transition-all duration-700" style={{ width: `${progressPct}%` }} />
             </div>
-            <p className="text-[10px] font-black text-emerald-900/40 dark:text-white/30 mt-2 text-right">{progressPct}% complet</p>
+            <p className="text-[10px] font-black text-emerald-900/40 dark:text-white/30 mt-2 text-right">{progressPct}% {t('complet')}</p>
             {!isPro && (
               <button onClick={onNavigateToUpgrade} className="mt-4 w-full py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 dark:from-amber-400 dark:to-amber-600 text-black text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-amber-500/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2">
                 <Crown size={14} /> Upgrade PRO
@@ -741,7 +749,7 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
 
       {/* ── Category Filters ── */}
       <div className="flex flex-wrap items-center gap-2.5 mb-8">
-        <CategoryPill label="Toate" emoji="📚" active={activeCategory === 'all'} onClick={() => setActiveCategory('all')} />
+        <CategoryPill label={t('Toate')} emoji="📚" active={activeCategory === 'all'} onClick={() => setActiveCategory('all')} />
         {availableCategories.map(cat => (
           <CategoryPill
             key={cat.id}
@@ -760,14 +768,14 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
             <Crown size={20} className="text-amber-500 dark:text-amber-400" />
           </div>
           <div className="flex-1 text-center sm:text-left">
-            <p className="font-black text-text-main text-sm">Ai acces la {freeCount}/{totalCount} ghiduri</p>
-            <p className="text-xs text-text-secondary">Upgrade la PRO pentru acces complet la toate protocoalele avansate.</p>
+            <p className="font-black text-text-main text-sm">{t('Ai acces la')} {freeCount}/{totalCount} {t('ghiduri')}</p>
+            <p className="text-xs text-text-secondary">{t('Upgrade la PRO pentru acces complet la toate protocoalele avansate.')}</p>
           </div>
           <button
             onClick={onNavigateToUpgrade}
             className="shrink-0 px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-black text-[11px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center gap-2"
           >
-            <Zap size={14} /> Deblochează Tot
+            <Zap size={14} /> {t('Deblochează Tot')}
           </button>
         </div>
       )}
@@ -852,26 +860,26 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
       <div className="mb-10">
         <h2 className="text-xl font-black text-text-main mb-1 flex items-center gap-3">
           <AlertTriangle className="text-red-600 dark:text-red-400" size={22} />
-          BUSTED: Erori Critice
+          BUSTED: {t('Erori Critice')}
         </h2>
-        <p className="text-sm text-text-secondary mb-6">Cele mai comune mituri care distrug grădinile.</p>
+        <p className="text-sm text-text-secondary mb-6">{t('Cele mai comune mituri care distrug grădinile.')}</p>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {[
             {
-              myth: '"Dau cu Erbicid Total și curăț terenul!"',
-              truth: 'Glifosatul nu afectează semințele latente din sol. La prima udare a noului gazon, cele milioane de semințe de buruieni vor germina simultan.',
+              myth: t('"Dau cu Erbicid Total și curăț terenul!"'),
+              truth: t('Glifosatul nu afectează semințele latente din sol. La prima udare a noului gazon, cele milioane de semințe de buruieni vor germina simultan.'),
             },
             {
-              myth: '"Pun pământ de umplutură peste iarba veche"',
-              truth: 'Putrefacția anaerobă eliberează hidrogen sulfurat toxic. Rădăcinile noului gazon vor fi asfixiate, terenul se va lăsa neuniform.',
+              myth: t('"Pun pământ de umplutură peste iarba veche"'),
+              truth: t('Putrefacția anaerobă eliberează hidrogen sulfurat toxic. Rădăcinile noului gazon vor fi asfixiate, terenul se va lăsa neuniform.'),
             },
             {
-              myth: '"Semințele se greblează în pământ"',
-              truth: 'Semințele de gazon NECESITĂ lumină pentru germinație. Se acoperă cu 1-1.5 cm de nisip fin (top-dressing) și se tăvălugesc.',
+              myth: t('"Semințele se greblează în pământ"'),
+              truth: t('Semințele de gazon NECESITĂ lumină pentru germinație. Se acoperă cu 1-1.5 cm de nisip fin (top-dressing) și se tăvălugesc.'),
             },
             {
-              myth: '"Ud gazonul în fiecare seară câte 10 minute"',
-              truth: 'Irigarea seara + frunza umedă = 12 ore de incubație fungică. Udările scurte mențin rădăcinile la suprafață, vulnerabile la secetă.',
+              myth: t('"Ud gazonul în fiecare seară câte 10 minute"'),
+              truth: t('Irigarea seara + frunza umedă = 12 ore de incubație fungică. Udările scurte mențin rădăcinile la suprafață, vulnerabile la secetă.'),
             },
           ].map(({ myth, truth }) => (
             <div key={myth} className="bg-bg-card border border-border-color rounded-3xl p-6 relative overflow-hidden group hover:border-red-500/20 transition-all">
@@ -973,7 +981,7 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
             <button
               onClick={() => setShowTroubleshooter(false)}
               className="absolute top-5 right-5 w-9 h-9 flex items-center justify-center rounded-full bg-bg-main hover:bg-border-color border border-border-color text-text-secondary hover:text-text-main transition-all z-10"
-              aria-label="Închide"
+              aria-label={t('Închide')}
             >
               <X size={16} />
             </button>
@@ -1010,9 +1018,9 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
               console.error(err);
               const message: string = err?.message || '';
               if (message.includes('not configured')) {
-                toast.error('Plățile online nu sunt încă active. Contactează-ne pentru un cod de acces.');
+                toast.error(t('Plățile online nu sunt încă active. Contactează-ne pentru un cod de acces.'));
               } else {
-                toast.error('Nu am putut iniția plata. Încearcă din nou.');
+                toast.error(t('Nu am putut iniția plata. Încearcă din nou.'));
               }
               setPaywallArticle(null);
             }
@@ -1029,7 +1037,7 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
         <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-bg-card border-2 border-border-color p-6 rounded-3xl flex flex-col items-center gap-3 shadow-2xl">
             <div className="w-8 h-8 border-2 border-accent-color/30 border-t-accent-color rounded-full animate-spin" />
-            <p className="text-xs font-black uppercase tracking-widest text-text-main">Se descarcă articolul...</p>
+            <p className="text-xs font-black uppercase tracking-widest text-text-main">{t('Se descarcă articolul...')}</p>
           </div>
         </div>
       )}

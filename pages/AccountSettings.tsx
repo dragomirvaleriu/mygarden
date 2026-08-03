@@ -153,11 +153,11 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword.length < 6) {
-      toast.error('Parola nouă trebuie să aibă cel puțin 6 caractere.');
+      toast.error(t('Parola nouă trebuie să aibă cel puțin 6 caractere.'));
       return;
     }
     if (newPassword !== confirmPassword) {
-      toast.error('Parolele nu coincid.');
+      toast.error(t('Parolele nu coincid.'));
       return;
     }
     const user = auth.currentUser;
@@ -174,7 +174,7 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
         passwordChangedAt: new Date().toISOString()
       });
 
-      toast.success('Parola a fost schimbată cu succes. Vei fi delogat din alte sesiuni.');
+      toast.success(t('Parola a fost schimbată cu succes. Vei fi delogat din alte sesiuni.'));
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
@@ -183,11 +183,11 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
       setTimeout(() => logout(), 2000);
     } catch (err: any) {
       if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
-        toast.error('Parola curentă este greșită.');
+        toast.error(t('Parola curentă este greșită.'));
       } else if (err.code === 'auth/weak-password') {
-        toast.error('Parola nouă este prea slabă.');
+        toast.error(t('Parola nouă este prea slabă.'));
       } else {
-        toast.error(err.message || 'Nu am putut schimba parola.');
+        toast.error(err.message || t('Nu am putut schimba parola.'));
       }
     } finally {
       setIsSavingPassword(false);
@@ -207,7 +207,7 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
         window.location.href = result.data.url;
       }
     } catch (err: any) {
-      toast.error('Eroare la inițierea cumpărăturii: ' + (err?.message || 'Unknown error'));
+      toast.error(t('Eroare la inițierea cumpărăturii:') + ' ' + (err?.message || 'Unknown error'));
     } finally {
       setIsPurchasing(false);
     }
@@ -220,7 +220,7 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
     try {
       const redeem = httpsCallable(functions, 'redeemGiftCode');
       await redeem({ code: giftCode.trim() });
-      toast.success('Cod activat! Contul tău este acum PRO.');
+      toast.success(t('Cod activat! Contul tău este acum PRO.'));
       setGiftCode('');
     } catch (err: any) {
       const message: string = err?.message || '';
@@ -283,8 +283,8 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
             <User size={24} className="text-accent-color" />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-main tracking-tight">Contul Meu</h1>
-            <p className="text-text-secondary text-xs font-semibold mt-0.5">Gestionează datele, securitatea și preferințele</p>
+            <h1 className="text-2xl font-black text-main tracking-tight">{t('Contul Meu')}</h1>
+            <p className="text-text-secondary text-xs font-semibold mt-0.5">{t('Gestionează datele, securitatea și preferințele')}</p>
           </div>
         </div>
 
@@ -297,14 +297,14 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
                 <div className="w-16 h-16 rounded-2xl bg-accent-color text-accent-text flex items-center justify-center text-xl font-black mb-3">
                   {displayName.charAt(0).toUpperCase() || 'G'}
                 </div>
-                <h3 className="text-base font-black text-main truncate max-w-full">{displayName || 'Grădinar'}</h3>
+                <h3 className="text-base font-black text-main truncate max-w-full">{displayName || t('Grădinar')}</h3>
                 <p className="text-xs text-text-secondary font-medium mt-0.5 truncate max-w-full">{userProfile.email}</p>
 
                 <div className="w-full mt-4 pt-4 border-t border-border-color flex flex-col items-center gap-2">
                   <Pill tone={tierMeta.tone}>{tierMeta.label}</Pill>
                   {userProfile.subscriptionExpiresAt && (
                     <p className="text-[11px] text-text-secondary font-medium">
-                      Expiră: {(
+                      {t('Expiră')}: {(
                         (userProfile.subscriptionExpiresAt as any)?.toDate
                           ? (userProfile.subscriptionExpiresAt as any).toDate()
                           : new Date(userProfile.subscriptionExpiresAt as any)
@@ -316,9 +316,9 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
             </Card>
 
             <Card padding="lg">
-              <p className="text-[10px] font-black text-text-secondary uppercase tracking-wider mb-3">Progres</p>
+              <p className="text-[10px] font-black text-text-secondary uppercase tracking-wider mb-3">{t('Progres')}</p>
               <div className="flex items-baseline justify-between mb-1.5">
-                <span className="text-sm font-bold text-main">Nivel {userProfile.level || 1}</span>
+                <span className="text-sm font-bold text-main">{t('Nivel')} {userProfile.level || 1}</span>
                 <span className="text-[10px] text-text-secondary tabular-nums">{(userProfile.exp || 0) % 100}/100 XP</span>
               </div>
               <div className="w-full bg-bg-main rounded-full h-2 overflow-hidden">
@@ -337,7 +337,7 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
               className="hidden lg:flex w-full px-4 py-3 rounded-xl bg-red-500/10 text-red-500 font-bold text-sm hover:bg-red-500/20 transition items-center justify-center gap-2"
             >
               <LogOut size={16} />
-              Deconectare
+              {t('Deconectare')}
             </button>
           </div>
 
@@ -345,16 +345,16 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
           <div className="space-y-5 min-w-0">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
               {/* Identity */}
-              <SectionCard icon={User} title="Date Personale">
+              <SectionCard icon={User} title={t('Date Personale')}>
                 <div className="space-y-5">
                   <form onSubmit={handleSaveName} className="space-y-2.5">
                     <label className="block text-[11px] font-black text-text-secondary uppercase tracking-wide">
-                      Cum te cheamă?
+                      {t('Cum te cheamă?')}
                     </label>
                     <div className="flex gap-2">
                       <input
                         type="text"
-                        placeholder="Exemplu: Ion Popescu"
+                        placeholder={t('Exemplu: Ion Popescu')}
                         value={displayName}
                         onChange={(e) => setDisplayName(e.target.value)}
                         className={`flex-1 min-w-0 ${inputCls}`}
@@ -364,7 +364,7 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
                         disabled={isSavingName || !displayName.trim()}
                         className={primaryBtnCls}
                       >
-                        {isSavingName ? <Loader2 size={16} className="animate-spin" /> : 'Salvează'}
+                        {isSavingName ? <Loader2 size={16} className="animate-spin" /> : t('Salvează')}
                       </button>
                     </div>
                   </form>
@@ -378,13 +378,13 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
                         <Mail size={16} className="text-accent-color shrink-0" />
                         <span className="font-medium text-sm text-main truncate">{userProfile.email}</span>
                       </div>
-                      <Pill tone="success" icon={CheckCircle}>Verificat</Pill>
+                      <Pill tone="success" icon={CheckCircle}>{t('Verificat')}</Pill>
                     </div>
                   </div>
 
                   <form onSubmit={handleSavePhone} className="space-y-2.5">
                     <label className="block text-[11px] font-black text-text-secondary uppercase tracking-wide">
-                      Telefon
+                      {t('Telefon')}
                     </label>
                     <div className="flex gap-2">
                       <input
@@ -399,22 +399,22 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
                         disabled={isSavingPhone}
                         className={primaryBtnCls}
                       >
-                        {isSavingPhone ? <Loader2 size={16} className="animate-spin" /> : 'Salvează'}
+                        {isSavingPhone ? <Loader2 size={16} className="animate-spin" /> : t('Salvează')}
                       </button>
                     </div>
                     <p className="text-[11px] text-text-secondary font-medium">
-                      Folosit pentru mesaje WhatsApp (ex: „e timpul să uzi", „tunde gazonul")
+                      {t('Folosit pentru mesaje WhatsApp (ex: „e timpul să uzi", „tunde gazonul")')}
                     </p>
                   </form>
                 </div>
               </SectionCard>
 
               {/* Security */}
-              <SectionCard icon={Lock} title="Securitate">
+              <SectionCard icon={Lock} title={t('Securitate')}>
                 <form onSubmit={handleChangePassword} className="space-y-3.5">
                   <div>
                     <label className="block text-[11px] font-black text-text-secondary uppercase tracking-wide mb-2">
-                      Parola curentă
+                      {t('Parola curentă')}
                     </label>
                     <input
                       type={showPasswords ? 'text' : 'password'}
@@ -429,7 +429,7 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
 
                   <div>
                     <label className="block text-[11px] font-black text-text-secondary uppercase tracking-wide mb-2">
-                      Parola nouă
+                      {t('Parola nouă')}
                     </label>
                     <input
                       type={showPasswords ? 'text' : 'password'}
@@ -445,7 +445,7 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
 
                   <div>
                     <label className="block text-[11px] font-black text-text-secondary uppercase tracking-wide mb-2">
-                      Confirmă parola nouă
+                      {t('Confirmă parola nouă')}
                     </label>
                     <div className="flex gap-2">
                       <input
@@ -462,7 +462,7 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
                         type="button"
                         onClick={() => setShowPasswords(v => !v)}
                         className="p-3 rounded-xl bg-bg-main border border-border-color hover:border-accent-color/30 transition text-text-secondary shrink-0"
-                        title={showPasswords ? 'Ascunde' : 'Arată'}
+                        title={showPasswords ? t('Ascunde') : t('Arată')}
                       >
                         {showPasswords ? <EyeOff size={16} /> : <Eye size={16} />}
                       </button>
@@ -475,7 +475,7 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
                     className={`w-full ${primaryBtnCls}`}
                   >
                     {isSavingPassword ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
-                    Schimbă Parola
+                    {t('Schimbă Parola')}
                   </button>
                 </form>
               </SectionCard>
@@ -483,9 +483,9 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
               {/* Preferences */}
-              <SectionCard icon={Globe} title="Preferințe">
+              <SectionCard icon={Globe} title={t('Preferințe')}>
                 <label className="block text-[11px] font-black text-text-secondary uppercase tracking-wide mb-2">
-                  Limbă
+                  {t('Limbă')}
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
@@ -514,14 +514,14 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
               </SectionCard>
 
               {/* Gift code */}
-              <SectionCard icon={Gift} title="Cod Cadou">
+              <SectionCard icon={Gift} title={t('Cod Cadou')}>
                 <p className="text-sm text-text-secondary font-medium mb-4">
-                  Ai un cod cadou? Activează-l aici pentru a primi Pro gratis!
+                  {t('Ai un cod cadou? Activează-l aici pentru a primi Pro gratis!')}
                 </p>
                 <form onSubmit={handleRedeemGiftCode} className="flex gap-2">
                   <input
                     type="text"
-                    placeholder="Introdu codul cadou..."
+                    placeholder={t('Introdu codul cadou...')}
                     value={giftCode}
                     onChange={(e) => setGiftCode(e.target.value)}
                     className={`flex-1 min-w-0 ${inputCls}`}
@@ -532,7 +532,7 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
                     disabled={isRedeeming || !giftCode.trim()}
                     className={primaryBtnCls}
                   >
-                    {isRedeeming ? <Loader2 size={16} className="animate-spin" /> : 'Activează'}
+                    {isRedeeming ? <Loader2 size={16} className="animate-spin" /> : t('Activează')}
                   </button>
                 </form>
               </SectionCard>
@@ -545,10 +545,10 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
                   <div className="w-9 h-9 rounded-xl bg-accent-color/10 flex items-center justify-center shrink-0">
                     <Share2 size={18} className="text-accent-color" />
                   </div>
-                  <h2 className="text-lg font-black text-main">Recomandă & Câștigă</h2>
+                  <h2 className="text-lg font-black text-main">{t('Recomandă & Câștigă')}</h2>
                 </div>
                 <p className="text-sm text-text-secondary font-medium mb-4">
-                  Trimite link-ul tău și ambii primiți +7 zile PRO gratuit!
+                  {t('Trimite link-ul tău și ambii primiți +7 zile PRO gratuit!')}
                 </p>
                 <div className="flex gap-2">
                   <input
@@ -562,14 +562,14 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
                     className={primaryBtnCls}
                   >
                     <Copy size={16} />
-                    Copiază
+                    {t('Copiază')}
                   </button>
                 </div>
               </Card>
             )}
 
             {/* Activity management */}
-            <SectionCard icon={Sprout} title="Activități Grădină">
+            <SectionCard icon={Sprout} title={t('Activități Grădină')}>
               <ActivityManagement
                 userId={userProfile.uid}
                 organizationId={userProfile.organizationId || 'default'}
@@ -583,7 +583,7 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
                 className="px-6 py-3 rounded-xl bg-bg-card border border-border-color text-main font-bold text-sm hover:border-accent-color/30 transition flex items-center justify-center gap-2"
               >
                 <Download size={16} />
-                Export Date
+                {t('Export Date')}
               </button>
               <button
                 onClick={() => {
@@ -593,7 +593,7 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
                 className="lg:hidden px-6 py-3 rounded-xl bg-red-500/10 text-red-500 font-bold text-sm hover:bg-red-500/20 transition flex items-center justify-center gap-2"
               >
                 <LogOut size={16} />
-                Deconectare
+                {t('Deconectare')}
               </button>
             </div>
           </div>

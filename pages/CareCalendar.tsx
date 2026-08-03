@@ -313,7 +313,7 @@ const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
         organizationId: organization.id,
         clientId: taskToComplete.propertyId, // Usually linked to the property in PF
         propertyId: taskToComplete.propertyId,
-        propertyName: properties.find(p => p.id === taskToComplete.propertyId)?.name || 'Grădină',
+        propertyName: properties.find(p => p.id === taskToComplete.propertyId)?.name || t('Grădină'),
         type: 'task_completion',
         date: serverTimestamp(),
         details: completionNote || taskToComplete.title,
@@ -629,9 +629,9 @@ const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
                         <div className="mb-6 p-6 rounded-2xl bg-red-500/10 border-2 border-red-500/30 flex items-start gap-4 shadow-lg shadow-red-500/5 animate-pulse">
                           <AlertCircle size={28} className="text-red-500 shrink-0 mt-1" />
                           <div>
-                            <h4 className="text-xs font-black uppercase tracking-widest text-red-500 mb-1">🌱 Protocol de Germinare (Mod Însămânțare)</h4>
+                            <h4 className="text-xs font-black uppercase tracking-widest text-red-500 mb-1">{t('🌱 Protocol de Germinare (Mod Însămânțare)')}</h4>
                             <p className="text-sm font-bold text-red-600 dark:text-red-400">
-                              Evită uscarea embrionului! Sămânța și nisipul NU au voie să se usuce deloc. Irigă "Puțin și Foarte Des": de 3-4 ori pe zi (ex: 09:00, 13:00, 16:00), timp de 2-4 minute. 
+                              {t('Evită uscarea embrionului! Sămânța și nisipul NU au voie să se usuce deloc. Irigă "Puțin și Foarte Des": de 3-4 ori pe zi (ex: 09:00, 13:00, 16:00), timp de 2-4 minute.')}
                             </p>
                           </div>
                         </div>
@@ -642,7 +642,7 @@ const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
                       <div className="mb-6 p-6 rounded-2xl bg-amber-500/10 border-2 border-amber-500/30 flex items-start gap-4 shadow-lg shadow-amber-500/5">
                         <AlertCircle size={28} className="text-amber-500 shrink-0 mt-1" />
                         <div>
-                          <h4 className="text-xs font-black uppercase tracking-widest text-amber-500 mb-1">Avertisment / Reguli Lunare</h4>
+                          <h4 className="text-xs font-black uppercase tracking-widest text-amber-500 mb-1">{t('Avertisment / Reguli Lunare')}</h4>
                           <p className="text-sm font-bold text-amber-600 dark:text-amber-400">
                             {currentMonthGuide.warning}
                           </p>
@@ -676,7 +676,7 @@ const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
                                 </div>
                                 <div className="mt-1">
                                   <span className="text-sm font-bold text-main leading-snug block">{task.title}</span>
-                                  {task.important && <span className="text-[9px] font-black uppercase tracking-widest text-accent-color mt-1 block">Prioritate</span>}
+                                  {task.important && <span className="text-[9px] font-black uppercase tracking-widest text-accent-color mt-1 block">{t('Prioritate')}</span>}
                                 </div>
                               </div>
                             );
@@ -693,12 +693,12 @@ const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
                         <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center">
                           <Info size={20} />
                         </div>
-                        <span className="text-lg">Vezi Știința Lunii {currentMonthGuide.title}</span>
+                        <span className="text-lg">{t('Vezi Știința Lunii')} {currentMonthGuide.title}</span>
                       </div>
                       <ChevronRight size={20} className="text-text-secondary transition-transform group-open/details:rotate-90" />
                     </summary>
                     <div className="p-6 pt-0 border-t border-border-color/50 mt-2 bg-bg-main/30">
-                      <h4 className="text-xs font-black uppercase text-blue-500 tracking-widest mb-4 mt-4">De ce facem aceste lucrări?</h4>
+                      <h4 className="text-xs font-black uppercase text-blue-500 tracking-widest mb-4 mt-4">{t('De ce facem aceste lucrări?')}</h4>
                       <p className="text-sm text-text-secondary font-medium leading-relaxed">
                         {currentMonthGuide.science}
                       </p>

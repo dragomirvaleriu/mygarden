@@ -24,18 +24,18 @@ interface Props {
   onComplete: () => void;
 }
 
-const CONCERN_OPTIONS: { value: string; label: string; subtext: string; icon: React.ReactNode }[] = [
-  { value: 'dry_patches', label: 'Pete Uscate sau Galbene', subtext: 'Zone în care iarba moare sau se îngălbenește.', icon: <ThermometerSun size={20} className="text-amber-500" /> },
-  { value: 'weeds_moss', label: 'Buruieni sau Mușchi', subtext: 'Plante nedorite care sufocă gazonul.', icon: <Leaf size={20} className="text-green-500" /> },
-  { value: 'growth_color', label: 'Culoare Palidă / Creștere Lentă', subtext: 'Gazonul este verde deschis sau crește greu.', icon: <Sprout size={20} className="text-emerald-400" /> },
-  { value: 'soil_water', label: 'Sol Compact / Bălți', subtext: 'Apa stagnează după irigare sau ploaie.', icon: <Waves size={20} className="text-blue-500" /> },
-  { value: 'pests', label: 'Dăunători', subtext: 'Cârtițe, mușuroaie, viermi sau insecte.', icon: <Bug size={20} className="text-red-500" /> },
-];
-
-const CONCERN_LABELS: Record<string, string> = Object.fromEntries(CONCERN_OPTIONS.map(o => [o.value, o.label]));
-
 const OnboardingWizard: React.FC<Props> = ({ organizationId, onComplete }) => {
   const { t } = useTranslation();
+
+  const CONCERN_OPTIONS: { value: string; label: string; subtext: string; icon: React.ReactNode }[] = [
+    { value: 'dry_patches', label: t('Pete Uscate sau Galbene'), subtext: t('Zone în care iarba moare sau se îngălbenește.'), icon: <ThermometerSun size={20} className="text-amber-500" /> },
+    { value: 'weeds_moss', label: t('Buruieni sau Mușchi'), subtext: t('Plante nedorite care sufocă gazonul.'), icon: <Leaf size={20} className="text-green-500" /> },
+    { value: 'growth_color', label: t('Culoare Palidă / Creștere Lentă'), subtext: t('Gazonul este verde deschis sau crește greu.'), icon: <Sprout size={20} className="text-emerald-400" /> },
+    { value: 'soil_water', label: t('Sol Compact / Bălți'), subtext: t('Apa stagnează după irigare sau ploaie.'), icon: <Waves size={20} className="text-blue-500" /> },
+    { value: 'pests', label: t('Dăunători'), subtext: t('Cârtițe, mușuroaie, viermi sau insecte.'), icon: <Bug size={20} className="text-red-500" /> },
+  ];
+
+  const CONCERN_LABELS: Record<string, string> = Object.fromEntries(CONCERN_OPTIONS.map(o => [o.value, o.label]));
   const [hasExistingName, setHasExistingName] = useState(true);
   const [startingStep, setStartingStep] = useState(2);
   const [step, setStep] = useState(2);
@@ -82,7 +82,7 @@ const OnboardingWizard: React.FC<Props> = ({ organizationId, onComplete }) => {
         ...(primaryConcern ? { primaryLawnConcern: primaryConcern } : {})
       });
       if (primaryConcern) {
-        toast.success(`Am notat: ${CONCERN_LABELS[primaryConcern]}. Găsești diagnosticul complet în cardul "Doctorul Grădinii" de pe Acasă.`, { duration: 6000 });
+        toast.success(`${t('Am notat:')} ${CONCERN_LABELS[primaryConcern]}. ${t('Găsești diagnosticul complet în cardul "Doctorul Grădinii" de pe Acasă.')}`, { duration: 6000 });
       }
       onComplete();
     } catch (error) {
@@ -95,20 +95,20 @@ const OnboardingWizard: React.FC<Props> = ({ organizationId, onComplete }) => {
   const steps = [
     {
       id: 1,
-      title: 'Cum te cheamă?',
-      description: 'Hai să pornim treaba în 3 pași simpli.',
+      title: t('Cum te cheamă?'),
+      description: t('Hai să pornim treaba în 3 pași simpli.'),
       icon: <Sprout className="text-accent-color" size={32} />
     },
     {
       id: 2,
-      title: 'Ce problemă principală ai?',
-      description: 'Așa îți arătăm din prima zi conținutul potrivit pentru tine.',
+      title: t('Ce problemă principală ai?'),
+      description: t('Așa îți arătăm din prima zi conținutul potrivit pentru tine.'),
       icon: <HelpCircle className="text-red-500" size={32} />
     },
     {
       id: 3,
       title: 'My Garden PRO',
-      description: 'Deblochează ghidurile avansate și calculatoarele precise.',
+      description: t('Deblochează ghidurile avansate și calculatoarele precise.'),
       icon: <Zap className="text-amber-500" size={32} />
     }
   ];
@@ -162,18 +162,18 @@ const OnboardingWizard: React.FC<Props> = ({ organizationId, onComplete }) => {
                 {step === 1 && (
                     <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
                         <p className="text-lg text-text-secondary font-medium leading-relaxed">
-                            Spune-ne cum te cheamă ca să personalizez saluturile și dashboard-ul pentru tine.
+                            {t('Spune-ne cum te cheamă ca să personalizez saluturile și dashboard-ul pentru tine.')}
                         </p>
                         <div className="space-y-3">
                             <input
                                 type="text"
-                                placeholder="Exemplu: Ion, Maria, etc."
+                                placeholder={t('Exemplu: Ion, Maria, etc.')}
                                 value={displayName}
                                 onChange={(e) => setDisplayName(e.target.value)}
                                 autoFocus
                                 className="w-full bg-bg-main border border-border-color rounded-xl px-4 py-3 text-sm font-medium outline-none focus:border-accent-color"
                             />
-                            <p className="text-xs text-text-secondary font-medium">✨ Vei vedea "Bună seara, [Nume] 🌙" pe dashboard!</p>
+                            <p className="text-xs text-text-secondary font-medium">✨ {t('Vei vedea "Bună seara, [Nume] 🌙" pe dashboard!')}</p>
                         </div>
                     </div>
                 )}
@@ -212,7 +212,7 @@ const OnboardingWizard: React.FC<Props> = ({ organizationId, onComplete }) => {
                                     : 'bg-bg-main border-border-color text-text-secondary hover:border-accent-color/40'
                                 }`}
                             >
-                                Nu știu încă / Doar vreau sfaturi generale
+                                {t('Nu știu încă / Doar vreau sfaturi generale')}
                             </button>
                         </div>
                     </div>
@@ -225,11 +225,11 @@ const OnboardingWizard: React.FC<Props> = ({ organizationId, onComplete }) => {
                                 <div className="absolute -top-4 -right-4 opacity-5 group-hover:scale-110 transition-transform">
                                     <Star size={80} />
                                 </div>
-                                <h4 className="text-xs font-black text-text-secondary uppercase tracking-widest mb-4">Free</h4>
+                                <h4 className="text-xs font-black text-text-secondary uppercase tracking-widest mb-4">{t('Free')}</h4>
                                 <ul className="space-y-3">
-                                    <li className="text-xs font-bold text-main flex items-center gap-2"><CheckCircle2 size={12} className="text-green-500" /> Ghiduri de bază Academy</li>
-                                    <li className="text-xs font-bold text-main flex items-center gap-2"><CheckCircle2 size={12} className="text-green-500" /> Calendar & memento-uri</li>
-                                    <li className="text-xs font-bold text-main flex items-center gap-2"><CheckCircle2 size={12} className="text-green-500" /> Doctorul Grădinii</li>
+                                    <li className="text-xs font-bold text-main flex items-center gap-2"><CheckCircle2 size={12} className="text-green-500" /> {t('Ghiduri de bază Academy')}</li>
+                                    <li className="text-xs font-bold text-main flex items-center gap-2"><CheckCircle2 size={12} className="text-green-500" /> {t('Calendar & memento-uri')}</li>
+                                    <li className="text-xs font-bold text-main flex items-center gap-2"><CheckCircle2 size={12} className="text-green-500" /> {t('Doctorul Grădinii')}</li>
                                 </ul>
                             </div>
                             <div className="p-6 bg-accent-color text-white rounded-3xl relative overflow-hidden shadow-xl shadow-accent-color/20">
@@ -238,14 +238,14 @@ const OnboardingWizard: React.FC<Props> = ({ organizationId, onComplete }) => {
                                 </div>
                                 <h4 className="text-xs font-black uppercase tracking-widest mb-4 opacity-80">PRO</h4>
                                 <ul className="space-y-3">
-                                    <li className="text-xs font-bold flex items-center gap-2"><Plus size={12} /> Peste 50 de ghiduri avansate</li>
-                                    <li className="text-xs font-bold flex items-center gap-2"><Plus size={12} /> Calculatoare precise de tratamente</li>
-                                    <li className="text-xs font-bold flex items-center gap-2"><Plus size={12} /> Fără reclame</li>
+                                    <li className="text-xs font-bold flex items-center gap-2"><Plus size={12} /> {t('Peste 50 de ghiduri avansate')}</li>
+                                    <li className="text-xs font-bold flex items-center gap-2"><Plus size={12} /> {t('Calculatoare precise de tratamente')}</li>
+                                    <li className="text-xs font-bold flex items-center gap-2"><Plus size={12} /> {t('Fără reclame')}</li>
                                 </ul>
                             </div>
                         </div>
                         <p className="text-xs text-center text-text-secondary font-bold uppercase tracking-widest py-4">
-                            Poți trece la PRO oricând din Academie
+                            {t('Poți trece la PRO oricând din Academie')}
                         </p>
                     </div>
                 )}
