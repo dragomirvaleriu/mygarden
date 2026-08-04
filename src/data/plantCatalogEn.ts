@@ -1,4 +1,4 @@
-import { PlantCatalogEntry, PlantCategory, PlantHeight, PlantWaterNeed, PlantLightNeed } from './plantCatalog';
+import { PlantCatalogEntry, PlantCategory, PlantHeight, PlantWaterNeed, PlantLightNeed, PlantSeason } from './plantCatalog';
 
 // English display-layer translations for the plant catalog, keyed by the
 // same `id` used in plantCatalog.ts. Internal fields that drive filtering
@@ -1468,6 +1468,13 @@ export const PLANT_LIGHT_LABELS_EN: Record<PlantLightNeed, string> = {
   umbra: 'Shade',
   'semi-umbra': 'Partial shade',
   soare: 'Full sun',
+};
+
+export const PLANT_SEASON_LABELS_EN: Record<PlantSeason, string> = {
+  primavara: 'Spring',
+  vara: 'Summer',
+  toamna: 'Autumn',
+  iarna: 'Winter',
 };
 
 export const DIFFICULTY_LABELS_EN: Record<PlantCatalogEntry['difficulty'], string> = {

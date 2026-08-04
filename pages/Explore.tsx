@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { Search, ArrowLeft, Check, Sprout, Sun, Droplets, Gauge, Ruler, SlidersHorizontal, MapPin, Layers, Flower2, Scissors, Bug, Shuffle, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, ArrowLeft, Check, Sprout, Sun, Droplets, Gauge, Ruler, SlidersHorizontal, MapPin, Layers, Flower2, Scissors, Bug, Shuffle, X, ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
 import { useModalBackNavigation } from '../src/hooks/useModalBackNavigation';
 import {
   plantCatalog,
@@ -10,10 +10,12 @@ import {
   plantHeights,
   plantWaterNeeds,
   plantLightNeeds,
+  plantSeasons,
   PLANT_CATEGORY_LABELS,
   PLANT_HEIGHT_LABELS,
   PLANT_WATER_LABELS,
   PLANT_LIGHT_LABELS,
+  PLANT_SEASON_LABELS,
   PlantCatalogEntry,
 } from '../src/data/plantCatalog';
 import {
@@ -22,6 +24,7 @@ import {
   PLANT_HEIGHT_LABELS_EN,
   PLANT_WATER_LABELS_EN,
   PLANT_LIGHT_LABELS_EN,
+  PLANT_SEASON_LABELS_EN,
   DIFFICULTY_LABELS_EN,
 } from '../src/data/plantCatalogEn';
 import { db, collection, addDoc, serverTimestamp } from '../services/firebase';
@@ -38,6 +41,7 @@ type CategoryFilter = 'toate' | PlantCatalogEntry['category'];
 type HeightFilter = 'toate' | PlantCatalogEntry['heightCategory'];
 type WaterFilter = 'toate' | PlantCatalogEntry['waterNeed'];
 type LightFilter = 'toate' | PlantCatalogEntry['lightNeed'];
+type SeasonFilter = 'toate' | PlantCatalogEntry['seasons'][number];
 
 const Explore: React.FC<Props> = ({ organizationId }) => {
   const { t, i18n } = useTranslation();
@@ -46,6 +50,7 @@ const Explore: React.FC<Props> = ({ organizationId }) => {
   const heightLabels = lang === 'en' ? PLANT_HEIGHT_LABELS_EN : PLANT_HEIGHT_LABELS;
   const waterLabels = lang === 'en' ? PLANT_WATER_LABELS_EN : PLANT_WATER_LABELS;
   const lightLabels = lang === 'en' ? PLANT_LIGHT_LABELS_EN : PLANT_LIGHT_LABELS;
+  const seasonLabels = lang === 'en' ? PLANT_SEASON_LABELS_EN : PLANT_SEASON_LABELS;
   const difficultyLabels = lang === 'en' ? DIFFICULTY_LABELS_EN : undefined;
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('toate');
@@ -54,6 +59,7 @@ const Explore: React.FC<Props> = ({ organizationId }) => {
   const [heightFilter, setHeightFilter] = useState<HeightFilter>('toate');
   const [waterFilter, setWaterFilter] = useState<WaterFilter>('toate');
   const [lightFilter, setLightFilter] = useState<LightFilter>('toate');
+  const [seasonFilter, setSeasonFilter] = useState<SeasonFilter>('toate');
   const [showMoreFilters, setShowMoreFilters] = useState(false);
   const [pageSize, setPageSize] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
@@ -83,16 +89,17 @@ const Explore: React.FC<Props> = ({ organizationId }) => {
       if (heightFilter !== 'toate' && plant.heightCategory !== heightFilter) return false;
       if (waterFilter !== 'toate' && plant.waterNeed !== waterFilter) return false;
       if (lightFilter !== 'toate' && plant.lightNeed !== lightFilter) return false;
+      if (seasonFilter !== 'toate' && !plant.seasons.includes(seasonFilter)) return false;
       if (term && !plant.name.toLowerCase().includes(term) && !plant.scientificName.toLowerCase().includes(term)) return false;
       return true;
     });
-  }, [localizedCatalog, search, typeFilter, difficultyFilter, categoryFilter, heightFilter, waterFilter, lightFilter]);
+  }, [localizedCatalog, search, typeFilter, difficultyFilter, categoryFilter, heightFilter, waterFilter, lightFilter, seasonFilter]);
 
   // Any change to the result set invalidates the current page — e.g. page 4
   // of an unfiltered list is nonsense once a filter drops it to 15 results.
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, typeFilter, difficultyFilter, categoryFilter, heightFilter, waterFilter, lightFilter, pageSize]);
+  }, [search, typeFilter, difficultyFilter, categoryFilter, heightFilter, waterFilter, lightFilter, seasonFilter, pageSize]);
 
   const totalPages = Math.max(1, Math.ceil(filteredPlants.length / pageSize));
   const pagedPlants = useMemo(
@@ -100,7 +107,7 @@ const Explore: React.FC<Props> = ({ organizationId }) => {
     [filteredPlants, currentPage, pageSize]
   );
 
-  const activeExtraFilterCount = [categoryFilter, heightFilter, waterFilter, lightFilter].filter(f => f !== 'toate').length;
+  const activeExtraFilterCount = [categoryFilter, heightFilter, waterFilter, lightFilter, seasonFilter].filter(f => f !== 'toate').length;
   const totalActiveFilterCount = activeExtraFilterCount + [typeFilter, difficultyFilter].filter(f => f !== 'toate').length;
 
   const resetFilters = () => {
@@ -110,6 +117,7 @@ const Explore: React.FC<Props> = ({ organizationId }) => {
     setHeightFilter('toate');
     setWaterFilter('toate');
     setLightFilter('toate');
+    setSeasonFilter('toate');
   };
 
   const handleAddToGarden = async (plant: PlantCatalogEntry) => {
@@ -302,6 +310,26 @@ const Explore: React.FC<Props> = ({ organizationId }) => {
                   }`}
                 >
                   {option === 'toate' ? t('Orice lumină') : lightLabels[option]}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-wider text-text-secondary mb-2 flex items-center gap-1.5">
+              <CalendarDays className="w-3 h-3" /> {t('Anotimp de interes')}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {(['toate', ...plantSeasons] as SeasonFilter[]).map((option) => (
+                <button
+                  key={option}
+                  onClick={() => setSeasonFilter(option)}
+                  className={`px-3 py-1.5 rounded-full text-[11px] font-bold border transition ${
+                    seasonFilter === option
+                      ? 'bg-accent-color text-white border-accent-color'
+                      : 'bg-bg-main border-border-color text-text-secondary hover:border-accent-color/30 hover:text-text-main'
+                  }`}
+                >
+                  {option === 'toate' ? t('Orice anotimp') : seasonLabels[option]}
                 </button>
               ))}
             </div>
