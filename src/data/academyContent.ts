@@ -800,6 +800,23 @@ export const ARTICLES_RO: ArticleMeta[] = [
     coverEmoji: '🍇',
     tags: ['pomi fructiferi', 'arbusti fructiferi', 'afin', 'zmeur', 'nuc', 'specii'],
     contentPath: 'content/academy/ro/pomi-arbusti-fructiferi-ghid.md'
+  },
+  {
+    id: 'ro-legume-condimentare-ghid-specii',
+    slug: 'legume-condimentare-ghid-specii',
+    lang: 'ro',
+    title: 'Legume și Plante Condimentare: Ghid pe Specii pentru Grădina de Bucătărie',
+    excerpt: 'De la rozmarinul care preferă sol calcaros la menta care invadează grădina dacă n-o ții în ghiveci — patru specii de legume și aromatice, cu cerințe tehnice exacte de sol, căldură și recoltare.',
+    category: 'specii-plante',
+    categoryLabel: 'Specii de Plante',
+    isPremium: true,
+    readTime: 5,
+    difficulty: 'Începător',
+    author: 'Echipa My Garden',
+    coverGradient: 'from-lime-950 via-green-950 to-emerald-950',
+    coverEmoji: '🌶️',
+    tags: ['legume', 'condimentare', 'rozmarin', 'ardei iute', 'vinete', 'menta', 'specii'],
+    contentPath: 'content/academy/ro/legume-condimentare-ghid-specii.md'
   }
 ];
 
