@@ -301,7 +301,14 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
                 role: 'admin',
                 theme: 'dark'
               };
-              await setDoc(doc(db, 'users', user.uid), profile);
+              // merge: true is critical here — "profile not found" can be a
+              // false negative from a transient read failure (see readProfile),
+              // not proof the document is actually missing. A bare setDoc would
+              // silently wipe displayName/phoneNumber/everything else on every
+              // false positive of this recovery path. App.tsx's own profile
+              // onSnapshot listener will pick up the real merged document and
+              // correct any fields missing from this local minimal object.
+              await setDoc(doc(db, 'users', user.uid), profile, { merge: true });
               finishOnboarding(profile);
             } else {
               console.log("No organization found in auth state, attempting server recovery");
@@ -388,7 +395,10 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
         ...(referredByRef.current ? { referredBy: referredByRef.current } : {})
       };
 
-      await setDoc(doc(db, 'users', uid), profile);
+      // merge: true — this path can also fire for a returning user whose
+      // profile read failed transiently (see readProfile), so it must not
+      // blindly overwrite fields (phoneNumber, etc.) that already exist.
+      await setDoc(doc(db, 'users', uid), profile, { merge: true });
 
       // Mark invitation as accepted
       if (inviteData) {
@@ -541,7 +551,9 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
               role: 'admin',
               theme: 'dark'
             };
-            await setDoc(doc(db, 'users', cred.user.uid), profile);
+            // merge: true — same false-negative risk as the auth-state-change
+            // recovery branch above; must not wipe displayName/phoneNumber/etc.
+            await setDoc(doc(db, 'users', cred.user.uid), profile, { merge: true });
             finishOnboarding(profile);
           } else {
             console.log("No organization found, attempting server recovery");
