@@ -66,6 +66,8 @@ const Explore: React.FC<Props> = ({ organizationId }) => {
   const [pageSize, setPageSize] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedPlant, setSelectedPlant] = useState<PlantCatalogEntry | null>(null);
+  const [galleryIndex, setGalleryIndex] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
   const [addingId, setAddingId] = useState<string | null>(null);
 
@@ -373,12 +375,21 @@ const Explore: React.FC<Props> = ({ organizationId }) => {
             {pagedPlants.map((plant) => (
               <button
                 key={plant.id}
-                onClick={() => setSelectedPlant(plant)}
+                onClick={() => { setSelectedPlant(plant); setGalleryIndex(0); }}
                 className="text-left bg-accent-subtle border border-accent-border/50 rounded-3xl p-4 shadow-sm hover:shadow-md hover:border-accent-border hover:-translate-y-1 transition-all active:translate-y-0"
               >
-                <div className="w-12 h-12 rounded-2xl bg-bg-main flex items-center justify-center text-2xl shadow-inner mb-3">
-                  {plant.emoji}
-                </div>
+                {plant.images && plant.images.length > 0 ? (
+                  <img
+                    src={`/${plant.images[0]}`}
+                    alt={plant.name}
+                    loading="lazy"
+                    className="w-[72px] h-[72px] rounded-2xl object-cover shadow-inner mb-3"
+                  />
+                ) : (
+                  <div className="w-[72px] h-[72px] rounded-2xl bg-bg-main flex items-center justify-center text-3xl shadow-inner mb-3">
+                    {plant.emoji}
+                  </div>
+                )}
                 <h3 className="font-black text-text-main text-sm leading-tight mb-1 truncate">{plant.name}</h3>
                 <p className="text-[11px] text-text-secondary italic truncate mb-2">{plant.scientificName}</p>
                 <span className={`inline-block px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wide border ${difficultyColor(plant.difficulty)}`}>
@@ -447,16 +458,55 @@ const Explore: React.FC<Props> = ({ organizationId }) => {
                   <span className="text-sm font-bold">{t('Înapoi')}</span>
                 </button>
 
-                <ContentImage
-                  path={plantMainImagePath(selectedPlant.id)}
-                  alt={selectedPlant.name}
-                  className="w-16 h-16 rounded-2xl object-cover shadow-inner mb-4"
-                  fallback={
-                    <div className="w-16 h-16 rounded-2xl bg-bg-main flex items-center justify-center text-3xl shadow-inner mb-4">
-                      {selectedPlant.emoji}
-                    </div>
-                  }
-                />
+                {selectedPlant.images && selectedPlant.images.length > 0 ? (
+                  <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-inner mb-4 bg-bg-main group/gallery">
+                    <img
+                      src={`/${selectedPlant.images[galleryIndex]}`}
+                      alt={`${selectedPlant.name} ${galleryIndex + 1}`}
+                      onClick={() => setLightboxOpen(true)}
+                      className="absolute inset-0 w-full h-full object-cover cursor-zoom-in"
+                    />
+                    {selectedPlant.images.length > 1 && (
+                      <>
+                        <button
+                          onClick={() => setGalleryIndex((i) => (i === 0 ? selectedPlant.images!.length - 1 : i - 1))}
+                          aria-label={t('Poza anterioară') as string}
+                          className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition"
+                        >
+                          <ChevronLeft size={18} />
+                        </button>
+                        <button
+                          onClick={() => setGalleryIndex((i) => (i === selectedPlant.images!.length - 1 ? 0 : i + 1))}
+                          aria-label={t('Poza următoare') as string}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition"
+                        >
+                          <ChevronRight size={18} />
+                        </button>
+                        <div className="absolute bottom-2 inset-x-0 flex items-center justify-center gap-1.5">
+                          {selectedPlant.images.map((_, i) => (
+                            <button
+                              key={i}
+                              onClick={() => setGalleryIndex(i)}
+                              aria-label={`${t('Poza')} ${i + 1}`}
+                              className={`w-1.5 h-1.5 rounded-full transition-all ${i === galleryIndex ? 'bg-white w-4' : 'bg-white/50'}`}
+                            />
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ) : (
+                  <ContentImage
+                    path={plantMainImagePath(selectedPlant.id)}
+                    alt={selectedPlant.name}
+                    className="w-16 h-16 rounded-2xl object-cover shadow-inner mb-4"
+                    fallback={
+                      <div className="w-16 h-16 rounded-2xl bg-bg-main flex items-center justify-center text-3xl shadow-inner mb-4">
+                        {selectedPlant.emoji}
+                      </div>
+                    }
+                  />
+                )}
                 <h2 className="text-xl font-black text-text-main leading-tight">{selectedPlant.name}</h2>
                 <p className="text-sm text-text-secondary italic">{selectedPlant.scientificName}</p>
               </div>
@@ -567,6 +617,64 @@ const Explore: React.FC<Props> = ({ organizationId }) => {
               </button>
               </div>
             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Lightbox — full-screen zoom, separate overlay from the detail
+          modal so its own open/close animation doesn't fight the modal's. */}
+      <AnimatePresence>
+        {lightboxOpen && selectedPlant?.images && selectedPlant.images.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[110] bg-black/95 flex items-center justify-center p-4"
+            onClick={() => setLightboxOpen(false)}
+          >
+            <button
+              onClick={() => setLightboxOpen(false)}
+              aria-label={t('Închide')}
+              className="absolute top-4 right-4 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition"
+            >
+              <X size={20} />
+            </button>
+
+            <img
+              src={`/${selectedPlant.images[galleryIndex]}`}
+              alt={`${selectedPlant.name} ${galleryIndex + 1}`}
+              onClick={(e) => e.stopPropagation()}
+              className="max-w-full max-h-full object-contain rounded-lg"
+            />
+
+            {selectedPlant.images.length > 1 && (
+              <>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setGalleryIndex((i) => (i === 0 ? selectedPlant.images!.length - 1 : i - 1)); }}
+                  aria-label={t('Poza anterioară') as string}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition"
+                >
+                  <ChevronLeft size={22} />
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setGalleryIndex((i) => (i === selectedPlant.images!.length - 1 ? 0 : i + 1)); }}
+                  aria-label={t('Poza următoare') as string}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition"
+                >
+                  <ChevronRight size={22} />
+                </button>
+                <div className="absolute bottom-6 inset-x-0 flex items-center justify-center gap-2">
+                  {selectedPlant.images.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={(e) => { e.stopPropagation(); setGalleryIndex(i); }}
+                      aria-label={`${t('Poza')} ${i + 1}`}
+                      className={`h-2 rounded-full transition-all ${i === galleryIndex ? 'bg-white w-6' : 'bg-white/40 w-2'}`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

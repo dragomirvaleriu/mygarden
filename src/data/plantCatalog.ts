@@ -57,6 +57,15 @@ export interface PlantCatalogEntry {
   maintenance: string;
   commonProblems: string;
   propagation: string;
+  // Real photos, up to 4, filled in progressively by
+  // scripts/fetch-plant-images.py (see that file for provenance/licensing —
+  // sourced from Wikipedia/Wikimedia Commons, not stock-photo sites, so
+  // licensing is verifiable per-image). Optional and absent for most
+  // entries today — PlantCard/PlantDetail fall back to the emoji when this
+  // is missing or empty, exactly like ContentImage does elsewhere in the
+  // app. Paths are relative to /public, e.g.
+  // "images/enciclopedie/12_monstera-deliciosa_1.jpg".
+  images?: string[];
 }
 
 export const plantCatalog: PlantCatalogEntry[] = [
@@ -83,6 +92,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Șterge praful de pe frunze periodic pentru fotosinteză eficientă; oferă un suport (moss pole) pentru ca frunzele mature să dezvolte găurile caracteristice.',
     commonProblems: 'Frunze îngălbenite = udare excesivă; frunze fără găuri = lumină insuficientă sau plantă tânără; păianjen roșu în aerul uscat de lângă calorifer.',
     propagation: 'Foarte ușor din butași de tulpină cu un nod aerian, puși în apă sau direct în substrat umed.',
+    images: ['images/enciclopedie/monstera-deliciosa_monstera-deliciosa_1.jpg'],
   },
   {
     id: 'sansevieria',
@@ -107,6 +117,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Practic zero întreținere; șterge ocazional praful de pe frunze și scoate frunzele deteriorate de la bază.',
     commonProblems: 'Putrezirea rădăcinii din udare excesivă e aproape singura problemă reală; rareori atacată de dăunători.',
     propagation: 'Prin diviziunea rizomului sau din segmente de frunză puse în apă — dar soiurile pestrițe pierd modelul de culoare la propagarea din frunză, doar diviziunea îl păstrează.',
+    images: ['images/enciclopedie/sansevieria_sansevieria-trifasciata_1.jpg'],
   },
   {
     id: 'ficus-elastica',
@@ -131,6 +142,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Șterge frunzele lucioase periodic, rotește ghiveciul pentru creștere uniformă și evită mutarea frecventă — frunzele cad la stres de poziție sau curent.',
     commonProblems: 'Cade frunzele la curent de aer rece sau schimbare bruscă de loc; scurgere de latex lăptos alb la rănire, care poate irita pielea.',
     propagation: 'Din butași de vârf cu 2-3 frunze, sau prin marcotaj aerian (air layering) pentru exemplare mai mature.',
+    images: ['images/enciclopedie/ficus-elastica_ficus-elastica_1.jpg'],
   },
   {
     id: 'pothos',
@@ -155,6 +167,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Retează lăstarii lungi pentru o formă mai stufoasă; șterge praful de pe frunze din când în când.',
     commonProblems: 'Frunze îngălbenite de udare excesivă; frunzele își pierd pestrițarea (devin complet verzi) la lumină insuficientă.',
     propagation: 'Extrem de ușor din butași de tulpină cu un nod, puși în apă, unde formează rădăcini în 2-3 săptămâni.',
+    images: ['images/enciclopedie/pothos_epipremnum-aureum_1.jpg'],
   },
   {
     id: 'orhidee-phalaenopsis',
@@ -179,6 +192,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Scufundă rădăcinile 10-15 minute în apă la temperatura camerei, apoi lasă să se scurgă complet — apa stătută la bază e cea mai frecventă cauză de eșec.',
     commonProblems: 'Rădăcini moi, maronii = putrezire din exces de apă; frunze zbârcite = rădăcini insuficiente sau aer prea uscat.',
     propagation: 'Prin keiki (plantule mici formate pe tija florală) sau diviziunea pseudobulbilor la exemplare mari — ambele dificile pentru începători.',
+    images: ['images/enciclopedie/orhidee-phalaenopsis_phalaenopsis_1.jpg'],
   },
   {
     id: 'lavanda',
@@ -203,6 +217,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tunde-o anual, primăvara sau imediat după prima înflorire, tăind aproximativ o treime din creșterea anuală — fără să atingi lemnul bătrân, care nu regenerează.',
     commonProblems: 'Putrezirea rădăcinii pe sol greu, argilos, care reține apa; devine lemnoasă și rărită dacă nu e tunsă anual.',
     propagation: 'Din butași semilemnificați, vara, puși direct în amestec de nisip și perlit.',
+    images: ['images/enciclopedie/lavanda_lavandula-angustifolia_1.jpg'],
   },
   {
     id: 'trandafir',
@@ -227,6 +242,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tăiere anuală primăvara, înainte de pornirea mugurilor; îndepărtarea florilor ofilite pe tot parcursul verii pentru înflorire remontantă.',
     commonProblems: 'Făinare și pete negre pe frunze în veri umede; afide pe lăstarii tineri primăvara.',
     propagation: 'Prin altoire (metoda comercială standard) sau din butași semilemnificați toamna, pentru soiurile pe rădăcini proprii.',
+    images: ['images/enciclopedie/trandafir_rosa-spp_1.jpg'],
   },
   {
     id: 'trandafir-urcator',
@@ -251,6 +267,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Dirijează și leagă lăstarii principali orizontal sau în evantai pe suport — lăstarii legați orizontal produc mult mai multe flori decât cei lăsați să crească vertical; tăiere de întreținere anuală, scurtând ramurile laterale înflorite.',
     commonProblems: 'Făinare pe lăstarii tineri lipiți de zid, unde circulația aerului e slabă; pete negre pe frunze în veri umede.',
     propagation: 'Prin altoire (standard comercial) sau din butași semilemnificați toamna pentru soiurile pe rădăcini proprii.',
+    images: ['images/enciclopedie/trandafir-urcator_rosa-grup-climber_1.jpg'],
   },
   {
     id: 'trandafir-catarator-rambler',
@@ -275,6 +292,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tăiere doar după înflorire (nu primăvara ca la ceilalți trandafiri, altfel se elimină lăstarii care ar fi înflorit); necesită spațiu generos și un suport solid din prima zi.',
     commonProblems: 'Devine rapid greu de controlat fără spațiu suficient — alege amplasamentul cu grijă; relativ rezistent la boli comparativ cu hibrizii de ceai.',
     propagation: 'Din butași semilemnificați toamna, se înrădăcinează relativ ușor datorită vigorii naturale a speciei.',
+    images: ['images/enciclopedie/trandafir-catarator-rambler_rosa-grup-rambler_1.jpg'],
   },
   {
     id: 'trandafir-pitic',
@@ -299,6 +317,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tăiere ușoară primăvara pentru a menține forma compactă; îndepărtarea florilor ofilite prelungește sezonul de înflorire.',
     commonProblems: 'Se usucă rapid în ghivece mici pe caniculă — verifică zilnic vara; păianjen roșu la aer uscat și cald.',
     propagation: 'Din butași semilemnificați vara — se înrădăcinează ușor datorită taliei mici a lăstarilor.',
+    images: ['images/enciclopedie/trandafir-pitic_rosa-grup-miniature-patio_1.jpg'],
   },
   {
     id: 'trandafir-englezesc',
@@ -323,6 +342,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tăiere anuală primăvara, mai puțin drastică decât la hibrizii de ceai (se lasă o structură mai deasă); îndepărtarea florilor ofilite susține remontanța.',
     commonProblems: 'Mai sensibil la pete negre și făinare decât soiurile rustice moderne — necesită tratamente preventive regulate în veri umede.',
     propagation: 'Prin altoire (metoda comercială standard) pentru viguare optimă; posibil și din butași semilemnificați, dar cu creștere mai lentă.',
+    images: ['images/enciclopedie/trandafir-englezesc_rosa-grup-english-shrub-rose_1.jpg'],
   },
   {
     id: 'rosii',
@@ -347,6 +367,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Copilit (îndepărtarea lăstarilor laterali) săptămânal la soiurile nedeterminate, legat pe măsură ce crește la spalier.',
     commonProblems: 'Mana (Phytophthora) pe vreme umedă și răcoroasă; putregaiul apical al fructului din udare neregulată; afide și minerul frunzelor.',
     propagation: 'Din semințe, semănate în casă cu 6-8 săptămâni înainte de ultimul îngheț, sau din butași de lăstari laterali.',
+    images: ['images/enciclopedie/rosii_solanum-lycopersicum_1.jpg'],
   },
   {
     id: 'busuioc',
@@ -371,6 +392,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Ciupește vârfurile regulat pentru o tufă stufoasă și pentru a întârzia înflorirea; recoltează dimineața, când uleiurile aromatice sunt cele mai concentrate.',
     commonProblems: 'Foarte sensibil la frig — moare la prima brumă; putrezirea rădăcinii pe sol prea ud; melci pe plantele tinere.',
     propagation: 'Din semințe (foarte ușor) sau din butași de lăstari puși în apă, care fac rădăcini în 1-2 săptămâni.',
+    images: ['images/enciclopedie/busuioc_ocimum-basilicum_1.jpg'],
   },
   {
     id: 'gazon',
@@ -395,6 +417,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tuns săptămânal în sezonul de creștere, aerare anuală toamna, scarificare pentru îndepărtarea stratului de iarbă moartă.',
     commonProblems: 'Boli fungice pe vreme umedă (vezi ghidul dedicat bolilor de gazon), buruieni în zonele rărite, mușuroaie de râme sau cârtițe.',
     propagation: 'Prin semănare directă sau instalare de brazde gata crescute (rulouri de gazon).',
+    images: ['images/enciclopedie/gazon_festuca-lolium-spp_1.jpg'],
   },
   {
     id: 'hortensie',
@@ -419,6 +442,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tăiere minimă, doar lăstarii uscați sau florile ofilite — tăierea drastică toamna sau iarna elimină mugurii florali deja formați.',
     commonProblems: 'Frunze veștejite la soare puternic de amiază sau sol prea uscat; făinare pe vreme umedă și lipsă de circulație a aerului.',
     propagation: 'Din butași semilemnificați vara, puși în amestec de nisip și perlit sub folie, pentru umiditate constantă.',
+    images: ['images/enciclopedie/hortensie_hydrangea-macrophylla_1.jpg'],
   },
   {
     id: 'aloe-vera',
@@ -443,6 +467,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Îndepărtează frunzele exterioare mature pentru gel, lasă centrul plantei intact; nu necesită tuns sau formă.',
     commonProblems: 'Putrezirea rădăcinii și a bazei frunzelor din udare excesivă e aproape singura cauză reală de eșec.',
     propagation: 'Din lăstari laterali ("pui") care apar la baza plantei mame, separați și puși direct în substrat uscat.',
+    images: ['images/enciclopedie/aloe-vera_aloe-vera_1.jpg'],
   },
   {
     id: 'iedera',
@@ -467,6 +492,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tunde-o pentru a controla extinderea, mai ales lângă ziduri sau clădiri, unde poate deteriora tencuiala sau pătrunde sub șindrilă.',
     commonProblems: 'Se poate extinde necontrolat și deveni invazivă dacă nu e ținută sub control; toxică pentru animale și copii dacă e ingerată.',
     propagation: 'Foarte ușor din butași de tulpină, puși în apă sau direct în sol umed, oricând în sezonul cald.',
+    images: ['images/enciclopedie/iedera_hedera-helix_1.jpg'],
   },
   {
     id: 'pachisandra',
@@ -491,6 +517,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Practic zero — doar îndepărtarea frunzelor uscate primăvara, dacă e cazul, și limitarea extinderii la marginile stratului.',
     commonProblems: 'Pete pe frunze (Volutella) în condiții de umiditate excesivă și circulație slabă a aerului; rare probleme cu dăunători.',
     propagation: 'Prin diviziunea rizomilor sau din butași de lăstari, ambele ușor de făcut primăvara sau toamna.',
+    images: ['images/enciclopedie/pachisandra_pachysandra-terminalis_1.jpg'],
   },
   {
     id: 'saschiu',
@@ -515,6 +542,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tunde marginile de 1-2 ori pe an pentru a controla extinderea — se răspândește rapid prin lăstari care fac rădăcini unde ating solul.',
     commonProblems: 'Poate deveni invazivă necontrolată; toxică pentru animale la ingestie.',
     propagation: 'Extrem de ușor prin diviziune sau din segmente de lăstar care au deja rădăcini formate natural la noduri.',
+    images: ['images/enciclopedie/saschiu_vinca-minor_1.jpg'],
   },
   {
     id: 'iarba-grasa',
@@ -539,6 +567,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Practic zero întreținere; se extinde singură prin lăstari târâtori care fac rădăcini la contact cu solul.',
     commonProblems: 'Singura problemă reală e udarea excesivă sau solul care reține apa — putrezește rapid.',
     propagation: 'Prin simpla rupere și așezare a unui fragment de lăstar pe sol — face rădăcini fără ajutor.',
+    images: ['images/enciclopedie/iarba-grasa_sedum-sexangulare_1.jpg'],
   },
   {
     id: 'urechelnita',
@@ -563,6 +592,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Zero — doar îndepărtarea ocazională a rozetelor moarte după înflorire.',
     commonProblems: 'Putrezirea completă apare doar din exces de apă/umezeală stagnantă; altfel practic indestructibilă.',
     propagation: 'Prin separarea rozetelor laterale ("pui"), care se prind ușor direct în sol pietros sau nisipos.',
+    images: ['images/enciclopedie/urechelnita_sempervivum-tectorum_1.jpg'],
   },
   {
     id: 'hipericum',
@@ -587,6 +617,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tăiere de întreținere primăvara pentru formă compactă și înflorire abundentă.',
     commonProblems: 'Rugină pe frunze în veri foarte umede; altfel rezistent la majoritatea problemelor.',
     propagation: 'Prin diviziune sau din butași semilemnificați vara.',
+    images: ['images/enciclopedie/hipericum_hypericum-calycinum_1.jpg'],
   },
   {
     id: 'nepeta',
@@ -611,6 +642,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Retează tufa la jumătate după primul val de flori (iunie) pentru re-înflorire compactă toamna.',
     commonProblems: 'Aproape fără probleme — rareori atacată de dăunători tocmai datorită uleiurilor aromatice.',
     propagation: 'Prin diviziunea tufei primăvara sau toamna, sau din butași de vârf vara.',
+    images: ['images/enciclopedie/nepeta_nepeta-faassenii_1.jpg'],
   },
   {
     id: 'cosmos',
@@ -635,6 +667,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Susținere cu araci la soiurile înalte; îndepărtarea florilor ofilite pentru înflorire prelungită.',
     commonProblems: 'Se culcă la vânt puternic dacă nu e susținută; făinare rareori, pe vreme foarte umedă.',
     propagation: 'Din semințe, semănate direct în grădină după ultimul îngheț — se resamănă adesea singură an de an.',
+    images: ['images/enciclopedie/cosmos_cosmos-bipinnatus_1.jpg'],
   },
   {
     id: 'gazania',
@@ -659,6 +692,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Îndepărtarea florilor ofilite pentru înflorire continuă; iernează în zone blânde dacă e la adăpost de îngheț.',
     commonProblems: 'Putrezirea rădăcinii pe sol care reține apa; rareori atacată de dăunători.',
     propagation: 'Din semințe sau din butași de lăstari laterali, mai ales dacă vrei să păstrezi un soi anume peste iarnă în interior.',
+    images: ['images/enciclopedie/gazania_gazania-splendens_1.jpg'],
   },
   {
     id: 'impatiens',
@@ -683,6 +717,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Udare atentă în zilele foarte calde — se ofilesc vizibil la stres hidric, dar își revin rapid la udare.',
     commonProblems: 'Foarte sensibilă la mana specifică (downy mildew) în veri umede — poate distruge tufe întregi rapid; verifică rezistența soiului la cumpărare.',
     propagation: 'Din semințe (lente la răsărire) sau din butași de lăstari puși în apă, care fac rădăcini rapid.',
+    images: ['images/enciclopedie/impatiens_impatiens-walleriana_1.jpg'],
   },
   {
     id: 'lobelia',
@@ -707,6 +742,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Udare constantă și frecventă, mai ales în ghivece agățate care se usucă rapid; retează ușor tufa dacă înflorirea scade în plină vară.',
     commonProblems: 'Se usucă rapid dacă udarea e neregulată; rareori probleme cu dăunători.',
     propagation: 'Din semințe foarte fine, semănate în casă cu 10-12 săptămâni înainte de ultimul îngheț.',
+    images: ['images/enciclopedie/lobelia_lobelia-erinus_1.jpg'],
   },
   {
     id: 'arborele-lui-iuda',
@@ -731,6 +767,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tăiere de formare doar în primii ani; ulterior necesită doar eliminarea ramurilor uscate sau bolnave.',
     commonProblems: 'Sensibil la ger în primii ani și la vânt puternic; rareori atacat de dăunători la maturitate.',
     propagation: 'Din semințe (necesită scarificare și stratificare la rece) sau din butași semilemnificați, dificil de înrădăcinat.',
+    images: ['images/enciclopedie/arborele-lui-iuda_cercis-siliquastrum_1.jpg'],
   },
   {
     id: 'magnolia',
@@ -755,6 +792,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tăiere minimă, doar de curățare — rănile se vindecă greu, deci evită tăierile mari inutile.',
     commonProblems: 'Florile pot îngheța la o brumă târzie de primăvară; rădăcinile superficiale suferă la secetă prelungită.',
     propagation: 'Prin marcotaj sau din butași semilemnificați vara, sub ceață/umiditate ridicată — propagare relativ dificilă pentru amatori.',
+    images: ['images/enciclopedie/magnolia_magnolia-x-soulangiana_1.jpg'],
   },
   {
     id: 'rododendron',
@@ -779,6 +817,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Îndepărtarea florilor ofilite fără să rănești mugurii noi de sub ele; mulcirea cu scoarță acidă ajută menținerea umidității și a pH-ului.',
     commonProblems: 'Cloroză (frunze îngălbenite cu nervuri verzi) pe sol neutru/alcalin — semn clar că pH-ul nu e potrivit.',
     propagation: 'Din butași semilemnificați vara-toamnă, sub umiditate ridicată — mai lent decât la alți arbuști.',
+    images: ['images/enciclopedie/rododendron_rhododendron-spp_1.jpg'],
   },
   {
     id: 'ghiocel',
@@ -803,6 +842,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Lasă frunzișul să se usuce complet natural după înflorire — acolo se acumulează rezervele pentru anul următor.',
     commonProblems: 'Foarte puține — bulbii pot putrezi doar pe sol care bălătește apa permanent.',
     propagation: 'Prin diviziunea ciorchinilor de bulbi imediat după înflorire, "în verde", cât frunzișul e încă activ.',
+    images: ['images/enciclopedie/ghiocel_galanthus-nivalis_1.jpg'],
   },
   {
     id: 'lalea',
@@ -827,6 +867,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'După înflorire, lasă frunzișul să se usuce complet (6-8 săptămâni) înainte de a-l tăia — acolo bulbul își reface rezervele pentru anul viitor.',
     commonProblems: 'Putrezirea bulbilor pe sol umed; rozătoarele (șoareci, popândăi) pot mânca bulbii depozitați sau plantați.',
     propagation: 'Prin bulbi secundari (bulbili) care se formează lângă bulbul principal, separați la scoaterea din pământ.',
+    images: ['images/enciclopedie/lalea_tulipa-gesneriana_1.jpg'],
   },
   {
     id: 'hosta',
@@ -851,6 +892,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Împarte tufele la 4-5 ani, când centrul începe să se rărească; taie tot frunzișul toamna, după ce îngheață.',
     commonProblems: 'Melcii și limacșii sunt principalul dușman — găuresc frunzele, mai ales primăvara devreme la lăstarii tineri.',
     propagation: 'Prin diviziunea tufei primăvara devreme sau toamna, cea mai simplă și sigură metodă.',
+    images: ['images/enciclopedie/hosta_hosta-spp_1.jpg'],
   },
   {
     id: 'panseluta',
@@ -875,6 +917,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Îndepărtarea constantă a florilor ofilite pentru înflorire continuă; protejează cu un strat de mulci în gerurile foarte severe.',
     commonProblems: 'Putregai la coroană pe sol prea umed în perioadele reci; afide primăvara.',
     propagation: 'Din semințe, semănate vara pentru înflorire de toamnă-primăvară, sau cumpărate ca răsad.',
+    images: ['images/enciclopedie/panseluta_viola-x-wittrockiana_1.jpg'],
   },
   {
     id: 'begonia',
@@ -899,6 +942,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Udă la sol, ferind frunzele și florile de apă — sunt sensibile la mucegai/putregai când rămân ude.',
     commonProblems: 'Făinare și putregai gri (Botrytis) pe vreme umedă și rece, mai ales dacă frunzișul rămâne ud.',
     propagation: 'Din butași de frunză (la soiurile cu frunze decorative) sau de tulpină, puși direct în substrat umed.',
+    images: ['images/enciclopedie/begonia_begonia-spp_1.jpg'],
   },
   {
     id: 'anemona',
@@ -923,6 +967,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Mulcirea toamna protejează rădăcinile la speciile mai sensibile la ger; împarte tufele la 3-4 ani.',
     commonProblems: 'Melci pe lăstarii tineri primăvara; rareori boli fungice pe sol prea umed permanent.',
     propagation: 'Prin diviziunea rizomilor sau a tuberculilor, primăvara sau toamna, în funcție de specie.',
+    images: ['images/enciclopedie/anemona_anemone-spp_1.jpg'],
   },
   {
     id: 'forsythia',
@@ -947,6 +992,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tăiere anuală imediat după înflorire, nu toamna sau iarna, când ai elimina mugurii florali deja formați pentru anul următor.',
     commonProblems: 'Foarte puține probleme reale — una din cele mai rezistente și tolerante plante ornamentale la boli și dăunători.',
     propagation: 'Extrem de ușor din butași lemnificați iarna sau semilemnificați vara — se prind aproape garantat.',
+    images: ['images/enciclopedie/forsythia_forsythia-suspensa_1.jpg'],
   },
   {
     id: 'calin',
@@ -971,6 +1017,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tăiere ușoară de formare după înflorire; elimină lăstarii uscați sau prea denși din interiorul tufei.',
     commonProblems: 'Afide pe lăstarii tineri primăvara; rareori boli fungice.',
     propagation: 'Din butași semilemnificați vara sau din marcotaj — ramurile joase care ating solul fac rădăcini natural.',
+    images: ['images/enciclopedie/calin_viburnum-opulus_1.jpg'],
   },
   {
     id: 'bujor',
@@ -995,6 +1042,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Nu planta prea adânc (mugurii la maxim 5cm sub sol) — cea mai frecventă cauză de neînflorire; taie tulpinile la sol toamna.',
     commonProblems: 'Botrytis (mană cenușie) pe vreme umedă și rece de primăvară, mai ales la boboci; neînflorire din plantare prea adâncă sau umbră excesivă.',
     propagation: 'Prin diviziunea rădăcinii tuberizate toamna, cu 3-5 muguri per bucată — se reface lent, câțiva ani, până înflorește din nou.',
+    images: ['images/enciclopedie/bujor_paeonia-officinalis_1.jpg'],
   },
   {
     id: 'margareta',
@@ -1019,6 +1067,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Retează regulat pentru formă compactă; taie totul la nivelul solului la finalul sezonului, toamna.',
     commonProblems: 'Puține probleme reale; ocazional afide sau făinare pe vreme foarte umedă.',
     propagation: 'Prin diviziunea tufei la 2-3 ani sau din semințe, care răsar ușor.',
+    images: ['images/enciclopedie/margareta_chrysanthemum-leucanthemum_1.jpg'],
   },
   {
     id: 'mac',
@@ -1043,6 +1092,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'După ofilirea florilor, taie tulpinile floare pentru a stimula eventual un al doilea val mai slab; nu te alarma când frunzișul dispare vara — e normal, planta reapare toamna sau primăvara.',
     commonProblems: 'Se culcă la ploaie/vânt puternic dacă tulpinile nu sunt susținute; rareori atacat de dăunători.',
     propagation: 'Prin diviziunea rădăcinii toamna, în repaus, sau din butași de rădăcină.',
+    images: ['images/enciclopedie/mac_papaver-orientale_1.jpg'],
   },
   // ─── Conifere ───────────────────────────────────────
   {
@@ -1068,6 +1118,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tundere de 1-2 ori pe an pentru menținerea formei gardului viu; iarna frunzișul se poate bruniza parțial, revenindu-și primăvara — nu e semn de boală.',
     commonProblems: 'Brunizare de iarnă (normală); rădăcină superficială sensibilă la secetă prelungită la exemplarele tinere.',
     propagation: 'Din butași semilemnificați toamna sau din semințe (mai lent).',
+    images: ['images/enciclopedie/thuja-occidentalis_thuja-occidentalis_1.jpg'],
   },
   {
     id: 'picea-pungens',
@@ -1092,6 +1143,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Practic zero tundere — crește natural într-o formă conică regulată.',
     commonProblems: 'Suferă vizibil la secetă prelungită; rareori atacată de dăunători.',
     propagation: 'Prin altoire (pentru păstrarea exactă a culorii cultivarului) sau din semințe.',
+    images: ['images/enciclopedie/picea-pungens_picea-pungens_1.jpg'],
   },
   {
     id: 'taxus-baccata',
@@ -1116,6 +1168,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Creștere lentă; tundere de 1-2 ori pe an dacă e folosită ca gard viu.',
     commonProblems: 'Foarte sensibilă la secetă și la înghețuri târzii; putrezirea rădăcinii pe sol care reține apa.',
     propagation: 'Din butași semilemnificați toamna, sub protecție.',
+    images: ['images/enciclopedie/taxus-baccata_taxus-baccata_1.jpg'],
   },
   {
     id: 'juniperus-communis',
@@ -1140,6 +1193,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Practic zero; eventual o tundere ușoară de formă.',
     commonProblems: 'Rareori probleme reale; putrezirea rădăcinii doar pe sol care reține apa permanent.',
     propagation: 'Din butași semilemnificați sau din semințe, cu germinație lentă.',
+    images: ['images/enciclopedie/juniperus-communis_juniperus-communis_1.jpg'],
   },
   {
     id: 'pinus-mugo',
@@ -1164,6 +1218,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Aproape zero — creștere naturală compactă, fără tundere necesară.',
     commonProblems: 'Foarte puține — rezistă la ger, secetă și vânt puternic.',
     propagation: 'Din semințe sau butași, ambele relativ lente.',
+    images: ['images/enciclopedie/pinus-mugo_pinus-mugo_1.jpg'],
   },
   {
     id: 'abies-nordmanniana',
@@ -1188,6 +1243,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Creștere lentă spre medie; nu necesită tundere regulată dacă e cultivat ca exemplar solitar.',
     commonProblems: 'Sensibil la poluare și la solurile mlăștinoase sau care bălătesc apa.',
     propagation: 'Din semințe — metoda comercială standard pentru puieți.',
+    images: ['images/enciclopedie/abies-nordmanniana_abies-nordmanniana_1.jpg'],
   },
   // ─── Copaci ornamentali (foioși & cu flori spectaculoase) ───
   {
@@ -1213,6 +1269,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Doar eliminarea ramurilor uscate; nu necesită tăieri de formare majore.',
     commonProblems: 'Foarte puține — specie rustică, cu cerințe minime.',
     propagation: 'Din semințe, semănate toamna direct sau stratificate la rece.',
+    images: ['images/enciclopedie/betula-pendula_betula-pendula_1.jpg'],
   },
   {
     id: 'acer-palmatum',
@@ -1237,6 +1294,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Creștere lentă; protejează-l de soare puternic și curenți uscați de aer.',
     commonProblems: 'Rezistă doar până la aproximativ -10°C; frunze arse la soare direct puternic sau aer prea uscat.',
     propagation: 'Prin altoire (pentru cultivaruri) sau din semințe stratificate la rece.',
+    images: ['images/enciclopedie/acer-palmatum_acer-palmatum_1.jpg'],
   },
   {
     id: 'robinia-pseudoacacia',
@@ -1261,6 +1319,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tăiere de formare în primii ani; ulterior doar eliminarea lăstarilor uscați.',
     commonProblems: 'Vânturile reci provoacă vătămări reale în climat aspru; sensibilă la sol compact sau apă stagnantă.',
     propagation: 'Din semințe (necesită scarificare) sau din drajoni (lăstari de rădăcină).',
+    images: ['images/enciclopedie/robinia-pseudoacacia_robinia-pseudoacacia_1.jpg'],
   },
   {
     id: 'prunus-serrulata',
@@ -1285,6 +1344,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Creștere erectă, lentă; tăiere minimă, doar de curățare.',
     commonProblems: 'Piere prematur pe sol greu, care reține apa — drenajul e esențial.',
     propagation: 'Prin altoire (metoda comercială standard pentru cultivaruri).',
+    images: ['images/enciclopedie/prunus-serrulata_prunus-serrulata_1.jpg'],
   },
   {
     id: 'catalpa-bignonioides',
@@ -1309,6 +1369,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Înfrunzire tardivă și cădere timpurie a frunzelor — normal pentru specie, nu semn de boală.',
     commonProblems: 'Foarte puține — rezistență bună la poluare.',
     propagation: 'Din semințe sau butași de vară.',
+    images: ['images/enciclopedie/catalpa-bignonioides_catalpa-bignonioides_1.jpg'],
   },
   {
     id: 'tilia-cordata',
@@ -1333,6 +1394,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tăiere de formare doar în primii ani; longeviv, cu creștere robustă.',
     commonProblems: 'Foarte puține probleme reale la maturitate.',
     propagation: 'Din semințe (stratificare la rece) sau din butași.',
+    images: ['images/enciclopedie/tilia-cordata_tilia-cordata_1.jpg'],
   },
   // ─── Arbuști ornamentali ───────────────────────────
   {
@@ -1358,6 +1420,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tundere de 2-3 ori pe sezon pentru forme geometrice precise; creștere foarte lentă.',
     commonProblems: 'Se degarnisește în zone secetoase fără udare suplimentară.',
     propagation: 'Din butași semilemnificați vara, care se prind ușor.',
+    images: ['images/enciclopedie/buxus-sempervirens_buxus-sempervirens_1.jpg'],
   },
   {
     id: 'pyracantha-coccinea',
@@ -1382,6 +1445,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Suportă foarte bine tunderea — folosită des ca gard viu de protecție, unde spinii descurajează intrușii.',
     commonProblems: 'Foarte puține — specie rustică, bine adaptată climatului românesc.',
     propagation: 'Din butași semilemnificați vara sau din semințe.',
+    images: ['images/enciclopedie/pyracantha-coccinea_pyracantha-coccinea_1.jpg'],
   },
   {
     id: 'berberis-thunbergii',
@@ -1406,6 +1470,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tolerează foarte bine tăierile — pretabilă pentru garduri vii joase.',
     commonProblems: 'Foarte puține — rezistentă la înghețuri, ger și vânt.',
     propagation: 'Din butași semilemnificați vara.',
+    images: ['images/enciclopedie/berberis-thunbergii_berberis-thunbergii_1.jpg'],
   },
   {
     id: 'cotinus-coggygria',
@@ -1430,6 +1495,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tăiere ușoară de formare; nu rezistă la vânturi puternice.',
     commonProblems: 'Foarte puține — rezistență bună la fum și praf.',
     propagation: 'Din butași semilemnificați vara sau din marcotaj.',
+    images: ['images/enciclopedie/cotinus-coggygria_cotinus-coggygria_1.jpg'],
   },
   {
     id: 'spiraea-japonica',
@@ -1454,6 +1520,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tăiere ușoară după înflorire pentru formă compactă și reînflorire.',
     commonProblems: 'Foarte puține probleme reale.',
     propagation: 'Din butași semilemnificați vara sau prin diviziune.',
+    images: ['images/enciclopedie/spiraea-japonica_spiraea-japonica_1.jpg'],
   },
   {
     id: 'wisteria-sinensis',
@@ -1478,6 +1545,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Necesită obligatoriu un suport solid instalat din start (pergolă, gard) — creștere rapidă și viguroasă.',
     commonProblems: 'Poate întârzia să înflorească la exemplare tinere; sensibilă la vânturi reci în primii ani.',
     propagation: 'Din butași sau marcotaj — din semințe este foarte lent și imprevizibil.',
+    images: ['images/enciclopedie/wisteria-sinensis_wisteria-sinensis_1.jpg'],
   },
   // ─── Flori anuale suplimentare ─────────────────────
   {
@@ -1503,6 +1571,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Îndepărtează regulat florile ofilite — prelungește înflorirea și produce flori mai mari la valurile următoare.',
     commonProblems: 'Foarte puține — specie rezistentă și ușor de crescut.',
     propagation: 'Din semințe, semănate direct sau ca răsad în aprilie-mai.',
+    images: ['images/enciclopedie/tagetes-patula_tagetes-patula_1.jpg'],
   },
   {
     id: 'salvia-splendens',
@@ -1527,6 +1596,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Udări suplimentare doar în perioadele secetoase.',
     commonProblems: 'Foarte puține — specie ușor de cultivat.',
     propagation: 'Din semințe, plantate în grădină în luna mai.',
+    images: ['images/enciclopedie/salvia-splendens_salvia-splendens_1.jpg'],
   },
   {
     id: 'portulaca-grandiflora',
@@ -1551,6 +1621,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Minimă — folosită frecvent ca acoperitor de sol sau la borduri.',
     commonProblems: 'Foarte puține — una din cele mai rezistente la secetă dintre florile anuale.',
     propagation: 'Din semințe, semănate direct în grădină.',
+    images: ['images/enciclopedie/portulaca-grandiflora_portulaca-grandiflora_1.jpg'],
   },
   {
     id: 'eschscholzia-californica',
@@ -1575,6 +1646,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Îndepărtarea florilor uscate; udări regulate, dar moderate.',
     commonProblems: 'Foarte puține — specie ușoară, tolerantă la secetă.',
     propagation: 'Din semințe, semănate direct în grădină, primăvara.',
+    images: ['images/enciclopedie/eschscholzia-californica_eschscholzia-californica_1.jpg'],
   },
   {
     id: 'antirrhinum-majus',
@@ -1599,6 +1671,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Sol curat de buruieni, afânarea solului; suporți pentru soiurile înalte.',
     commonProblems: 'Nu suportă solurile prea umede — asigură drenaj bun.',
     propagation: 'Din semințe, plantate la loc definitiv în aprilie-mai.',
+    images: ['images/enciclopedie/antirrhinum-majus_antirrhinum-majus_1.jpg'],
   },
   {
     id: 'nicotiana-alata',
@@ -1623,6 +1696,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Udări dese; suporți de susținere pentru plantele înalte expuse la vânt.',
     commonProblems: 'Tulpina poate ceda sub greutatea florilor sau la rafale puternice fără suport.',
     propagation: 'Din semințe, semănate ca răsad.',
+    images: ['images/enciclopedie/nicotiana-alata_nicotiana-alata_1.jpg'],
   },
   // ─── Flori bienale ──────────────────────────────────
   {
@@ -1648,6 +1722,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Protecție iarna cu un strat de frunze; se seamănă în valuri succesive, an de an, pentru flori continue.',
     commonProblems: 'Toxicitate — atenție dacă ai copii mici sau animale de companie.',
     propagation: 'Din semințe, semănate vara pentru înflorire în anul următor.',
+    images: ['images/enciclopedie/digitalis-purpurea_digitalis-purpurea_1.jpg'],
   },
   {
     id: 'campanula-medium',
@@ -1672,6 +1747,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Afânarea solului, plivire regulată.',
     commonProblems: 'Foarte puține — specie rustică, puține pretenții.',
     propagation: 'Din semințe, semănate vara pentru înflorire în anul următor.',
+    images: ['images/enciclopedie/campanula-medium_campanula-medium_1.jpg'],
   },
   {
     id: 'bellis-perennis',
@@ -1696,6 +1772,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Udări, pliviri, păstrarea solului afânat.',
     commonProblems: 'Foarte puține — una din cele mai tolerante bienale.',
     propagation: 'Din semințe, semănate vara pentru înflorire în anul următor.',
+    images: ['images/enciclopedie/bellis-perennis_bellis-perennis_1.jpg'],
   },
   {
     id: 'althaea-rosea',
@@ -1720,6 +1797,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Protecție împotriva gerurilor puternice pe timpul iernii.',
     commonProblems: 'Rugină pe frunze în veri foarte umede.',
     propagation: 'Din semințe, semănate vara pentru înflorire în anul următor.',
+    images: ['images/enciclopedie/althaea-rosea_althaea-rosea_1.jpg'],
   },
   {
     id: 'myosotis-alpestris',
@@ -1744,6 +1822,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Curăță solul de buruieni, păstrează-l reavăn și afânat.',
     commonProblems: 'Foarte puține probleme reale.',
     propagation: 'Din semințe, plantate la loc definitiv în octombrie sau primăvara.',
+    images: ['images/enciclopedie/myosotis-alpestris_myosotis-alpestris_1.jpg'],
   },
   // ─── Flori bulboase suplimentare ────────────────────
   {
@@ -1769,6 +1848,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Aerarea solului, îndepărtarea buruienilor; lasă frunzișul să se usuce complet după înflorire.',
     commonProblems: 'Foarte puține — bulbi rezistenți, rareori atacați de dăunători.',
     propagation: 'Prin bulbi secundari, separați la 3-4 ani.',
+    images: ['images/enciclopedie/narcissus-pseudonarcissus_narcissus-pseudonarcissus_1.jpg'],
   },
   {
     id: 'hyacinthus-orientalis',
@@ -1793,6 +1873,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Bulbii se plantează în octombrie, la 10-15cm adâncime.',
     commonProblems: 'Bulbi subdezvoltați pe sol umed și neaerat — drenajul e esențial.',
     propagation: 'Prin bulbi secundari, separați la scoaterea din pământ.',
+    images: ['images/enciclopedie/hyacinthus-orientalis_hyacinthus-orientalis_1.jpg'],
   },
   {
     id: 'muscari-armeniacum',
@@ -1817,6 +1898,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Aerarea solului la suprafață, îndepărtarea buruienilor.',
     commonProblems: 'Foarte puține — bulboasă rezistentă și ușor de întreținut.',
     propagation: 'Prin bulbi secundari, care se înmulțesc rapid singuri.',
+    images: ['images/enciclopedie/muscari-armeniacum_muscari-armeniacum_1.jpg'],
   },
   {
     id: 'dahlia-variabilis',
@@ -1841,6 +1923,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Toamna, înainte de îngheț, rizomii se scot din pământ pentru depozitare protejată peste iarnă.',
     commonProblems: 'Nu suportă seceta prelungită; rizomii nerezistenți la ger trebuie scoși obligatoriu toamna.',
     propagation: 'Prin diviziunea rizomilor la replantare, primăvara.',
+    images: ['images/enciclopedie/dahlia-variabilis_dahlia-variabilis_1.jpg'],
   },
   {
     id: 'gladiolus-hybridus',
@@ -1865,6 +1948,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tuberobulbii se scot obligatoriu toamna, înainte de îngheț — nu rezistă la frig.',
     commonProblems: 'Nu e rezistentă la frig; solul trebuie să fie bine drenat, altfel bulbii putrezesc.',
     propagation: 'Prin bulbi secundari (tuberobulbi noi), formați lângă cel principal.',
+    images: ['images/enciclopedie/gladiolus-hybridus_gladiolus-hybridus_1.jpg'],
   },
   {
     id: 'allium-giganteum',
@@ -1889,6 +1973,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Florile uscate, lăsate pe plantă, formează semințe decorative la unele soiuri.',
     commonProblems: 'Foarte puține — bulboasă rezistentă.',
     propagation: 'Prin bulbi secundari, separați la scoaterea din pământ.',
+    images: ['images/enciclopedie/allium-giganteum_allium-giganteum_1.jpg'],
   },
   // ─── Flori perene suplimentare ──────────────────────
   {
@@ -1914,6 +1999,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Instalează suporți pentru soiurile înalte încă de la plantare — ulterior poate vătăma rădăcina.',
     commonProblems: 'Se culcă fără suport; îndepărtarea florilor uscate stimulează noi boboci.',
     propagation: 'Din semințe sau prin diviziunea tufei primăvara.',
+    images: ['images/enciclopedie/delphinium-cultorum_delphinium-cultorum_1.jpg'],
   },
   {
     id: 'hemerocallis-fulva',
@@ -1938,6 +2024,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Taie tulpinile de la bază la finalul înfloririi.',
     commonProblems: 'Foarte puține — una din cele mai tolerante perene la neglijare.',
     propagation: 'Prin diviziunea tufei, primăvara sau toamna.',
+    images: ['images/enciclopedie/hemerocallis-fulva_hemerocallis-fulva_1.jpg'],
   },
   {
     id: 'gypsophila-paniculata',
@@ -1962,6 +2049,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Imediat după înflorire, taie la nivelul solului pentru vigoare mai mare la anul următor.',
     commonProblems: 'Foarte puține probleme reale.',
     propagation: 'Din semințe sau prin diviziune, primăvara.',
+    images: ['images/enciclopedie/gypsophila-paniculata_gypsophila-paniculata_1.jpg'],
   },
   {
     id: 'astilbe-astilboides',
@@ -1986,6 +2074,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Udări obligatorii seara, după apusul soarelui; protecție în sezonul rece.',
     commonProblems: 'Suferă vizibil pe sol uscat sau prea însorit fără umiditate suficientă.',
     propagation: 'Prin diviziunea tufei, primăvara sau toamna.',
+    images: ['images/enciclopedie/astilbe-astilboides_astilbe-astilboides_1.jpg'],
   },
   {
     id: 'rudbeckia-purpurea',
@@ -2010,6 +2099,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Îndepărtarea florilor ofilite pentru înflorire prelungită.',
     commonProblems: 'Foarte puține — specie robustă și tolerantă.',
     propagation: 'Prin diviziunea tufei sau din semințe.',
+    images: ['images/enciclopedie/rudbeckia-purpurea_rudbeckia-purpurea_1.jpg'],
   },
   // ─── Stâncărie & acoperitoare de sol suplimentare ───
   {
@@ -2035,6 +2125,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Are viață scurtă — la fiecare 3-4 ani recoltează butași sau segmentează rizomii, altfel planta se epuizează.',
     commonProblems: 'Se epuizează după câțiva ani fără reînnoire prin butași sau diviziune.',
     propagation: 'Din butași recoltați vara sau prin segmentarea rizomilor.',
+    images: ['images/enciclopedie/aubrieta-deltoidea_aubrieta-deltoidea_1.jpg'],
   },
   {
     id: 'iberis-sempervirens',
@@ -2059,6 +2150,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Îndepărtarea florilor uscate prelungește înflorirea; protecție iarna cu un strat de mulci.',
     commonProblems: 'Foarte puține — specie rustică și tolerantă.',
     propagation: 'Din butași sau prin diviziune, primăvara sau toamna.',
+    images: ['images/enciclopedie/iberis-sempervirens_iberis-sempervirens_1.jpg'],
   },
   {
     id: 'thymus-vulgaris',
@@ -2083,6 +2175,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Îndepărtează florile uscate pentru a stimula frunzișul decorativ ulterior.',
     commonProblems: 'Foarte puține — specie rustică și aromatică, rareori atacată de dăunători.',
     propagation: 'Prin diviziune sau din butași, primăvara.',
+    images: ['images/enciclopedie/thymus-vulgaris_thymus-vulgaris_1.jpg'],
   },
   {
     id: 'leontopodium-alpinum',
@@ -2107,6 +2200,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Sol curat de buruieni, îndepărtarea florilor uscate.',
     commonProblems: 'Foarte puține — specie montană rustică.',
     propagation: 'Din semințe, cu germinație uneori lentă.',
+    images: ['images/enciclopedie/leontopodium-alpinum_leontopodium-alpinum_1.jpg'],
   },
   {
     id: 'alyssum-saxatile',
@@ -2131,6 +2225,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Minimă — crește bine pe sol sărac, fără fertilizare intensivă.',
     commonProblems: 'Foarte puține — specie rustică și tolerantă la secetă.',
     propagation: 'Din butași sau semințe, primăvara.',
+    images: ['images/enciclopedie/alyssum-saxatile_alyssum-saxatile_1.jpg'],
   },
   {
     id: 'cerastium-tomentosum',
@@ -2155,6 +2250,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Îndepărtarea florilor uscate determină înflorire abundentă și prelungește perioada de înflorire.',
     commonProblems: 'Foarte puține — rezistă bine la temperaturi scăzute.',
     propagation: 'Prin diviziune sau din butași.',
+    images: ['images/enciclopedie/cerastium-tomentosum_cerastium-tomentosum_1.jpg'],
   },
   // ─── Plante cățărătoare ─────────────────────────────
   {
@@ -2180,6 +2276,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Necesită suport de susținere din start; sensibilă la vânt puternic.',
     commonProblems: 'Sensibilă la secetă și vânt — un loc adăpostit previne majoritatea problemelor.',
     propagation: 'Din butași semilemnificați vara.',
+    images: ['images/enciclopedie/clematis-jackmanii_clematis-x-jackmanii_1.jpg'],
   },
   {
     id: 'ipomoea-purpurea',
@@ -2204,6 +2301,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Are nevoie de tutorare pe suporți de susținere de la început.',
     commonProblems: 'Foarte puține — specie rezistentă și ușor de crescut.',
     propagation: 'Din semințe, semănate direct la loc definitiv, după ultimul îngheț.',
+    images: ['images/enciclopedie/ipomoea-purpurea_ipomoea-purpurea_1.jpg'],
   },
   {
     id: 'lathyrus-odoratus',
@@ -2228,6 +2326,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Susținere obligatorie pe suporți; udări moderate fără să uzi frunzișul.',
     commonProblems: 'Căldura mare și seceta diminuează calitatea florilor și opresc creșterea.',
     propagation: 'Din semințe, semănate direct sau ca răsad primăvara devreme.',
+    images: ['images/enciclopedie/lathyrus-odoratus_lathyrus-odoratus_1.jpg'],
   },
   {
     id: 'campsis-radicans',
@@ -2252,6 +2351,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Se dezvoltă aproape invaziv — ține-o sub control, mai ales lângă plante mai delicate.',
     commonProblems: 'Poate deveni invazivă dacă nu e ținută sub control activ.',
     propagation: 'Din butași sau lăstari cu rădăcini proprii, separați de planta mamă.',
+    images: ['images/enciclopedie/campsis-radicans_campsis-radicans_1.jpg'],
   },
   {
     id: 'parthenocissus-quinquefolia',
@@ -2276,6 +2376,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tunde-o pentru a controla extinderea pe ziduri sau clădiri.',
     commonProblems: 'Fructele sunt toxice — atenție dacă ai copii mici sau animale de companie.',
     propagation: 'Din butași de tulpină, puși direct în sol umed.',
+    images: ['images/enciclopedie/parthenocissus-quinquefolia_parthenocissus-quinquefolia_1.jpg'],
   },
   // ─── Plante de baltă & acvatice ─────────────────────
   {
@@ -2301,6 +2402,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Verifică adâncimea de apă recomandată pentru soiul exact — variază enorm între soiuri.',
     commonProblems: 'Nu înflorește dacă apa e prea adâncă sau prea rece pentru soiul respectiv.',
     propagation: 'Prin diviziunea rizomului, primăvara.',
+    images: ['images/enciclopedie/nymphaea-alba_nymphaea-alba_1.jpg'],
   },
   {
     id: 'iris-pseudacorus',
@@ -2325,6 +2427,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Udă și după înflorire — continuă să decoreze prin frunziș tot sezonul.',
     commonProblems: 'Foarte puține — specie rezistentă, nu necesită protecție de iarnă.',
     propagation: 'Prin diviziunea rizomului, toamna sau primăvara.',
+    images: ['images/enciclopedie/iris-pseudacorus_iris-pseudacorus_1.jpg'],
   },
   {
     id: 'typha-latifolia',
@@ -2349,6 +2452,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Plantează-o obligatoriu în container, nu direct în pământ, dacă vrei să-i limitezi extinderea.',
     commonProblems: 'Sistemul radicular profund și greu de îndepărtat odată instalat — invadează rapid dacă nu e ținută sub control.',
     propagation: 'Prin diviziunea rizomului.',
+    images: ['images/enciclopedie/typha-latifolia_typha-latifolia_1.jpg'],
   },
   {
     id: 'gunnera-manicata',
@@ -2373,6 +2477,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Nu rezistă la temperaturi sub 4°C — protejează sau scoate din pământ peste iarnă, în funcție de severitatea gerului local.',
     commonProblems: 'Sensibilă la ger — necesită protecție serioasă de iarnă în climatul românesc.',
     propagation: 'Prin diviziunea tufei sau din semințe, ambele lente.',
+    images: ['images/enciclopedie/gunnera-manicata_gunnera-manicata_1.jpg'],
   },
   {
     id: 'butomus-umbellatus',
@@ -2397,6 +2502,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Minimă — se dezvoltă bine la marginea apei fără îngrijire complicată.',
     commonProblems: 'Foarte puține — specie rustică de zonă umedă.',
     propagation: 'Prin diviziunea rizomului.',
+    images: ['images/enciclopedie/butomus-umbellatus_butomus-umbellatus_1.jpg'],
   },
   {
     id: 'acorus-calamus',
@@ -2421,6 +2527,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Minimă — potrivită pentru zone mlăștinoase fără altă îngrijire.',
     commonProblems: 'Foarte puține probleme reale.',
     propagation: 'Prin diviziunea rizomului.',
+    images: ['images/enciclopedie/acorus-calamus_acorus-calamus_1.jpg'],
   },
   // ─── Frunziș decorativ & graminee ornamentale ───────
   {
@@ -2446,6 +2553,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Trebuie ținută sub control — se înmulțește repede și poate deveni invazivă.',
     commonProblems: 'Poate deveni invazivă dacă nu e ținută sub control.',
     propagation: 'Prin diviziunea tufei, primăvara.',
+    images: ['images/enciclopedie/miscanthus-sinensis_miscanthus-sinensis_1.jpg'],
   },
   {
     id: 'festuca-glauca',
@@ -2470,6 +2578,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Toamna, taie la nivelul solului; divide planta la 2-3 ani, altfel se sufocă din interior.',
     commonProblems: 'Se depreciază vizibil pe sol umed sau prea bogat.',
     propagation: 'Prin diviziunea tufei, toamna sau primăvara.',
+    images: ['images/enciclopedie/festuca-glauca_festuca-glauca_1.jpg'],
   },
   {
     id: 'stipa-tenuissima',
@@ -2494,6 +2603,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tundere anuală, la începutul primăverii.',
     commonProblems: 'Foarte puține — specie rustică, tolerantă la secetă.',
     propagation: 'Din semințe sau prin diviziune.',
+    images: ['images/enciclopedie/stipa-tenuissima_stipa-tenuissima_1.jpg'],
   },
   {
     id: 'heuchera-spp',
@@ -2518,6 +2628,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Divide tufele la 3-4 ani, când centrul începe să se rărească.',
     commonProblems: 'Rareori probleme fungice pe sol prea umed sau compact.',
     propagation: 'Prin diviziunea tufei, primăvara sau toamna.',
+    images: ['images/enciclopedie/heuchera-spp_heuchera-spp_1.jpg'],
   },
   {
     id: 'coleus-blumei',
@@ -2542,6 +2653,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Ciupește tufa regulat pentru ramificare mai bogată.',
     commonProblems: 'Foarte puține — specie ușor de crescut.',
     propagation: 'Din butași de tulpină, foarte ușor de înrădăcinat în apă.',
+    images: ['images/enciclopedie/coleus-blumei_coleus-blumei_1.jpg'],
   },
   {
     id: 'hakonechloa-macra',
@@ -2566,6 +2678,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Taie frunzișul uscat toamna târziu sau primăvara devreme.',
     commonProblems: 'Foarte puține — una din puținele graminee tolerante la umbră.',
     propagation: 'Prin diviziunea tufei, primăvara.',
+    images: ['images/enciclopedie/hakonechloa-macra_hakonechloa-macra_1.jpg'],
   },
   // ─── Conifere suplimentare (specii proeminente omise inițial) ───
   {
@@ -2591,6 +2704,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Practic zero — puține boli și dăunători, potrivit pentru aliniamente stradale.',
     commonProblems: 'Foarte puține — una din cele mai rezistente specii de arbori la poluare și boli.',
     propagation: 'Din semințe (stratificare) sau din butași pentru păstrarea sexului dorit (exemplare mascule).',
+    images: ['images/enciclopedie/ginkgo-biloba_ginkgo-biloba_1.jpg'],
   },
   {
     id: 'cedrus-atlantica',
@@ -2615,6 +2729,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Creștere lentă; nu necesită tundere dacă e cultivat ca exemplar solitar.',
     commonProblems: 'Foarte puține la maturitate; sensibil la extreme termice în primii ani.',
     propagation: 'Din semințe — metoda comercială standard pentru puieți.',
+    images: ['images/enciclopedie/cedrus-atlantica_cedrus-atlantica_1.jpg'],
   },
   {
     id: 'cupressocyparis-leylandii',
@@ -2639,6 +2754,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tundere de 2-3 ori pe an — creșterea foarte rapidă cere control constant al formei.',
     commonProblems: 'Rădăcina superficială o face vulnerabilă la doborâturi de vânt pe sol prea umed.',
     propagation: 'Din butași semilemnificați — metoda comercială standard, singura fiabilă (nu produce semințe viabile fiind hibrid).',
+    images: ['images/enciclopedie/cupressocyparis-leylandii_cupressocyparis-x-leylandii_1.jpg'],
   },
   {
     id: 'larix-decidua',
@@ -2663,6 +2779,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Creștere rapidă în tinerețe; fără tundere necesară ca exemplar solitar.',
     commonProblems: 'Foarte puține — specie robustă montană.',
     propagation: 'Din semințe, cu stratificare la rece.',
+    images: ['images/enciclopedie/larix-decidua_larix-decidua_1.jpg'],
   },
   {
     id: 'abies-alba',
@@ -2687,6 +2804,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Fără tundere; sensibil la poluare, nu pentru curți urbane.',
     commonProblems: 'Sensibil la poluare; nu suportă inundațiile sau solurile mlăștinoase.',
     propagation: 'Din semințe — metoda comercială standard pentru puieți.',
+    images: ['images/enciclopedie/abies-alba_abies-alba_1.jpg'],
   },
   {
     id: 'abies-concolor',
@@ -2711,6 +2829,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Necesită soare direct pentru a-și păstra densitatea frunzișului.',
     commonProblems: 'Sensibil la îngheț și arșiță în tinerețe; se degarnisește la umbră.',
     propagation: 'Din semințe.',
+    images: ['images/enciclopedie/abies-concolor_abies-concolor_1.jpg'],
   },
   {
     id: 'cedrus-deodara',
@@ -2735,6 +2854,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Creștere lentă; climat moderat, fără extreme termice.',
     commonProblems: 'Sensibil la geruri puternice — pierde ace, dar se reface.',
     propagation: 'Din semințe.',
+    images: ['images/enciclopedie/cedrus-deodara_cedrus-deodara_1.jpg'],
   },
   {
     id: 'chamaecyparis-lawsoniana',
@@ -2759,6 +2879,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Creștere lentă în tinerețe, apoi se accelerează.',
     commonProblems: 'Foarte puține — specie tolerantă la poluare.',
     propagation: 'Din butași semilemnificați (pentru cultivaruri) sau din semințe.',
+    images: ['images/enciclopedie/chamaecyparis-lawsoniana_chamaecyparis-lawsoniana_1.jpg'],
   },
   {
     id: 'chamaecyparis-pisifera',
@@ -2783,6 +2904,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Creștere lentă.',
     commonProblems: 'Foarte puține.',
     propagation: 'Din butași semilemnificați.',
+    images: ['images/enciclopedie/chamaecyparis-pisifera_chamaecyparis-pisifera-boulevard_1.jpg'],
   },
   {
     id: 'cupressus-arizonica',
@@ -2807,6 +2929,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Suportă excelent tunderea pentru forme geometrice.',
     commonProblems: 'Nu rezistă la geruri puternice.',
     propagation: 'Din butași sau semințe.',
+    images: ['images/enciclopedie/cupressus-arizonica_cupressus-arizonica_1.jpg'],
   },
   {
     id: 'cupressus-sempervirens',
@@ -2831,6 +2954,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Protecție obligatorie de iarnă în primii ani, în climatul românesc.',
     commonProblems: 'Se acomodează greu la iernile românești fără protecție.',
     propagation: 'Din semințe sau butași.',
+    images: ['images/enciclopedie/cupressus-sempervirens_cupressus-sempervirens_1.jpg'],
   },
   {
     id: 'juniperus-sabina',
@@ -2855,6 +2979,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Practic zero — fixează bine solul pe pante.',
     commonProblems: 'Foarte puține.',
     propagation: 'Din butași semilemnificați.',
+    images: ['images/enciclopedie/juniperus-sabina_juniperus-sabina_1.jpg'],
   },
   {
     id: 'picea-abies',
@@ -2879,6 +3004,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Suportă tunderea; sensibil la doborâturi de vânt pe sol umed.',
     commonProblems: 'Rădăcină superficială, vulnerabilă la vânt puternic pe sol prea umed.',
     propagation: 'Din semințe.',
+    images: ['images/enciclopedie/picea-abies_picea-abies_1.jpg'],
   },
   {
     id: 'picea-orientalis',
@@ -2903,6 +3029,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Preferă zone protejate de vânt.',
     commonProblems: 'Foarte puține în condiții protejate.',
     propagation: 'Din semințe.',
+    images: ['images/enciclopedie/picea-orientalis_picea-orientalis_1.jpg'],
   },
   {
     id: 'pinus-griffithii',
@@ -2927,6 +3054,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Puieții necesită protecție la înghețuri târzii.',
     commonProblems: 'Puieții sensibili la înghețuri târzii.',
     propagation: 'Din semințe.',
+    images: ['images/enciclopedie/pinus-griffithii_pinus-griffithii_1.jpg'],
   },
   {
     id: 'pinus-nigra',
@@ -2951,6 +3079,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Practic zero — creștere rapidă în tinerețe.',
     commonProblems: 'Foarte puține — rezistentă la poluare.',
     propagation: 'Din semințe.',
+    images: ['images/enciclopedie/pinus-nigra_pinus-nigra_1.jpg'],
   },
   {
     id: 'pinus-strobus',
@@ -2975,6 +3104,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Are nevoie de apă suficientă — sensibilă la secetă.',
     commonProblems: 'Sensibilă la secetă prelungită.',
     propagation: 'Din semințe.',
+    images: ['images/enciclopedie/pinus-strobus_pinus-strobus_1.jpg'],
   },
   {
     id: 'pseudotsuga-menziesii',
@@ -2999,6 +3129,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Creștere rapidă; plantele tinere sensibile la îngheț.',
     commonProblems: 'Plantele tinere sensibile la îngheț; la maturitate rezistă bine.',
     propagation: 'Din semințe.',
+    images: ['images/enciclopedie/pseudotsuga-menziesii_pseudotsuga-menziesii_1.jpg'],
   },
   {
     id: 'thuja-orientalis',
@@ -3023,6 +3154,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Protecție la geruri puternice.',
     commonProblems: 'Sensibilă la ger.',
     propagation: 'Din butași semilemnificați.',
+    images: ['images/enciclopedie/thuja-orientalis_thuja-orientalis_1.jpg'],
   },
   {
     id: 'thuja-plicata',
@@ -3047,6 +3179,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Protecție obligatorie în primii ani față de ger și arșiță.',
     commonProblems: 'Sensibilă la ger și arșiță în tinerețe.',
     propagation: 'Din butași semilemnificați.',
+    images: ['images/enciclopedie/thuja-plicata_thuja-plicata_1.jpg'],
   },
   {
     id: 'tsuga-canadensis',
@@ -3071,6 +3204,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Suportă tunderea — potrivită pentru garduri vii înalte.',
     commonProblems: 'Nu suportă seceta prelungită.',
     propagation: 'Din semințe sau butași.',
+    images: ['images/enciclopedie/tsuga-canadensis_tsuga-canadensis_1.jpg'],
   },
   // ─── Copaci foioși suplimentari (arțari, stejari, sălcii, plopi) ───
   {
@@ -3096,6 +3230,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Suportă bine tunderea.',
     commonProblems: 'Foarte puține — specie rezistentă la fum și praf.',
     propagation: 'Din semințe.',
+    images: ['images/enciclopedie/acer-campestre_acer-campestre_1.jpg'],
   },
   {
     id: 'acer-ginnala',
@@ -3120,6 +3255,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Creștere rapidă în primii ani.',
     commonProblems: 'Foarte puține — rezistent la ger.',
     propagation: 'Din semințe sau butași.',
+    images: ['images/enciclopedie/acer-ginnala_acer-ginnala_1.jpg'],
   },
   {
     id: 'acer-negundo',
@@ -3144,6 +3280,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Creștere activă, aproape fără îngrijire.',
     commonProblems: 'Foarte puține.',
     propagation: 'Din semințe.',
+    images: ['images/enciclopedie/acer-negundo_acer-negundo_1.jpg'],
   },
   {
     id: 'acer-platanoides',
@@ -3168,6 +3305,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Puține cerințe.',
     commonProblems: 'Foarte puține.',
     propagation: 'Din semințe.',
+    images: ['images/enciclopedie/acer-platanoides_acer-platanoides_1.jpg'],
   },
   {
     id: 'acer-saccharinum',
@@ -3192,6 +3330,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Necesită apă suficientă — sensibil la secetă.',
     commonProblems: 'Sensibil la secetă prelungită.',
     propagation: 'Din semințe.',
+    images: ['images/enciclopedie/acer-saccharinum_acer-saccharinum_1.jpg'],
   },
   {
     id: 'ailanthus-altissima',
@@ -3216,6 +3355,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Ține sub control drajonarea — lăstari noi apar la distanță de trunchi.',
     commonProblems: 'Invaziv; efect alelopatic asupra plantelor din apropiere; rădăcină periculoasă pentru fundații.',
     propagation: 'Din drajoni (se înmulțește singur, adesea nedorit).',
+    images: ['images/enciclopedie/ailanthus-altissima_ailanthus-altissima_1.jpg'],
   },
   {
     id: 'carpinus-betulus',
@@ -3240,6 +3380,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Suportă foarte bine tunderea — clasic pentru garduri vii.',
     commonProblems: 'Sensibil la secetă prelungită.',
     propagation: 'Din semințe.',
+    images: ['images/enciclopedie/carpinus-betulus_carpinus-betulus_1.jpg'],
   },
   {
     id: 'fagus-sylvatica',
@@ -3264,6 +3405,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Frunzele ruginii persistă pe ramuri iarna — normal pentru specie.',
     commonProblems: 'Foarte sensibil la secetă și uscăciune.',
     propagation: 'Din semințe.',
+    images: ['images/enciclopedie/fagus-sylvatica_fagus-sylvatica_1.jpg'],
   },
   {
     id: 'gleditsia-triacanthos',
@@ -3288,6 +3430,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Puține cerințe — tolerantă la condiții variate.',
     commonProblems: 'Spinii pot răni — nerecomandată în curți cu copii mici.',
     propagation: 'Din semințe.',
+    images: ['images/enciclopedie/gleditsia-triacanthos_gleditsia-triacanthos_1.jpg'],
   },
   {
     id: 'platanus-hybrida',
@@ -3312,6 +3455,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Rezistență bună la geruri.',
     commonProblems: 'Foarte puține — specie robustă urbană.',
     propagation: 'Din semințe sau butași.',
+    images: ['images/enciclopedie/platanus-hybrida_platanus-hybrida_1.jpg'],
   },
   {
     id: 'populus-alba',
@@ -3336,6 +3480,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Drajonează puternic — poate necesita control al lăstarilor din jur.',
     commonProblems: 'Drajonare puternică, nedorită uneori.',
     propagation: 'Din drajoni sau butași.',
+    images: ['images/enciclopedie/populus-alba_populus-alba_1.jpg'],
   },
   {
     id: 'populus-nigra',
@@ -3360,6 +3505,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Plantează la distanță mare de construcții și rețele edilitare.',
     commonProblems: 'Sistem radicular extrem de invaziv — risc real pentru fundații și conducte.',
     propagation: 'Din butași.',
+    images: ['images/enciclopedie/populus-nigra_populus-nigra_1.jpg'],
   },
   {
     id: 'populus-tremula',
@@ -3384,6 +3530,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Puține cerințe.',
     commonProblems: 'Foarte puține.',
     propagation: 'Din drajoni sau semințe.',
+    images: ['images/enciclopedie/populus-tremula_populus-tremula_1.jpg'],
   },
   {
     id: 'quercus-robur',
@@ -3408,6 +3555,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Rezistent la gerurile de iarnă la maturitate.',
     commonProblems: 'Creștere lentă în primul deceniu — necesită răbdare.',
     propagation: 'Din ghindă (semințe), toamna.',
+    images: ['images/enciclopedie/quercus-robur_quercus-robur_1.jpg'],
   },
   {
     id: 'quercus-rubra',
@@ -3432,6 +3580,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Creșteri active până la 30-40 de ani.',
     commonProblems: 'Foarte puține — evită înghețurile târzii prin pornirea tardivă în vegetație.',
     propagation: 'Din ghindă, toamna.',
+    images: ['images/enciclopedie/quercus-rubra_quercus-rubra_1.jpg'],
   },
   {
     id: 'salix-babylonica',
@@ -3456,6 +3605,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Plantează departe de canalizare sau fundații.',
     commonProblems: 'Rădăcină invazivă pentru rețele edilitare.',
     propagation: 'Din butași — se prind foarte ușor.',
+    images: ['images/enciclopedie/salix-babylonica_salix-babylonica_1.jpg'],
   },
   {
     id: 'salix-caprea',
@@ -3480,6 +3630,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Lăstărește puternic — poate necesita control.',
     commonProblems: 'Foarte puține.',
     propagation: 'Din butași.',
+    images: ['images/enciclopedie/salix-caprea_salix-caprea_1.jpg'],
   },
   {
     id: 'salix-matsudana',
@@ -3504,6 +3655,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Drajonează abundent.',
     commonProblems: 'Foarte puține.',
     propagation: 'Din butași.',
+    images: ['images/enciclopedie/salix-matsudana_salix-matsudana-tortuosa_1.jpg'],
   },
   {
     id: 'salix-purpurea',
@@ -3528,6 +3680,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Practic zero.',
     commonProblems: 'Foarte puține.',
     propagation: 'Din butași — se prind foarte ușor.',
+    images: ['images/enciclopedie/salix-purpurea_salix-purpurea_1.jpg'],
   },
   {
     id: 'salix-viminalis',
@@ -3552,6 +3705,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Practic zero.',
     commonProblems: 'Foarte puține.',
     propagation: 'Din butași.',
+    images: ['images/enciclopedie/salix-viminalis_salix-viminalis_1.jpg'],
   },
   {
     id: 'ulmus-glabra',
@@ -3576,6 +3730,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Puține cerințe dincolo de umiditate constantă.',
     commonProblems: 'Vulnerabil la boala olmului (grafioza), ca majoritatea speciilor de ulm.',
     propagation: 'Din semințe.',
+    images: ['images/enciclopedie/ulmus-glabra_ulmus-glabra_1.jpg'],
   },
   // ─── Copaci cu flori spectaculoase suplimentari ────
   {
@@ -3601,6 +3756,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Zone calde, ferite de îngheț.',
     commonProblems: 'Sensibilă la îngheț.',
     propagation: 'Din semințe sau butași de rădăcină.',
+    images: ['images/enciclopedie/koelreuteria-paniculata_koelreuteria-paniculata_1.jpg'],
   },
   {
     id: 'liriodendron-tulipifera',
@@ -3625,6 +3781,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Vegetează bine lângă ape, dar nu tolerează excesul de apă stagnantă.',
     commonProblems: 'Nu suportă apa stagnantă la rădăcină.',
     propagation: 'Din semințe.',
+    images: ['images/enciclopedie/liriodendron-tulipifera_liriodendron-tulipifera_1.jpg'],
   },
   {
     id: 'paulownia-tomentosa',
@@ -3649,6 +3806,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Sistemul radicular profund împiedică eroziunea solului — plus practic pe pante.',
     commonProblems: 'Sensibilitate foarte mare la ger și înghețuri timpurii — protejează exemplarele tinere în primele ierni.',
     propagation: 'Din drajoni sau butași de rădăcină.',
+    images: ['images/enciclopedie/paulownia-tomentosa_paulownia-tomentosa_1.jpg'],
   },
   {
     id: 'prunus-cerasifera',
@@ -3673,6 +3831,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Lăstărește viguros, creștere rapidă.',
     commonProblems: 'Foarte puține — una din puținele specii care preferă condiții dificile de sol.',
     propagation: 'Prin altoire sau din butași.',
+    images: ['images/enciclopedie/prunus-cerasifera_prunus-cerasifera-atropurpurea_1.jpg'],
   },
   // ─── Arbuști ornamentali suplimentari ──────────────
   {
@@ -3698,6 +3857,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Suportă tunderea — folosit frecvent la formarea gardurilor vii.',
     commonProblems: 'Toxică — atenție la copii mici și animale de companie.',
     propagation: 'Din butași semilemnificați vara.',
+    images: ['images/enciclopedie/prunus-laurocerasus_prunus-laurocerasus_1.jpg'],
   },
   {
     id: 'photinia-fraseri',
@@ -3722,6 +3882,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Exemplarele tinere suferă sub -15°C — protecție în ierni foarte geroase.',
     commonProblems: 'Sensibilă la exces de umiditate; exemplare tinere sensibile la geruri severe.',
     propagation: 'Din butași semilemnificați vara.',
+    images: ['images/enciclopedie/photinia-fraseri_photinia-x-fraseri_1.jpg'],
   },
   {
     id: 'prunus-lusitanica',
@@ -3746,6 +3907,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Suportă foarte bine tunderea.',
     commonProblems: 'Foarte puține — bine adaptat climatului românesc.',
     propagation: 'Din butași semilemnificați.',
+    images: ['images/enciclopedie/prunus-lusitanica_prunus-lusitanica_1.jpg'],
   },
   {
     id: 'ligustrum-japonicum',
@@ -3770,6 +3932,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Suportă foarte bine tunderea.',
     commonProblems: 'Foarte puține — bine adaptat climatului românesc.',
     propagation: 'Din butași semilemnificați.',
+    images: ['images/enciclopedie/ligustrum-japonicum_ligustrum-japonicum_1.jpg'],
   },
   {
     id: 'ilex-aquifolium',
@@ -3794,6 +3957,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Protejează de vânturi puternice; afectat de înghețurile târzii.',
     commonProblems: 'Are nevoie de ambele sexe plantate împreună pentru fructe.',
     propagation: 'Din butași semilemnificați toamna.',
+    images: ['images/enciclopedie/ilex-aquifolium_ilex-aquifolium_1.jpg'],
   },
   {
     id: 'berberis-julianae',
@@ -3818,6 +3982,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Rezistentă la ger și fum.',
     commonProblems: 'Spinii pot răni — atenție la copii mici.',
     propagation: 'Din butași semilemnificați.',
+    images: ['images/enciclopedie/berberis-julianae_berberis-julianae_1.jpg'],
   },
   {
     id: 'chaenomeles-japonica',
@@ -3842,6 +4007,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Creștere activă în tinerețe.',
     commonProblems: 'Cerințe mari de apă din cauza rădăcinii superficiale.',
     propagation: 'Din butași sau marcotaj.',
+    images: ['images/enciclopedie/chaenomeles-japonica_chaenomeles-japonica_1.jpg'],
   },
   {
     id: 'kerria-japonica',
@@ -3866,6 +4032,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Lăstărește viguros.',
     commonProblems: 'Foarte puține.',
     propagation: 'Din butași sau prin diviziune.',
+    images: ['images/enciclopedie/kerria-japonica_kerria-japonica_1.jpg'],
   },
   {
     id: 'laburnum-anagyroides',
@@ -3890,6 +4057,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Rezistență la praf, fum și gaze.',
     commonProblems: 'Toxică în întregime — atenție maximă la copii și animale.',
     propagation: 'Din semințe.',
+    images: ['images/enciclopedie/laburnum-anagyroides_laburnum-anagyroides_1.jpg'],
   },
   {
     id: 'potentilla-fruticosa',
@@ -3914,6 +4082,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Rezistență bună la temperaturile scăzute.',
     commonProblems: 'Nu suportă stagnările de apă.',
     propagation: 'Din butași semilemnificați.',
+    images: ['images/enciclopedie/potentilla-fruticosa_potentilla-fruticosa_1.jpg'],
   },
   {
     id: 'hibiscus-syriacus',
@@ -3938,6 +4107,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Înghețurile timpurii afectează lujerii tineri.',
     commonProblems: 'Foarte puține la maturitate.',
     propagation: 'Din butași semilemnificați vara.',
+    images: ['images/enciclopedie/hibiscus-syriacus_hibiscus-syriacus_1.jpg'],
   },
   {
     id: 'cotoneaster-horizontalis',
@@ -3962,6 +4132,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Creștere foarte rapidă.',
     commonProblems: 'Foarte puține.',
     propagation: 'Din butași semilemnificați.',
+    images: ['images/enciclopedie/cotoneaster-horizontalis_cotoneaster-horizontalis_1.jpg'],
   },
   {
     id: 'cotoneaster-dammeri',
@@ -3986,6 +4157,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Practic zero.',
     commonProblems: 'Foarte puține.',
     propagation: 'Din butași semilemnificați.',
+    images: ['images/enciclopedie/cotoneaster-dammeri_cotoneaster-dammeri_1.jpg'],
   },
   {
     id: 'elaeagnus-angustifolia',
@@ -4010,6 +4182,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Practic zero — specie fixatoare de teren.',
     commonProblems: 'Foarte puține.',
     propagation: 'Din semințe sau butași.',
+    images: ['images/enciclopedie/elaeagnus-angustifolia_elaeagnus-angustifolia_1.jpg'],
   },
   {
     id: 'rhus-typhina',
@@ -4034,6 +4207,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Creștere activă.',
     commonProblems: 'Foarte puține.',
     propagation: 'Din drajoni sau butași de rădăcină.',
+    images: ['images/enciclopedie/rhus-typhina_rhus-typhina_1.jpg'],
   },
   {
     id: 'euonymus-fortunei',
@@ -4058,6 +4232,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Creștere lentă; puțin rezistentă la îngheț.',
     commonProblems: 'Puțin rezistentă la geruri puternice.',
     propagation: 'Din butași.',
+    images: ['images/enciclopedie/euonymus-fortunei_euonymus-fortunei_1.jpg'],
   },
   {
     id: 'mahonia-aquifolium',
@@ -4082,6 +4257,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Creștere lentă; specie rustică.',
     commonProblems: 'Foarte puține.',
     propagation: 'Din semințe sau butași.',
+    images: ['images/enciclopedie/mahonia-aquifolium_mahonia-aquifolium_1.jpg'],
   },
   {
     id: 'lonicera-nitida',
@@ -4106,6 +4282,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Creștere medie spre rapidă; oferă decor de iarnă prin foliajul persistent.',
     commonProblems: 'Foarte puține.',
     propagation: 'Din butași.',
+    images: ['images/enciclopedie/lonicera-nitida_lonicera-nitida_1.jpg'],
   },
   {
     id: 'lonicera-caprifolium',
@@ -4130,6 +4307,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Creștere medie; pretenții reduse față de sol.',
     commonProblems: 'Foarte puține.',
     propagation: 'Din butași sau marcotaj.',
+    images: ['images/enciclopedie/lonicera-caprifolium_lonicera-caprifolium_1.jpg'],
   },
   {
     id: 'parthenocissus-tricuspidata',
@@ -4154,6 +4332,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tunde-o pentru a controla extinderea.',
     commonProblems: 'Foarte puține.',
     propagation: 'Din butași de tulpină.',
+    images: ['images/enciclopedie/parthenocissus-tricuspidata_parthenocissus-tricuspidata_1.jpg'],
   },
   // ─── Flori bulboase suplimentare (2) ────────────────
   {
@@ -4179,6 +4358,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Mulcire cu mraniță; respectă strict adâncimea de plantare recomandată.',
     commonProblems: 'Neînflorire din plantare prea superficială.',
     propagation: 'Prin bulbi secundari.',
+    images: ['images/enciclopedie/fritillaria-imperialis_fritillaria-imperialis_1.jpg'],
   },
   {
     id: 'galanthus-plicatus',
@@ -4203,6 +4383,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Repaus complet vara — normal pentru specie.',
     commonProblems: 'Foarte puține.',
     propagation: 'Prin diviziunea ciorchinilor de bulbi.',
+    images: ['images/enciclopedie/galanthus-plicatus_galanthus-plicatus_1.jpg'],
   },
   {
     id: 'agapanthus-africanus',
@@ -4227,6 +4408,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Îndepărtarea florilor uscate.',
     commonProblems: 'Foarte puține.',
     propagation: 'Prin diviziunea bulbilor, primăvara.',
+    images: ['images/enciclopedie/agapanthus-africanus_agapanthus-africanus_1.jpg'],
   },
   {
     id: 'lilium-candidum',
@@ -4251,6 +4433,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Nu necesită scoaterea bulbilor toamna — rezistă în câmp.',
     commonProblems: 'Florile se decolorează la soare direct puternic.',
     propagation: 'Prin bulbi secundari.',
+    images: ['images/enciclopedie/lilium-candidum_lilium-candidum_1.jpg'],
   },
   {
     id: 'ranunculus-asiaticus',
@@ -4275,6 +4458,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Necesită protecție peste iarnă.',
     commonProblems: 'Uscarea prematură a frunzelor pe vreme foarte caldă sau uscată.',
     propagation: 'Prin bulbi secundari.',
+    images: ['images/enciclopedie/ranunculus-asiaticus_ranunculus-asiaticus_1.jpg'],
   },
   {
     id: 'scilla-bifolia',
@@ -4299,6 +4483,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Protecție cu frunze sau paie în sezonul rece.',
     commonProblems: 'Foarte puține.',
     propagation: 'Prin diviziunea bulbilor.',
+    images: ['images/enciclopedie/scilla-bifolia_scilla-bifolia_1.jpg'],
   },
   {
     id: 'canna-indica',
@@ -4323,6 +4508,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Protocol de iernare: rizomii se scot toamna, se scurtează partea aeriană și se depozitează protejați.',
     commonProblems: 'Nu rezistă la ger — rizomii trebuie scoși obligatoriu toamna.',
     propagation: 'Prin diviziunea rizomilor.',
+    images: ['images/enciclopedie/canna-indica_canna-indica_1.jpg'],
   },
   {
     id: 'polianthes-tuberosa',
@@ -4347,6 +4533,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Bulbii se scot toamna pentru depozitare protejată.',
     commonProblems: 'Sensibilă atât la secetă prelungită cât și la stagnarea apei.',
     propagation: 'Prin bulbi secundari.',
+    images: ['images/enciclopedie/polianthes-tuberosa_polianthes-tuberosa_1.jpg'],
   },
   {
     id: 'colchicum-autumnale',
@@ -4371,6 +4558,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Suportă bine temperaturile scăzute.',
     commonProblems: 'Nu suportă seceta.',
     propagation: 'Prin bulbi secundari.',
+    images: ['images/enciclopedie/colchicum-autumnale_colchicum-autumnale_1.jpg'],
   },
   {
     id: 'iris-pumila',
@@ -4395,6 +4583,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Sol afânat, lipsit de buruieni.',
     commonProblems: 'Foarte puține.',
     propagation: 'Prin fragmentarea rizomilor, eliminând porțiunile îmbătrânite.',
+    images: ['images/enciclopedie/iris-pumila_iris-pumila_1.jpg'],
   },
   // ─── Flori perene suplimentare (2) ──────────────────
   {
@@ -4420,6 +4609,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'În octombrie, taie planta complet de la bază.',
     commonProblems: 'Foarte puține.',
     propagation: 'Prin diviziunea tufei.',
+    images: ['images/enciclopedie/aster-alpinus_aster-alpinus_1.jpg'],
   },
   {
     id: 'aster-novi-belgii',
@@ -4444,6 +4634,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Ciupire, bobocire, tutorare; transplantare la 3-4 ani; combaterea făinării cu fungicid.',
     commonProblems: 'Susceptibilă la făinare; epuizează solul rapid.',
     propagation: 'Prin diviziunea tufei la 3-4 ani.',
+    images: ['images/enciclopedie/aster-novi-belgii_aster-novi-belgii_1.jpg'],
   },
   {
     id: 'dicentra-spectabilis',
@@ -4468,6 +4659,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Taie complet la nivelul solului după înflorire.',
     commonProblems: 'Foarte puține.',
     propagation: 'Prin diviziunea tufei, primăvara sau toamna.',
+    images: ['images/enciclopedie/dicentra-spectabilis_dicentra-spectabilis_1.jpg'],
   },
   {
     id: 'gaillardia-aristata',
@@ -4492,6 +4684,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Imediat după înflorire, taie la nivelul solului pentru vigoare mai mare.',
     commonProblems: 'Foarte puține — una din cele mai rezistente perene.',
     propagation: 'Prin diviziunea tufei sau din semințe.',
+    images: ['images/enciclopedie/gaillardia-aristata_gaillardia-aristata_1.jpg'],
   },
   {
     id: 'geranium-cinereum',
@@ -4516,6 +4709,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Îndepărtează florile ofilite; toamna, taie tufa complet de la bază.',
     commonProblems: 'Foarte puține.',
     propagation: 'Prin diviziunea tufei.',
+    images: ['images/enciclopedie/geranium-cinereum_geranium-cinereum_1.jpg'],
   },
   {
     id: 'helleborus-odorus',
@@ -4540,6 +4734,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Îndepărtarea melcilor de grădină; sol curat de buruieni.',
     commonProblems: 'Toxică — manipulează cu mănuși.',
     propagation: 'Prin diviziunea tufei sau din semințe.',
+    images: ['images/enciclopedie/helleborus-odorus_helleborus-odorus_1.jpg'],
   },
   {
     id: 'lupinus-polyphyllus',
@@ -4564,6 +4759,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Îndepărtarea florilor și frunzelor uscate.',
     commonProblems: 'Foarte puține.',
     propagation: 'Din semințe sau prin diviziune.',
+    images: ['images/enciclopedie/lupinus-polyphyllus_lupinus-polyphyllus_1.jpg'],
   },
   {
     id: 'physostegia-virginiana',
@@ -4588,6 +4784,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Divizarea tufelor la 3-4 ani; mulcire cu mraniță; toamna, scurtare la 10-20cm.',
     commonProblems: 'Suferă pe soluri uscate.',
     propagation: 'Prin diviziunea tufei la 3-4 ani.',
+    images: ['images/enciclopedie/physostegia-virginiana_physostegia-virginiana_1.jpg'],
   },
   {
     id: 'yucca-filamentosa',
@@ -4612,6 +4809,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Stropește frunzele dimineața; păstrează solul afânat și curat de buruieni.',
     commonProblems: 'Foarte puține — una din cele mai rezistente perene la secetă.',
     propagation: 'Prin diviziune sau din drajoni.',
+    images: ['images/enciclopedie/yucca-filamentosa_yucca-filamentosa_1.jpg'],
   },
   // ─── Stâncărie suplimentară ─────────────────────────
   {
@@ -4637,6 +4835,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Îndepărtează florile uscate; sol curat de buruieni.',
     commonProblems: 'Foarte puține.',
     propagation: 'Din semințe sau prin diviziune.',
+    images: ['images/enciclopedie/adonis-vernalis_adonis-vernalis_1.jpg'],
   },
   {
     id: 'armeria-maritima',
@@ -4661,6 +4860,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Îndepărtează florile uscate.',
     commonProblems: 'Foarte puține.',
     propagation: 'Din butași recoltați primăvara sau toamna, sau din semințe.',
+    images: ['images/enciclopedie/armeria-maritima_armeria-maritima_1.jpg'],
   },
   {
     id: 'gentiana-acaulis',
@@ -4685,6 +4885,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Îndepărtarea florilor uscate.',
     commonProblems: 'Foarte puține în condiții potrivite.',
     propagation: 'Prin diviziune sau din semințe.',
+    images: ['images/enciclopedie/gentiana-acaulis_gentiana-acaulis_1.jpg'],
   },
   {
     id: 'oxalis-adenophylla',
@@ -4709,6 +4910,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Sol curat de buruieni, îndepărtarea florilor uscate.',
     commonProblems: 'Foarte puține.',
     propagation: 'Prin diviziune.',
+    images: ['images/enciclopedie/oxalis-adenophylla_oxalis-adenophylla_1.jpg'],
   },
   {
     id: 'papaver-alpinum',
@@ -4733,6 +4935,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Taie lăstarii florali după înflorire pentru un al doilea val.',
     commonProblems: 'Foarte puține.',
     propagation: 'Din semințe.',
+    images: ['images/enciclopedie/papaver-alpinum_papaver-alpinum_1.jpg'],
   },
   {
     id: 'echeveria-elegans',
@@ -4757,6 +4960,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Adu-o la adăpost iarna — nu rezistă la ger.',
     commonProblems: 'Nu suportă temperaturi sub 7°C.',
     propagation: 'Din lăstari laterali sau frunze.',
+    images: ['images/enciclopedie/echeveria-elegans_echeveria-elegans_1.jpg'],
   },
   {
     id: 'sanvitalia-procumbens',
@@ -4781,6 +4985,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Semănat direct la loc definitiv — nu se recomandă răsad mutat.',
     commonProblems: 'Suferă la transplantare — seamănă direct.',
     propagation: 'Din semințe, direct la loc definitiv.',
+    images: ['images/enciclopedie/sanvitalia-procumbens_sanvitalia-procumbens_1.jpg'],
   },
   // ─── Frunziș decorativ & graminee suplimentare ──────
   {
@@ -4806,6 +5011,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Menține solul constant umed.',
     commonProblems: 'Rezistentă la boli și dăunători.',
     propagation: 'Din butași de tulpină.',
+    images: ['images/enciclopedie/alternanthera-dentata_alternanthera-dentata_1.jpg'],
   },
   {
     id: 'cineraria-maritima',
@@ -4830,6 +5036,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Plantele tinere au nevoie de udări zilnice până se instalează.',
     commonProblems: 'Foarte puține.',
     propagation: 'Din semințe.',
+    images: ['images/enciclopedie/cineraria-maritima_cineraria-maritima_1.jpg'],
   },
   {
     id: 'iresine-herbstii',
@@ -4854,6 +5061,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Udări suplimentare în perioada de creștere.',
     commonProblems: 'Foarte puține.',
     propagation: 'Din butași.',
+    images: ['images/enciclopedie/iresine-herbstii_iresine-herbstii_1.jpg'],
   },
   {
     id: 'santolina-chamaecyparissus',
@@ -4878,6 +5086,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Îndepărtează tijele florale după uscarea florilor.',
     commonProblems: 'Foarte puține.',
     propagation: 'Din butași.',
+    images: ['images/enciclopedie/santolina-chamaecyparissus_santolina-chamaecyparissus_1.jpg'],
   },
   {
     id: 'cortaderia-selloana',
@@ -4902,6 +5111,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tăiere anuală la nivelul solului, primăvara.',
     commonProblems: 'Foarte puține.',
     propagation: 'Prin diviziunea tufei.',
+    images: ['images/enciclopedie/cortaderia-selloana_cortaderia-selloana_1.jpg'],
   },
   {
     id: 'imperata-cylindrica',
@@ -4926,6 +5136,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tăiere la nivelul solului toamna.',
     commonProblems: 'Foarte puține.',
     propagation: 'Prin diviziunea tufei.',
+    images: ['images/enciclopedie/imperata-cylindrica_imperata-cylindrica-red-baron_1.jpg'],
   },
   {
     id: 'calamagrostis-karl-foerster',
@@ -4950,6 +5161,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tăiere la nivelul solului primăvara.',
     commonProblems: 'Foarte puține.',
     propagation: 'Prin diviziunea tufei.',
+    images: ['images/enciclopedie/calamagrostis-karl-foerster_calamagrostis-x-acutiflora-karl-foerster_1.jpg'],
   },
   {
     id: 'pennisetum-alopecuroides',
@@ -4974,6 +5186,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tăiere la nivelul solului primăvara.',
     commonProblems: 'Foarte puține.',
     propagation: 'Prin diviziunea tufei.',
+    images: ['images/enciclopedie/pennisetum-alopecuroides_pennisetum-alopecuroides-little-bunny_1.jpg'],
   },
   // ─── Plante de baltă & acvatice suplimentare ────────
   {
@@ -4999,6 +5212,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Continuă să decoreze prin frunziș tot sezonul.',
     commonProblems: 'Foarte puține.',
     propagation: 'Prin diviziunea rizomului.',
+    images: ['images/enciclopedie/iris-sibirica_iris-sibirica_1.jpg'],
   },
   {
     id: 'nelumbo-nucifera',
@@ -5023,6 +5237,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Nu rezistă afară în climat temperat fără protecție serioasă — se păstrează în spații protejate iarna.',
     commonProblems: 'Necesită protecție serioasă de iarnă în climatul românesc.',
     propagation: 'Prin diviziunea rizomului.',
+    images: ['images/enciclopedie/nelumbo-nucifera_nelumbo-nucifera_1.jpg'],
   },
   {
     id: 'nuphar-lutea',
@@ -5047,6 +5262,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Plantează rizomii în vase pentru a limita răspândirea.',
     commonProblems: 'Se răspândește necontrolat dacă nu e plantat în container.',
     propagation: 'Prin diviziunea rizomului.',
+    images: ['images/enciclopedie/nuphar-lutea_nuphar-lutea_1.jpg'],
   },
   {
     id: 'rheum-palmatum',
@@ -5071,6 +5287,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Udări suplimentare, regulate.',
     commonProblems: 'Nu suportă insolația și temperaturile foarte ridicate.',
     propagation: 'Prin diviziunea tufei.',
+    images: ['images/enciclopedie/rheum-palmatum_rheum-palmatum_1.jpg'],
   },
   {
     id: 'schizostylis-coccinea',
@@ -5095,6 +5312,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Protecție cu mulci în sezonul rece.',
     commonProblems: 'Nu suportă stagnările de apă la rădăcină.',
     propagation: 'Prin diviziunea tufei.',
+    images: ['images/enciclopedie/schizostylis-coccinea_schizostylis-coccinea_1.jpg'],
   },
   {
     id: 'stratiotes-aloides',
@@ -5119,6 +5337,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Nu necesită protecție de iarnă — se scufundă singură.',
     commonProblems: 'Foarte puține.',
     propagation: 'Prin semințe sau stoloni.',
+    images: ['images/enciclopedie/stratiotes-aloides_stratiotes-aloides_1.jpg'],
   },
   {
     id: 'trapa-natans',
@@ -5143,6 +5362,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Ține sub control activ — se răspândește rapid.',
     commonProblems: 'Poate invada suprafața apei dacă nu e ținută sub control.',
     propagation: 'Din semințe.',
+    images: ['images/enciclopedie/trapa-natans_trapa-natans_1.jpg'],
   },
   {
     id: 'azolla-filiculoides',
@@ -5167,6 +5387,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Trebuie rărită constant — se înmulțește foarte repede; mută în spații protejate iarna.',
     commonProblems: 'Nu rezistă la temperaturi scăzute — necesită protecție de iarnă.',
     propagation: 'Se înmulțește singură prin fragmentare.',
+    images: ['images/enciclopedie/azolla-filiculoides_azolla-filiculoides_1.jpg'],
   },
   // ─── Pomi & arbuști fructiferi (din cartea „Grădinărit în orice anotimp") ───
   {
@@ -5192,6 +5413,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Prima tăiere de rărire la 4-5 ani de la plantare; taie ramurile bătrâne imediat deasupra solului; acoperă cu plasă contra păsărilor.',
     commonProblems: 'Frunze îngălbenite pe sol prea calcaros (cloroză din pH nepotrivit); atacat ocazional de omizi.',
     propagation: 'Din butași sau plante altoite, cumpărate de la pepinieră (nu din sămânță).',
+    images: ['images/enciclopedie/vaccinium-corymbosum_vaccinium-corymbosum_1.jpg'],
   },
   {
     id: 'ribes-rubrum',
@@ -5216,6 +5438,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Rărește tufele la 4-5 ani; taie ramurile bătrâne.',
     commonProblems: 'Foarte puține — una din cele mai ușor de crescut fructe de tufă.',
     propagation: 'Din butași lemnificați, iarna.',
+    images: ['images/enciclopedie/ribes-rubrum_ribes-rubrum_1.jpg'],
   },
   {
     id: 'rubus-idaeus',
@@ -5240,6 +5463,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Necesită spalier (suport cu sârmă); mulcire cu paie sau frunze uscate; recoltează din 2 în 2 zile — fructele nu se coc simultan.',
     commonProblems: 'Carența de magneziu; protejează recolta cu plasă contra păsărilor.',
     propagation: 'Din drajoni sau lăstari cumpărați la 2 ani, plantați toamna sau primăvara.',
+    images: ['images/enciclopedie/rubus-idaeus_rubus-idaeus_1.jpg'],
   },
   {
     id: 'ribes-uva-crispa',
@@ -5264,6 +5488,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Taie ramurile mai bătrâne de 4 ani și pe cele care cresc spre interior; se poate înmulți prin marcotaj.',
     commonProblems: 'Făinarea americană a agrișului — afectează mai ales soiurile vechi; alege soiuri rezistente la făinare.',
     propagation: 'Prin marcotaj (aplecarea unei ramuri în sol) sau din butași.',
+    images: ['images/enciclopedie/ribes-uva-crispa_ribes-uva-crispa_1.jpg'],
   },
   {
     id: 'rubus-hibrid-zmeur-mur',
@@ -5288,6 +5513,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Necesită suport/spalier ca zmeurul, dat fiind lungimea lujerilor.',
     commonProblems: 'Foarte puține — vigoare hibridă bună.',
     propagation: 'Din lăstari sau butași.',
+    images: ['images/enciclopedie/rubus-hibrid-zmeur-mur_rubus-fruticosus-x-idaeus_1.jpg'],
   },
   {
     id: 'fragaria-vesca-semperflorens',
@@ -5312,6 +5538,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Plantează cu vârfurile lăstarilor de creștere deasupra solului; acoperă spațiul dintre plante cu paie sau talaș după apariția fructelor.',
     commonProblems: 'Pe vreme umedă și sol compact poate apărea putregaiul cenușiu — amestecă solul compact cu nisip și compost înainte de plantare.',
     propagation: 'Din semințe (primăvara devreme, chiar în casă) sau din stoloni, la soiurile care îi produc.',
+    images: ['images/enciclopedie/fragaria-vesca-semperflorens_fragaria-vesca-semperflorens_1.jpg'],
   },
   {
     id: 'vitis-vinifera',
@@ -5336,6 +5563,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'La începutul lui martie, taie coardele anuale la 2-3 ochi; mulcește solul cu paie sau iarbă cosită pe toată perioada de vegetație pentru a proteja vița de uscare.',
     commonProblems: 'Predispusă la boli micotice dacă frunzișul se udă; viespile și păsările atacă boabele coapte — plasă cu ochiuri mici pentru protecție.',
     propagation: 'Prin altoire (metoda comercială standard) sau din butași lemnificați.',
+    images: ['images/enciclopedie/vitis-vinifera_vitis-vinifera_1.jpg'],
   },
   {
     id: 'prunus-domestica',
@@ -5360,6 +5588,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'La plantare, verifică cu un specialist dacă soiul ales are nevoie de polenizator; protejează trunchiul cu clei de horticultură contra dăunătorilor.',
     commonProblems: 'Hurloapele (deformarea prunelor) — infecție micotică ce deformează și brunifică fructele; culege și distruge fructele infectate.',
     propagation: 'Din altoi de prun, cumpărat de la pepinieră (nu se recomandă din sămânță).',
+    images: ['images/enciclopedie/prunus-domestica_prunus-domestica_1.jpg'],
   },
   {
     id: 'prunus-dulcis',
@@ -5384,6 +5613,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tăiere moderată — rărește ramurile mai vârstnice; rodește prima oară la 3-4 ani; rezistă la -20°C, dar florile din martie sunt sensibile la îngheț.',
     commonProblems: 'Florile și fructele tinere sunt sensibile la înghețurile târzii de primăvară.',
     propagation: 'Prin altoire — cumpără puieți altoiți de la pepinieră.',
+    images: ['images/enciclopedie/prunus-dulcis_prunus-dulcis_1.jpg'],
   },
   {
     id: 'juglans-regia',
@@ -5408,6 +5638,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Adună frunzele și cojile căzute după recoltare, ca dăunătorii să nu se instaleze acolo; cumpără doar nuci altoiți, nu din sămânță.',
     commonProblems: 'Arsura bacteriană — pete brun-negricioase pe fructe și frunze pe vreme umedă; evită locurile de cultură prea umede, nu există tratament chimic eficient.',
     propagation: 'Prin altoire — cumpără puieți altoiți certificați.',
+    images: ['images/enciclopedie/juglans-regia_juglans-regia_1.jpg'],
   },
   {
     id: 'castanea-sativa',
@@ -5432,6 +5663,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Taie castanii tineri în a doua iarnă la 3-4 ramuri de schelet; tratează scoarța cu var diluat pentru a preveni crăpăturile de ger.',
     commonProblems: 'Fluturele ghindelor de stejar depune ouă în flori — larvele mănâncă interiorul fructelor; distruge castanele contaminate.',
     propagation: 'Prin altoire — cumpără plante altoite, nu din sămânță (se înrădăcinează greu corect).',
+    images: ['images/enciclopedie/castanea-sativa_castanea-sativa_1.jpg'],
   },
   {
     id: 'hippophae-rhamnoides',
@@ -5456,6 +5688,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Taie iarna, cu mănuși de protecție (spini); suportă bine tăierile drastice; drajonează, deci plantează unde se poate extinde liber.',
     commonProblems: 'Făinare pe vreme caldă și umedă, mai ales pe sol bogat — plantează într-un loc corespunzător și îndepărtează lăstarii contaminați.',
     propagation: 'Din drajoni (lăstari de rădăcină) — metoda cea mai simplă, folosită și pentru fixarea solului.',
+    images: ['images/enciclopedie/hippophae-rhamnoides_hippophae-rhamnoides_1.jpg'],
   },
   {
     id: 'rheum-rhabarbarum',
@@ -5480,6 +5713,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Recoltează doar câteva petioluri deodată, răsucindu-le de la bază, nu tăindu-le; acoperă baza plantei cu materiale organice pentru umiditate.',
     commonProblems: 'Mozaicul rebarbei (viral, incurabil) — desene verde-deschis/închis apoi pete maro cu margine roșie; plantele contaminate trebuie distruse.',
     propagation: 'Prin diviziunea rizomilor sănătoși, cu 2-4 muguri fiecare.',
+    images: ['images/enciclopedie/rheum-rhabarbarum_rheum-rhabarbarum_1.jpg'],
   },
   {
     id: 'gaura-lindheimeri',
@@ -5504,6 +5738,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Taie tufa drastic (la 10-15cm) la sfârșitul iernii sau începutul primăverii, înainte de pornirea în vegetație; nu necesită tutorare.',
     commonProblems: 'Putrezirea rădăcinii pe sol greu sau prea umed — cel mai frecvent motiv de eșec; rareori atacată de dăunători.',
     propagation: 'Din semințe sau butași de vârf vara; diviziunea e dificilă din cauza rădăcinii pivotante adânci.',
+    images: ['images/enciclopedie/gaura-lindheimeri_gaura-lindheimeri-oenothera-lindheimeri_1.jpg'],
   },
   // ─── Legume & condimentare suplimentare ────────────
   {
@@ -5529,6 +5764,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Ciupește vârful lăstarilor; nu recolta mai mult de o cincime din lăstarii plantei odată; toamna, în regiuni cu climă rece, protejează cu mușuroire sau mută în ghiveci la interior, la loc luminos ferit de ger.',
     commonProblems: 'Putregaiul rădăcinii pe sol cu apă stagnantă; păduchii lânoși (pufuleți albi cerați) — șterge-i cu vată îmbibată în alcool.',
     propagation: 'Prin marcotaj (mai-iunie) sau din butași (august, înrădăcinați în nisip); nu se recomandă din semințe — planta se dezvoltă foarte lent așa.',
+    images: ['images/enciclopedie/rosmarinus-officinalis_rosmarinus-officinalis_1.jpg'],
   },
   {
     id: 'capsicum-annuum-iute',
@@ -5553,6 +5789,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Lasă doar 3-4 lăstari principali pe plantă, elimină restul; seamănă în casă din februarie la 22-25°C, transplantă afară de la mijlocul lui mai, cu protecție (clopote de folie) până la mijlocul lui iunie.',
     commonProblems: 'Buha (fluture de noapte) — larvele brun-cenușii rod plantele nou plantate noaptea; verifică sistematic și strânge larvele manual.',
     propagation: 'Din semințe, semănate în casă în februarie.',
+    images: ['images/enciclopedie/capsicum-annuum-iute_capsicum-annuum_1.jpg'],
   },
   {
     id: 'solanum-melongena',
@@ -5577,6 +5814,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Leagă lăstarii de tutori — plantele se pot apleca sub greutatea fructelor; seamănă în casă din februarie.',
     commonProblems: 'Verticilioza și fuzarioza (ofilire vasculară) — vârfuri ofilite, frunze îngălbenite sau brunificate, vase conducătoare brunificate la tăiere; distruge fructele contaminate, nu le composta.',
     propagation: 'Din semințe, semănate în casă în februarie, cu repicare ulterioară.',
+    images: ['images/enciclopedie/solanum-melongena_solanum-melongena_1.jpg'],
   },
   {
     id: 'mentha-spicata',
@@ -5601,6 +5839,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Ciupește vârful lăstarilor tineri pentru mai multe frunze; verifică regulat ca rădăcinile să nu iasă prin ghiveci; taie și acoperă cu frunziș înainte de ger; recoltează frunzele din treimea superioară a plantei, unde aroma e cea mai plăcută.',
     commonProblems: 'Putregaiul rădăcinilor pe sol cu apă stagnantă — frunzele îngălbenesc, tulpina se înnegrește; scoate și distruge plantele contaminate.',
     propagation: 'Prin diviziunea tufei sau din butași de lăstar, foarte ușor.',
+    images: ['images/enciclopedie/mentha-spicata_mentha-spicata_1.jpg'],
   },
   {
     id: 'petunia',
@@ -5625,6 +5864,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Curăță florile ofilite (deadheading) pentru înflorire continuă; ciupește vârfurile lăstarilor la mijlocul verii dacă planta se „dezgolește" la bază, pentru relansare.',
     commonProblems: 'Putregaiul rădăcinilor la udare excesivă/drenaj slab; afide și tripși pe vreme secetoasă; oprire din înflorit dacă nu e fertilizată constant.',
     propagation: 'Din semințe foarte fine, semănate la adăpost în februarie-martie, sau din butași de lăstar pentru soiurile hibride F1 care nu produc semințe fidele.',
+    images: ['images/enciclopedie/petunia_petunia-atkinsiana_1.jpg'],
   },
   {
     id: 'surfinia',
@@ -5649,6 +5889,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tunde lăstarii la jumătate la mijlocul verii dacă înflorirea scade sau centrul plantei se dezgolește — relansează rapid o nouă masă de flori în 2-3 săptămâni.',
     commonProblems: 'Se usucă vizibil rapid pe vânt sau căldură — frunzele flasce sunt semnalul de udare urgentă; mană și putregai la umezeală stagnantă pe frunziș des.',
     propagation: 'Exclusiv din butași de lăstar, sub licență — nu se propagă din semințe ca petunia clasică.',
+    images: ['images/enciclopedie/surfinia_petunia-atkinsiana-grup-surfinia_1.jpg'],
   },
   {
     id: 'verbena-hibrid',
@@ -5673,6 +5914,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Curăță periodic florile ofilite pentru a stimula formarea de noi umbele; tunde ușor lăstarii lungiți pentru a menține forma compactă.',
     commonProblems: 'Făinare (oidium) pe frunziș la umezeală și circulație slabă a aerului — asigură spațiere bună între plante.',
     propagation: 'Din semințe (germinare lentă și neuniformă) sau, mai fiabil, din butași de lăstar pentru soiurile hibride.',
+    images: ['images/enciclopedie/verbena-hibrid_verbena-x-hybrida_1.jpg'],
   },
   {
     id: 'bacopa',
@@ -5697,6 +5939,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tunde ușor lăstarii dacă devin prea lungi sau rărești în mijloc, pentru a stimula ramificarea; nu necesită curățarea florilor ofilite, cad singure.',
     commonProblems: 'Ofilire rapidă și ireversibilă la uscarea completă a substratului — cel mai frecvent motiv de eșec; putregai la exces de apă stagnantă în farfurioară.',
     propagation: 'Din butași de lăstar, care se înrădăcinează ușor în apă sau substrat umed.',
+    images: ['images/enciclopedie/bacopa_sutera-cordata-syn-chaenostoma-cordatum_1.jpg'],
   },
   {
     id: 'calibrachoa',
@@ -5721,6 +5964,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Nu necesită curățarea florilor ofilite; ciupește ușor vârfurile la începutul sezonului pentru o tufă mai deasă.',
     commonProblems: 'Cloroză (îngălbenirea frunzelor tinere) la pH prea alcalin al substratului; putregaiul rădăcinilor la udare inconsecventă.',
     propagation: 'Exclusiv din butași de lăstar sub licență — nu produce semințe fidele soiului.',
+    images: ['images/enciclopedie/calibrachoa_calibrachoa-hybrida_1.jpg'],
   },
   {
     id: 'fuchsia',
@@ -5745,6 +5989,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Ciupește vârfurile lăstarilor tineri primăvara pentru o tufă mai deasă; la interior/adăpost poate ierna dacă e ținută la 5-10°C, cu udare minimă.',
     commonProblems: 'Musculița albă de seră (whitefly) — dăunătorul clasic al fuchsiei, vizibil ca un nor mic la scuturarea frunzișului; cădere de boboci la stres hidric sau curent de aer cald.',
     propagation: 'Din butași de lăstar tineri primăvara sau vara, care se înrădăcinează relativ ușor.',
+    images: ['images/enciclopedie/fuchsia_fuchsia-hybrida_1.jpg'],
   },
   {
     id: 'nemesia',
@@ -5769,6 +6014,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tunde tufa la jumătate după primul val de înflorire (la mijlocul verii) pentru a stimula o a doua înflorire toamna, dacă temperaturile permit.',
     commonProblems: 'Oprire din înflorit și aspect ofilit pe caniculă prelungită — plantă de sezon răcoros prin natura ei; putregai la exces de apă.',
     propagation: 'Din semințe semănate la adăpost primăvara devreme, sau din butași de lăstar pentru soiurile hibride.',
+    images: ['images/enciclopedie/nemesia_nemesia-hybrida_1.jpg'],
   },
   {
     id: 'osteospermum',
@@ -5793,6 +6039,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Curăță florile ofilite pentru înflorire continuă; tunde ușor lăstarii lungiți la mijlocul verii pentru a menține forma compactă.',
     commonProblems: 'Alungire excesivă și înflorire redusă la umbră sau exces de fertilizare cu azot; relativ rezistentă la boli și dăunători comparativ cu alte flori de balcon.',
     propagation: 'Din semințe sau din butași de lăstar pentru soiurile hibride care nu produc semințe fidele.',
+    images: ['images/enciclopedie/osteospermum_osteospermum-ecklonis_1.jpg'],
   },
   {
     id: 'achillea-millefolium',
@@ -5817,6 +6064,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tunde tulpinile înflorite la bază după prima înflorire pentru un al doilea val; divide tufele la 3-4 ani, când centrul începe să se degradeze.',
     commonProblems: 'Tulpini culcate (lodging) pe sol prea bogat sau la umbră parțială; rareori atacată de boli sau dăunători semnificativi.',
     propagation: 'Prin diviziunea tufei primăvara sau toamna, sau din semințe semănate direct în strat.',
+    images: ['images/enciclopedie/achillea-millefolium_achillea-millefolium_1.jpg'],
   },
   {
     id: 'coreopsis-grandiflora',
@@ -5841,6 +6089,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Îndepărtează florile ofilite constant pentru înflorire prelungită; tunde tufa la jumătate la mijlocul verii dacă devine dezordonată; divide la 2-3 ani pentru a menține vigoarea.',
     commonProblems: 'Plantă de viață scurtă (adesea 2-3 ani) dacă nu e divizată periodic; rareori atacată de boli semnificative.',
     propagation: 'Prin diviziunea tufei primăvara, din semințe, sau din butași de lăstar vara.',
+    images: ['images/enciclopedie/coreopsis-grandiflora_coreopsis-grandiflora_1.jpg'],
   },
   {
     id: 'phlox-paniculata',
@@ -5865,6 +6114,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Asigură spațiere bună între plante (circulație de aer) pentru a preveni făinarea, boala ei clasică; îndepărtează inflorescențele ofilite; divide la 3-4 ani.',
     commonProblems: 'Făinare (oidium) — pete albicioase pudroase pe frunze, mai ales la circulație slabă a aerului sau umiditate ridicată; alege soiuri rezistente la făinare acolo unde e posibil.',
     propagation: 'Prin diviziunea tufei toamna sau primăvara devreme, sau din butași de rădăcină iarna.',
+    images: ['images/enciclopedie/phlox-paniculata_phlox-paniculata_1.jpg'],
   },
   {
     id: 'alchemilla-mollis',
@@ -5889,6 +6139,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tunde frunzișul la bază după înflorire dacă arată obosit — reface rapid o rozetă nouă de frunze proaspete; se autosemânță ușor, poate deveni invazivă în condiții favorabile.',
     commonProblems: 'Autosemânțare excesivă în straturi umede și fertile — îndepărtează inflorescențele înainte de a face semințe dacă nu vrei răspândire necontrolată.',
     propagation: 'Prin diviziunea tufei primăvara sau toamna, sau din semințele proprii, care germinează ușor.',
+    images: ['images/enciclopedie/alchemilla-mollis_alchemilla-mollis_1.jpg'],
   },
   {
     id: 'crocus-vernus',
@@ -5913,6 +6164,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Lasă frunzișul să se usuce complet natural după înflorire (6-8 săptămâni) înainte de a-l tăia — planta reface rezervele bulbului pentru anul următor prin fotosinteza frunzelor. Se înmulțește singur, formând treptat covoare tot mai dense.',
     commonProblems: 'Bulbii sunt o delicatesă pentru rozătoare (șoareci, veverițe) — plantează la adâncime corectă (7-8 cm) și, în zone cu probleme, sub o plasă metalică fină îngropată.',
     propagation: 'Prin diviziunea cormilor (bulbo-tuberculi) la 3-4 ani, când tufa devine prea deasă, sau prin cormeții secundari care se formează natural lângă cormul matur.',
+    images: ['images/enciclopedie/crocus-vernus_crocus-vernus_1.jpg'],
   },
   {
     id: 'convallaria-majalis',
@@ -5937,6 +6189,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Practic zero — o dată instalată, se extinde singură prin rizomi și necesită doar îndepărtarea ocazională a frunzișului ofilit toamna. Împarte tufa doar dacă vrei să limitezi răspândirea sau să o propagi în altă zonă.',
     commonProblems: 'Toate părțile plantei sunt toxice la ingestie (inclusiv apa din vasul cu flori tăiate) — plantează cu grijă dacă ai copii mici sau animale de companie care mestecă plante. Poate deveni invazivă în condiții favorabile, extinzându-se dincolo de zona dorită.',
     propagation: 'Prin diviziunea rizomilor toamna sau la începutul primăverii — fiecare bucată de rizom cu un mugure („pip") pornește o plantă nouă.',
+    images: ['images/enciclopedie/convallaria-majalis_convallaria-majalis_1.jpg'],
   },
   {
     id: 'chionodoxa-luciliae',
@@ -5961,6 +6214,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Lasă frunzișul să se usuce natural după înflorire înainte de a-l îndepărta. Se autosemânță generos și formează treptat covoare tot mai extinse an de an, fără intervenție.',
     commonProblems: 'Practic fără probleme semnificative — una dintre cele mai puțin pretențioase bulboase de primăvară.',
     propagation: 'Prin diviziunea bulbilor la 3-4 ani, sau lăsată să se autosemânțeze liber pentru extindere naturală a covorului.',
+    images: ['images/enciclopedie/chionodoxa-luciliae_chionodoxa-luciliae_1.jpg'],
   },
   {
     id: 'corydalis-solida',
@@ -5985,6 +6239,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Minimă — lasă planta să-și încheie natural ciclul și să dispară sub pământ vara; nu săpa în zona respectivă cât timp bulbii sunt în dormanță, riști să-i deteriorezi fără să-i vezi.',
     commonProblems: 'Practic fără probleme dacă e plantată în condițiile potrivite (semi-umbră, sol bine drenat); rar atacată de dăunători sau boli.',
     propagation: 'Prin diviziunea tuberculilor imediat după înflorire, cât frunzișul e încă vizibil, sau din semințe proaspete, care germinează cel mai bine semănate imediat după coacere.',
+    images: ['images/enciclopedie/corydalis-solida_corydalis-solida_1.jpg'],
   },
   {
     id: 'dianthus-plumarius',
@@ -6009,6 +6264,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Curăță florile ofilite pentru prelungirea înfloririi; tunde ușor tufa după prima înflorire pentru a menține forma compactă și a preveni lemnificarea excesivă a bazei.',
     commonProblems: 'Putregaiul rădăcinilor și al coletului pe sol umed sau prost drenat — de departe cea mai frecventă cauză de pierdere a plantei; rar atacată de dăunători.',
     propagation: 'Din butași de vârf de lăstar vara, din semințe, sau prin diviziunea tufelor mai vechi primăvara.',
+    images: ['images/enciclopedie/dianthus-plumarius_dianthus-plumarius_1.jpg'],
   },
   {
     id: 'alcea-rosea',
@@ -6033,6 +6289,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tutorează tulpinile înalte în locuri expuse vântului; taie tulpinile la bază după înflorire. Adesea bienală sau perenă de viață scurtă — lasă câteva flori să facă semințe pentru autosemânțare și regenerare naturală a grupului an de an.',
     commonProblems: 'Rugina nalbei (Puccinia malvacearum) — pete portocalii-ruginii pe partea inferioară a frunzelor, o boală fungică aproape universală la această specie; îndepărtează frunzele afectate și evită udarea pe frunziș. Rareori fatală, dar afectează vizual planta spre sfârșitul sezonului.',
     propagation: 'Din semințe, semănate direct unde vor înflori (rădăcina pivotantă nu suportă bine transplantarea) — adesea se autosemânță generos, menținând un grup activ ani la rând fără replantare manuală.',
+    images: ['images/enciclopedie/alcea-rosea_alcea-rosea_1.jpg'],
   },
   {
     id: 'aquilegia-vulgaris',
@@ -6057,6 +6314,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tunde tulpinile florale la bază după înflorire pentru a stimula un frunziș proaspăt și pentru a preveni autosemânțarea excesivă, dacă nu vrei extindere necontrolată; planta e adesea de viață scurtă (3-4 ani), dar se perpetuează singură prin semințe.',
     commonProblems: 'Minerul frunzelor (leaf miner) — larve care sapă galerii vizibile, șerpuite, în frunziș; mai mult o problemă estetică decât una care pune planta în pericol. Tunde frunzișul afectat, va reface unul nou.',
     propagation: 'Din semințe (germinare mai bună dacă au trecut printr-o perioadă rece, stratificare naturală iarna afară) sau prin autosemânțare spontană, foarte activă.',
+    images: ['images/enciclopedie/aquilegia-vulgaris_aquilegia-vulgaris_1.jpg'],
   },
   {
     id: 'centaurea-cyanus',
@@ -6081,6 +6339,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Îndepărtează florile ofilite pentru înflorire prelungită; tutorează ușor în locuri expuse vântului, tulpinile fiind relativ fragile.',
     commonProblems: 'Rareori atacată semnificativ de boli sau dăunători; principala problemă e culcarea tulpinilor pe vânt puternic sau sol prea bogat.',
     propagation: 'Din semințe, semănate direct primăvara sau toamna târziu pentru înflorire timpurie — se autosemânță ușor, revenind spontan an de an.',
+    images: ['images/enciclopedie/centaurea-cyanus_centaurea-cyanus_1.jpg'],
   },
   {
     id: 'monarda-didyma',
@@ -6105,6 +6364,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Asigură spațiere bună între plante pentru circulația aerului, esențială pentru prevenirea făinării, boala ei clasică; divide tufele la 2-3 ani, fiindcă tinde să se răspândească agresiv prin rizomi și centrul tufei se degradează cu timpul.',
     commonProblems: 'Făinare (oidium) — pete albicioase pudroase pe frunze, aproape universale la circulație slabă a aerului sau umiditate ridicată; alege soiuri rezistente la făinare acolo unde e posibil, o caracteristică des menționată la soiurile moderne.',
     propagation: 'Prin diviziunea tufei primăvara sau toamna — de fapt recomandată periodic oricum, pentru a controla răspândirea agresivă prin rizomi.',
+    images: ['images/enciclopedie/monarda-didyma_monarda-didyma_1.jpg'],
   },
   {
     id: 'weigela-florida',
@@ -6129,6 +6389,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tăiere de întreținere imediat după înflorire (nu toamna sau iarna, altfel elimini mugurii de floare ai anului următor) — elimină ramurile bătrâne, neproductive, la bază pentru a stimula lăstari noi.',
     commonProblems: 'Rareori atacată semnificativ de boli sau dăunători; înflorire slabă de regulă indică lumină insuficientă sau tăiere greșit programată.',
     propagation: 'Din butași semilemnificați vara, care se înrădăcinează relativ ușor.',
+    images: ['images/enciclopedie/weigela-florida_weigela-florida_1.jpg'],
   },
   {
     id: 'philadelphus-coronarius',
@@ -6153,6 +6414,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tăiere de întreținere imediat după înflorire — elimină o treime din ramurile cele mai bătrâne la bază anual, pentru a menține tufa viguroasă și a preveni lemnificarea excesivă a centrului.',
     commonProblems: 'Rareori atacat semnificativ de boli sau dăunători; poate deveni desfrunzit la bază dacă nu e tăiat periodic.',
     propagation: 'Din butași semilemnificați vara sau butași lemnificați iarna.',
+    images: ['images/enciclopedie/philadelphus-coronarius_philadelphus-coronarius_1.jpg'],
   },
   {
     id: 'buddleja-davidii',
@@ -6177,6 +6439,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tăiere drastică primăvara (nu toamna) — taie toate ramurile la 30-60cm de la sol; specia înflorește pe lemn nou din anul curent, deci tăierea severă anuală stimulează, nu reduce, înflorirea.',
     commonProblems: 'Poate deveni invazivă în unele regiuni prin autosemânțare generoasă — îndepărtează paniculele ofilite înainte de a face semințe dacă vrei să previi răspândirea necontrolată.',
     propagation: 'Din butași semilemnificați vara, care se înrădăcinează foarte ușor, sau din semințe.',
+    images: ['images/enciclopedie/buddleja-davidii_buddleja-davidii_1.jpg'],
   },
   {
     id: 'deutzia-gracilis',
@@ -6201,6 +6464,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tăiere de întreținere imediat după înflorire — elimină ramurile bătrâne la bază pentru a stimula lăstari noi, care vor purta florile anului următor.',
     commonProblems: 'Rareori atacată semnificativ de boli sau dăunători.',
     propagation: 'Din butași semilemnificați vara.',
+    images: ['images/enciclopedie/deutzia-gracilis_deutzia-gracilis_1.jpg'],
   },
   {
     id: 'perovskia-atriplicifolia',
@@ -6225,6 +6489,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tăiere drastică primăvara, la 15-20cm de la sol — se comportă similar unei plante perene ierboase, deși are tulpini semi-lemnoase; tăierea anuală menține forma compactă și înflorirea abundentă.',
     commonProblems: 'Putregaiul rădăcinilor pe sol umed sau prost drenat — de departe cea mai frecventă cauză de eșec.',
     propagation: 'Din butași semilemnificați vara sau prin diviziunea tufei primăvara.',
+    images: ['images/enciclopedie/perovskia-atriplicifolia_perovskia-atriplicifolia_1.jpg'],
   },
   {
     id: 'lysimachia-punctata',
@@ -6249,6 +6514,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Divide tufele la 2-3 ani pentru a controla răspândirea prin rizomi, care poate deveni agresivă în condiții favorabile (sol umed, bogat); tunde tulpinile ofilite după înflorire.',
     commonProblems: 'Poate deveni invazivă în straturi umede, bogate — plantează cu o barieră de rădăcini dacă vrei să limitezi răspândirea, sau alege un loc unde extinderea nu deranjează.',
     propagation: 'Prin diviziunea tufei primăvara sau toamna — extrem de ușor, fiecare bucată de rizom pornește o plantă nouă.',
+    images: ['images/enciclopedie/lysimachia-punctata_lysimachia-punctata_1.jpg'],
   },
   {
     id: 'penstemon-barbatus',
@@ -6273,6 +6539,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Îndepărtează tulpinile florale ofilite pentru înflorire prelungită; tunde tufa la sfârșitul iernii, lăsând tulpinile vechi peste iarnă ca protecție naturală a coroanei împotriva gerului.',
     commonProblems: 'Putregaiul rădăcinilor pe sol greu, prost drenat, mai ales iarna — de departe cea mai frecventă cauză de pierdere a plantei; relativ sensibilă la ierni foarte umede.',
     propagation: 'Din semințe, din butași de vârf de lăstar vara, sau prin diviziunea tufelor mai vechi primăvara.',
+    images: ['images/enciclopedie/penstemon-barbatus_penstemon-barbatus_1.jpg'],
   },
   {
     id: 'centranthus-ruber',
@@ -6297,6 +6564,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tunde tufa la jumătate după primul val de înflorire pentru a stimula o a doua înflorire și a preveni autosemânțarea excesivă, dacă nu vrei răspândire necontrolată.',
     commonProblems: 'Practic fără probleme semnificative de boli sau dăunători; singura „problemă" reală e autosemânțarea generoasă, care poate deveni excesivă în condiții favorabile.',
     propagation: 'Din semințe (se autosemânță ușor, spontan) sau prin diviziunea tufei primăvara.',
+    images: ['images/enciclopedie/centranthus-ruber_centranthus-ruber_1.jpg'],
   },
   {
     id: 'verbascum-hybridum',
@@ -6321,6 +6589,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Tutorează tulpinile foarte înalte în locuri expuse vântului; taie tulpinile florale la bază după înflorire. Lasă câteva capitule să facă semințe pentru autosemânțare, fiindcă planta e adesea de viață scurtă.',
     commonProblems: 'Molia lumânăricii (Cucullia verbasci) — omizi mari, viu colorate, care pot defolia rapid planta; verifică și îndepărtează manual dacă apar. Putregaiul rădăcinilor pe sol umed.',
     propagation: 'Din semințe, semănate direct (rădăcina pivotantă nu suportă bine transplantarea) — se autosemânță ușor în condiții favorabile.',
+    images: ['images/enciclopedie/verbascum-hybridum_verbascum-hybridum_1.jpg'],
   },
   {
     id: 'origanum-vulgare',
@@ -6345,6 +6614,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Recoltează constant vârfurile lăstarilor pentru a stimula o tufă mai deasă; tunde tufa la jumătate la mijlocul verii dacă devine lemnificată sau dezordonată.',
     commonProblems: 'Putregaiul rădăcinilor pe sol umed sau prost drenat; rareori atacat semnificativ de dăunători, fiind el însuși un repelent natural pentru multe insecte.',
     propagation: 'Prin diviziunea tufei primăvara, din butași de lăstar vara, sau din semințe.',
+    images: ['images/enciclopedie/origanum-vulgare_origanum-vulgare_1.jpg'],
   },
   {
     id: 'catananche-caerulea',
@@ -6369,6 +6639,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     maintenance: 'Îndepărtează florile ofilite pentru înflorire prelungită; tunde tufa toamna, după terminarea completă a înfloririi.',
     commonProblems: 'Putregaiul rădăcinilor pe sol umed — de departe cea mai frecventă cauză de eșec; rareori atacată de boli sau dăunători.',
     propagation: 'Din semințe sau prin diviziunea tufei primăvara.',
+    images: ['images/enciclopedie/catananche-caerulea_catananche-caerulea_1.jpg'],
   },
 ];
 
