@@ -490,7 +490,7 @@ const App: React.FC = () => {
                 subscriptionTier={subscriptionTier}
                 theme={currentTheme}
                 onToggleTheme={toggleTheme}
-                accentColors={organization?.accentColors || ['#4A7C59', '#EC4899', '#3b82f6', '#a855f7', '#ef4444']}
+                accentColors={organization?.accentColors || ['#4A7C59', '#3b82f6', '#ef4444', '#EC4899', '#a855f7']}
                 selectedAccentColor={profile.accentColor || '#4A7C59'}
                 onSelectAccentColor={selectAccentColor}
               />;
@@ -527,7 +527,7 @@ const App: React.FC = () => {
             onNavigate={navigateTo}
             theme={currentTheme as 'light' | 'dark'}
             onToggleTheme={toggleTheme}
-            accentColors={organization?.accentColors || ['#4A7C59', '#EC4899', '#3b82f6', '#a855f7', '#ef4444']}
+            accentColors={organization?.accentColors || ['#4A7C59', '#3b82f6', '#ef4444', '#EC4899', '#a855f7']}
             subscriptionTier={subscriptionTier}
             selectedAccentColor={profile.accentColor || '#4A7C59'}
             onSelectAccentColor={selectAccentColor}
