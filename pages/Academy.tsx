@@ -9,7 +9,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import {
   ARTICLES_RO, ARTICLES_EN, ACADEMY_CATEGORIES,
-  ArticleMeta, getArticlesByLang, getFreeArticleCount, getTotalArticleCount
+  ArticleMeta, ArticleCategory, getArticlesByLang, getFreeArticleCount, getTotalArticleCount, articleMatchesCategory
 } from '../src/data/academyContent';
 import { auth, functions, httpsCallable } from '../services/firebase';
 import { academyCoverPath } from '../services/contentImages';
@@ -488,7 +488,7 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
   const { organization } = useData();
   const lang = i18n.language?.startsWith('en') ? 'en' : 'ro';
 
-  const [activeCategory, setActiveCategory] = useState('all');
+  const [activeCategory, setActiveCategory] = useState<ArticleCategory | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchAutocomplete, setShowSearchAutocomplete] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
@@ -529,7 +529,7 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
   const filteredArticles = useMemo(() => {
     let result = articles;
     if (activeCategory !== 'all') {
-      result = result.filter(a => a.category === activeCategory);
+      result = result.filter(a => articleMatchesCategory(a, activeCategory));
     }
     if (searchQuery.trim()) {
       result = result.filter(a =>
@@ -543,8 +543,8 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
   }, [articles, activeCategory, searchQuery]);
 
   const availableCategories = useMemo(() => {
-    const cats = [...new Set(articles.map(a => a.category))];
-    return ACADEMY_CATEGORIES.filter(c => cats.includes(c.id));
+    const cats = new Set(articles.flatMap(a => [a.category, ...(a.categories || [])]));
+    return ACADEMY_CATEGORIES.filter(c => cats.has(c.id));
   }, [articles]);
 
   const markRead = (id: string) => {
@@ -791,7 +791,7 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
       {activeCategory === 'all' && !searchQuery.trim() ? (
         <div className="space-y-12 mb-12">
           {availableCategories.map(cat => {
-            const catArticles = articles.filter(a => a.category === cat.id);
+            const catArticles = articles.filter(a => articleMatchesCategory(a, cat.id));
             if (catArticles.length === 0) return null;
             return (
               <div key={cat.id} className="relative">

@@ -27,6 +27,12 @@ export interface ArticleMeta {
   excerpt: string;
   category: ArticleCategory;
   categoryLabel: string;
+  // Optional secondary categories. `category` still drives the cover
+  // display and the Netflix-row grouping on "Toate"; this only widens
+  // which category filters the article also matches under, for articles
+  // that genuinely straddle more than one topic (e.g. a fungicide
+  // protocol is both disease management and chemistry/treatments).
+  categories?: ArticleCategory[];
   isPremium: boolean;
   readTime: number; // minutes
   difficulty: 'Începător' | 'Intermediar' | 'Avansat' | 'Beginner' | 'Intermediate' | 'Advanced';
@@ -78,9 +84,9 @@ export const ACADEMY_CATEGORIES: ArticleCategory_Config[] = [
   },
   {
     id: 'chimie-tratamente',
-    labelRo: 'Chimie & Tratamente',
-    labelEn: 'Chemistry & Treatments',
-    description: 'pH, NPK, blocaj mineral. Îngrășăminte, fungicide și insecticide — știința din spatele etichetelor.',
+    labelRo: 'Erbicide & Tratamente',
+    labelEn: 'Herbicides & Treatments',
+    description: 'pH, NPK, blocaj mineral. Îngrășăminte, erbicide, fungicide și insecticide — știința din spatele etichetelor.',
     color: 'text-amber-400',
     bgGradient: 'from-amber-950 via-orange-950 to-slate-950',
     emoji: '🧪',
@@ -178,7 +184,7 @@ export const ARTICLES_RO: ArticleMeta[] = [
     title: 'Chimia Solului: pH, Macronutrienți și Blocaj Mineral',
     excerpt: 'De ce arunci bani pe îngrășăminte și nu vezi rezultate? 90% din cazuri = pH incorect. Cum decodezi NPK-ul de pe etichetă și corectezi pH-ul real al solului tău.',
     category: 'chimie-tratamente',
-    categoryLabel: 'Chimie & Tratamente',
+    categoryLabel: 'Erbicide & Tratamente',
     isPremium: true,
     readTime: 6,
     difficulty: 'Avansat',
@@ -196,6 +202,7 @@ export const ARTICLES_RO: ArticleMeta[] = [
     excerpt: 'Brown Patch, Pythium, Dollar Spot — cum identifici boala, contact vs. sistemic, rotația substanțelor active și ce poate (și nu poate) face cuprul pe gazon.',
     category: 'managementul-bolilor',
     categoryLabel: 'Managementul Bolilor',
+    categories: ['chimie-tratamente'],
     isPremium: true,
     readTime: 5,
     difficulty: 'Avansat',
@@ -264,7 +271,7 @@ export const ARTICLES_RO: ArticleMeta[] = [
     title: 'Erbicide pentru Gazon: 13 Produse Reale de pe Piață, cu Doze și Explicații',
     excerpt: 'Dicopur, Cerlit, Foxtrot, Banvel, Lontrel, Stomp Aqua, Glifosat și altele — ce conțin, cum acționează, ce buruiană omoară fiecare și când le aplici.',
     category: 'chimie-tratamente',
-    categoryLabel: 'Chimie & Tratamente',
+    categoryLabel: 'Erbicide & Tratamente',
     isPremium: true,
     readTime: 20,
     difficulty: 'Avansat',
@@ -282,6 +289,7 @@ export const ARTICLES_RO: ArticleMeta[] = [
     excerpt: 'Gazonul se ridică ca un covor? Probabilitate 90% = larvele de cărăbuș. Protocol complet de combatere.',
     category: 'managementul-bolilor',
     categoryLabel: 'Managementul Bolilor',
+    categories: ['chimie-tratamente'],
     isPremium: true,
     readTime: 7,
     difficulty: 'Avansat',
@@ -333,6 +341,7 @@ export const ARTICLES_RO: ArticleMeta[] = [
     excerpt: 'Identificarea corectă a inelului de fum și intervenția chimică de urgență pentru a salva gazonul.',
     category: 'managementul-bolilor',
     categoryLabel: 'Managementul Bolilor',
+    categories: ['chimie-tratamente', 'sezonalitate'],
     isPremium: true,
     readTime: 5,
     difficulty: 'Intermediar',
@@ -401,6 +410,7 @@ export const ARTICLES_RO: ArticleMeta[] = [
     excerpt: 'Sub copaci mari sau în colțuri umbroase gazonul se răreşte mereu, oricât ai încerca. Iată de ce se întâmplă asta și alternativa care chiar funcționează acolo, cu specii concrete pentru fiecare situație.',
     category: 'protocoale-baza',
     categoryLabel: 'Protocoale de Bază',
+    categories: ['specii-plante', 'amenajare-design'],
     isPremium: true,
     readTime: 9,
     difficulty: 'Începător',
@@ -452,6 +462,7 @@ export const ARTICLES_RO: ArticleMeta[] = [
     excerpt: 'Pete brun-roșiatice pe scoarță, care se adâncesc, crapă și formează inele circulare de proliferare tumorală — cancerul ramurilor (Nectria) poate ucide complet un pom tânăr dacă nu intervii la timp. Cum recunoști boala, de ce nu se tratează cu substanțe chimice ca alte boli fungice, și tehnica exactă de excizie a rănilor infectate.',
     category: 'managementul-bolilor',
     categoryLabel: 'Managementul Bolilor',
+    categories: ['specii-plante'],
     isPremium: true,
     readTime: 10,
     difficulty: 'Avansat',
@@ -469,6 +480,7 @@ export const ARTICLES_RO: ArticleMeta[] = [
     excerpt: 'Crăițele plantate printre legume îndepărtează nematozii din sol. Cimbrișorul protejează fasolea de păduchi. Ceapa și morcovul formează o cultură mixtă clasică fiindcă fiecare alungă musca dăunătoare a celeilalte. Ghidul complet al combinațiilor de plante verificate empiric pentru control natural al dăunătorilor.',
     category: 'managementul-bolilor',
     categoryLabel: 'Managementul Bolilor',
+    categories: ['amenajare-design'],
     isPremium: true,
     readTime: 11,
     difficulty: 'Intermediar',
@@ -486,6 +498,7 @@ export const ARTICLES_RO: ArticleMeta[] = [
     excerpt: 'Cultivi aceleași legume în același loc, an de an, și randamentul scade constant, iar bolile revin mereu? Sistemul clasic de rotație pe 4 straturi, organizat după cerințele nutritive ale plantelor, rezolvă ambele probleme fără să cumperi mai mult îngrășământ.',
     category: 'protocoale-baza',
     categoryLabel: 'Protocoale de Bază',
+    categories: ['specii-plante'],
     isPremium: true,
     readTime: 9,
     difficulty: 'Intermediar',
@@ -520,6 +533,7 @@ export const ARTICLES_RO: ArticleMeta[] = [
     excerpt: 'Înainte să cumperi orice fungicid, merită să înțelegi de ce apar de fapt bolile de gazon. Trei lucruri trebuie să se întâmple deodată — și dacă lipsește unul, boala nu prinde.',
     category: 'managementul-bolilor',
     categoryLabel: 'Managementul Bolilor',
+    categories: ['protocoale-baza'],
     isPremium: false,
     readTime: 11,
     difficulty: 'Începător',
@@ -537,6 +551,7 @@ export const ARTICLES_RO: ArticleMeta[] = [
     excerpt: 'Trandafirii nu sunt capricioși fără motiv — au niște cerințe foarte precise de sol, lumină, orientare și nutriție. Dacă le respecți pe toate, diferența se vede din prima vară.',
     category: 'protocoale-baza',
     categoryLabel: 'Protocoale de Bază',
+    categories: ['specii-plante'],
     isPremium: false,
     readTime: 9,
     difficulty: 'Începător',
@@ -554,6 +569,7 @@ export const ARTICLES_RO: ArticleMeta[] = [
     excerpt: 'Nu toți trandafirii sunt la fel — unii sunt făcuți pentru ghiveci pe balcon, alții pentru garduri vii, alții cață pe un gard. Iată clasificarea completă și cum alegi tipul potrivit pentru locul tău exact.',
     category: 'protocoale-baza',
     categoryLabel: 'Protocoale de Bază',
+    categories: ['specii-plante'],
     isPremium: true,
     readTime: 8,
     difficulty: 'Începător',
@@ -571,6 +587,7 @@ export const ARTICLES_RO: ArticleMeta[] = [
     excerpt: 'Câți muguri lași la tăiere depinde de tipul de trandafir și de vigoarea lui — greșești aici și ori nu mai înflorește, ori epuizezi tufa în câțiva ani. Ghid complet, cu unelte, tehnică și protocol pe fiecare tip.',
     category: 'protocoale-baza',
     categoryLabel: 'Protocoale de Bază',
+    categories: ['specii-plante'],
     isPremium: true,
     readTime: 10,
     difficulty: 'Avansat',
@@ -588,6 +605,7 @@ export const ARTICLES_RO: ArticleMeta[] = [
     excerpt: 'Un trandafir care supraviețuiește 5 ierni la rând poate muri complet la a 6-a, dintr-un ger neobișnuit de sever, dacă punctul de altoire nu e protejat corect. Tehnica de mușuroire, momentul exact al aplicării și al îndepărtării, și ce faci diferit la trandafirii urcători.',
     category: 'sezonalitate',
     categoryLabel: 'Calendar Sezonier',
+    categories: ['specii-plante'],
     isPremium: true,
     readTime: 9,
     difficulty: 'Intermediar',
@@ -605,6 +623,7 @@ export const ARTICLES_RO: ArticleMeta[] = [
     excerpt: 'Un trandafir plantat singur, izolat pe un petic de pământ gol, arată de regulă mai sărăcăcios decât unul înconjurat de plante companion — o combinație recurentă în grădinăritul englezesc clasic: nemțișor, lavandă, clopoței și jaleș. De ce funcționează vizual, și cum alegi combinația potrivită pentru tipul tău de trandafir.',
     category: 'amenajare-design',
     categoryLabel: 'Amenajare & Design',
+    categories: ['specii-plante'],
     isPremium: true,
     readTime: 8,
     difficulty: 'Începător',
@@ -622,6 +641,7 @@ export const ARTICLES_RO: ArticleMeta[] = [
     excerpt: 'Vrei să renunți la furtunul cu care alergi prin curte seară de seară? Iată cum se proiectează un sistem de aspersoare de la zero, pas cu pas, înainte să sapi primul șanț.',
     category: 'protocoale-baza',
     categoryLabel: 'Protocoale de Bază',
+    categories: ['amenajare-design'],
     isPremium: true,
     readTime: 13,
     difficulty: 'Intermediar',
@@ -639,6 +659,7 @@ export const ARTICLES_RO: ArticleMeta[] = [
     excerpt: 'De la tisa care crește la umbră deasă până la chiparosul de Arizona care vrea soare mediteranean — 27 de specii de conifere, organizate pe cerințe reale de spațiu, lumină și sol.',
     category: 'specii-plante',
     categoryLabel: 'Specii de Plante',
+    categories: ['amenajare-design'],
     isPremium: true,
     readTime: 9,
     difficulty: 'Intermediar',
@@ -656,6 +677,7 @@ export const ARTICLES_RO: ArticleMeta[] = [
     excerpt: 'Sisteme radiculare invazive de evitat lângă fundații, temperament de lumină vs. umbră și culori de toamnă — 24 de specii de arțari, stejari, sălcii, plopi și altele, organizate practic.',
     category: 'specii-plante',
     categoryLabel: 'Specii de Plante',
+    categories: ['amenajare-design'],
     isPremium: true,
     readTime: 7,
     difficulty: 'Intermediar',
@@ -673,6 +695,7 @@ export const ARTICLES_RO: ArticleMeta[] = [
     excerpt: 'Copaci aleși pentru un singur moment — înflorirea. De la sakura japoneză la salcâmul înmiresmat, cum alegi specia potrivită pentru spectacolul pe care ți-l dorești.',
     category: 'specii-plante',
     categoryLabel: 'Specii de Plante',
+    categories: ['amenajare-design'],
     isPremium: true,
     readTime: 5,
     difficulty: 'Intermediar',
@@ -690,6 +713,7 @@ export const ARTICLES_RO: ArticleMeta[] = [
     excerpt: 'Peste 25 de arbuști și liane, de la cimișir și piracanta la glicină și trâmbiță — organizați pe rol practic: gard viu, fructe de iarnă, culoare de toamnă sau plantă cățărătoare pe pergolă.',
     category: 'specii-plante',
     categoryLabel: 'Specii de Plante',
+    categories: ['amenajare-design'],
     isPremium: true,
     readTime: 16,
     difficulty: 'Intermediar',
@@ -775,6 +799,7 @@ export const ARTICLES_RO: ArticleMeta[] = [
     excerpt: 'De la Edelweiss la suculentele pentru acoperișuri verzi — plante pentru solul sărac, drenajul excelent și zonele unde vrei un covor des care ține buruienile la distanță.',
     category: 'specii-plante',
     categoryLabel: 'Specii de Plante',
+    categories: ['amenajare-design'],
     isPremium: true,
     readTime: 6,
     difficulty: 'Intermediar',
@@ -809,6 +834,7 @@ export const ARTICLES_RO: ArticleMeta[] = [
     excerpt: 'Zorele, măzărichea parfumată, călțunași — flori volubile care acoperă un gard sau o pergolă într-un singur sezon, cu suport instalat din start.',
     category: 'specii-plante',
     categoryLabel: 'Specii de Plante',
+    categories: ['amenajare-design'],
     isPremium: true,
     readTime: 4,
     difficulty: 'Începător',
@@ -826,6 +852,7 @@ export const ARTICLES_RO: ArticleMeta[] = [
     excerpt: 'Nuferi, papură, lotus și plante de mal — ce plantezi în apă, ce plantezi doar pe sol permanent umed, și ce specii invadează rapid dacă nu le ții sub control.',
     category: 'specii-plante',
     categoryLabel: 'Specii de Plante',
+    categories: ['amenajare-design'],
     isPremium: true,
     readTime: 6,
     difficulty: 'Intermediar',
@@ -843,6 +870,7 @@ export const ARTICLES_RO: ArticleMeta[] = [
     excerpt: 'Coleus, Iresine, Festuca albastră, Miscanthus — plante alese nu pentru floare, ci pentru culoarea și textura frunzișului, cu valoare decorativă aproape tot sezonul.',
     category: 'specii-plante',
     categoryLabel: 'Specii de Plante',
+    categories: ['amenajare-design'],
     isPremium: true,
     readTime: 6,
     difficulty: 'Intermediar',
@@ -911,6 +939,7 @@ export const ARTICLES_RO: ArticleMeta[] = [
     excerpt: 'Trei probleme fizice pe care le întâlnește aproape orice proprietar de gazon, dar despre care nu se vorbește destul: cum montezi o bordură care chiar rezistă, cum repari o movilă sau o groapă fără să lași o cicatrice vizibilă, și ce faci cu gazonul care refuză să crească sub conifere.',
     category: 'protocoale-baza',
     categoryLabel: 'Protocoale de Bază',
+    categories: ['amenajare-design'],
     isPremium: true,
     readTime: 14,
     difficulty: 'Intermediar',
@@ -928,6 +957,7 @@ export const ARTICLES_RO: ArticleMeta[] = [
     excerpt: 'Tunzi de doar 2-3 ori pe an, nu mai fertilizezi, și în schimb ai un covor viu de flori sălbatice care hrănește albinele și fluturii — dar ai nevoie de răbdare: o pajiște cu flori nu arată spectaculos decât din al treilea an. Ghidul complet, cu ambele variante: conversia unui gazon existent și înființarea de la zero.',
     category: 'protocoale-baza',
     categoryLabel: 'Protocoale de Bază',
+    categories: ['amenajare-design', 'specii-plante'],
     isPremium: true,
     readTime: 11,
     difficulty: 'Intermediar',
@@ -1017,6 +1047,13 @@ export const ARTICLES_EN: ArticleMeta[] = [
 export const getArticlesByLang = (lang: 'ro' | 'en'): ArticleMeta[] => {
   return lang === 'en' ? ARTICLES_EN : ARTICLES_RO;
 };
+
+// Helper: every category an article should match under (primary + secondary),
+// deduplicated. Use this instead of comparing `article.category` directly
+// wherever filtering/grouping by category — articles with `categories` set
+// belong to more than one topic.
+export const articleMatchesCategory = (article: ArticleMeta, categoryId: ArticleCategory): boolean =>
+  article.category === categoryId || (article.categories?.includes(categoryId) ?? false);
 
 // Helper: get free articles count
 export const getFreeArticleCount = (lang: 'ro' | 'en') => {
