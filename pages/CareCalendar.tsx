@@ -169,6 +169,31 @@ const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
     "Iulie", "August", "Septembrie", "Octombrie", "Noiembrie", "Decembrie"
   ];
 
+  // Illustrated month/season art (bundled static assets, not the Storage-backed
+  // content-images/calendar/ cover system — these are fixed decorative
+  // artwork baked into the design, not photos an admin swaps over time, so
+  // they ship in the bundle instead of going through an async Storage fetch).
+  const MONTH_IMAGES = [
+    '/images/calendar/months/01-ianuarie.png',
+    '/images/calendar/months/02-februarie.png',
+    '/images/calendar/months/03-martie.png',
+    '/images/calendar/months/04-aprilie.png',
+    '/images/calendar/months/05-mai.png',
+    '/images/calendar/months/06-iunie.png',
+    '/images/calendar/months/07-iulie.png',
+    '/images/calendar/months/08-august.png',
+    '/images/calendar/months/09-septembrie.png',
+    '/images/calendar/months/10-octombrie.png',
+    '/images/calendar/months/11-noiembrie.png',
+    '/images/calendar/months/12-decembrie.png',
+  ];
+  const SEASON_IMAGES = {
+    Winter: '/images/calendar/seasons/season-iarna.png',
+    Spring: '/images/calendar/seasons/season-primavara.png',
+    Summer: '/images/calendar/seasons/season-vara.png',
+    Autumn: '/images/calendar/seasons/season-toamna.png',
+  } as const;
+
   // Meteorological seasons (Northern hemisphere) — one lookup shared by the
   // carousel tiles and the legend, so "which season am I looking at" always
   // agrees between the two.
@@ -187,6 +212,7 @@ const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
       iconActive: 'bg-blue-500/10 text-blue-500',
       topBarActive: 'bg-blue-500',
       borderActive: 'border-blue-500/30',
+      ringActive: 'ring-blue-500/50',
       legendActive: 'bg-blue-500/10 text-blue-500',
       legendIcon: 'text-blue-500',
       panelBorder: 'border-blue-500/20',
@@ -198,6 +224,7 @@ const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
       iconActive: 'bg-accent-color/10 text-accent-color',
       topBarActive: 'bg-accent-color',
       borderActive: 'border-accent-color/30',
+      ringActive: 'ring-accent-color/50',
       legendActive: 'bg-accent-color/10 text-accent-color',
       legendIcon: 'text-accent-color',
       panelBorder: 'border-accent-color/20',
@@ -209,6 +236,7 @@ const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
       iconActive: 'bg-amber-500/10 text-amber-500',
       topBarActive: 'bg-amber-500',
       borderActive: 'border-amber-500/30',
+      ringActive: 'ring-amber-500/50',
       legendActive: 'bg-amber-500/10 text-amber-500',
       legendIcon: 'text-amber-500',
       panelBorder: 'border-amber-500/20',
@@ -220,6 +248,7 @@ const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
       iconActive: 'bg-orange-600/10 text-orange-600',
       topBarActive: 'bg-orange-600',
       borderActive: 'border-orange-600/30',
+      ringActive: 'ring-orange-600/50',
       legendActive: 'bg-orange-600/10 text-orange-600',
       legendIcon: 'text-orange-600',
       panelBorder: 'border-orange-600/20',
@@ -469,28 +498,30 @@ const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
                active season when space is tightest, growing to all 4 once
                there's room — the same windowing idea as the month carousel
                below, sized for what 1-2 words of Romanian actually need. */}
-           <div className="flex items-center gap-3 shrink-0">
+           <div className="flex items-center gap-2 shrink-0">
               {visibleSeasons.map(key => {
                   const style = SEASON_STYLES[key];
-                  const Icon = style.icon;
                   const isActive = activeSeasonKey === key;
                   return (
                     <div
                       key={key}
-                      className={`flex items-center gap-1 rounded-full shrink-0 transition-all duration-300 ${
-                        isActive ? `px-1.5 py-0.5 -my-0.5 ${style.legendActive}` : 'px-0 py-0'
+                      className={`relative w-8 h-8 rounded-lg overflow-hidden shrink-0 transition-all duration-300 ${
+                        isActive ? `ring-2 ${style.ringActive} opacity-100` : 'opacity-40'
                       }`}
                     >
-                       <Icon
-                         size={9}
-                         strokeWidth={3}
-                         className={`shrink-0 transition-opacity duration-300 ${isActive ? `${style.legendIcon} opacity-100` : 'text-text-secondary opacity-30'}`}
+                       <img
+                         src={SEASON_IMAGES[key]}
+                         alt={t(key) as string}
+                         className="absolute inset-0 w-full h-full object-cover"
                        />
-                       <span className={`text-[9px] font-black uppercase tracking-widest whitespace-nowrap transition-opacity duration-300
-                         ${isActive ? 'opacity-100' : 'text-text-secondary opacity-30'}
-                       `}>
-                         {t(key)}
-                       </span>
+                       {/* Discreet name overlay at the bottom of the image, not
+                           beside it — this is the "poza cu scrisul peste, jos"
+                           treatment the user asked for. */}
+                       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent pt-2 pb-0.5">
+                          <span className="block text-center text-[5px] font-black uppercase tracking-tighter text-white leading-none">
+                            {t(key)}
+                          </span>
+                       </div>
                     </div>
                   );
                 })}
@@ -518,7 +549,6 @@ const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
                 const monthName = months[idx];
                 const seasonKey = seasonKeyOf(idx);
                 const season = SEASON_STYLES[seasonKey];
-                const SeasonIcon = season.icon;
                 const isSelected = selectedMonth === idx;
                 const isCenter = offset === 0;
 
@@ -544,13 +574,17 @@ const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
                       ${isSelected ? `${season.topBarActive} opacity-100` : `${season.topBarActive} opacity-0 group-hover/month:opacity-30`}
                     `}></div>
 
-                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center mb-1 transition-all duration-300
+                    <div className={`relative w-11 h-11 rounded-lg overflow-hidden mb-1 transition-all duration-300
                       ${isSelected
-                        ? season.iconActive
-                        : 'bg-bg-main text-text-secondary opacity-30 group-hover/month:opacity-100'
+                        ? `ring-2 ${season.ringActive} opacity-100`
+                        : 'opacity-40 group-hover/month:opacity-80'
                       }`}
                     >
-                      <SeasonIcon size={14} strokeWidth={2.5} />
+                      <img
+                        src={MONTH_IMAGES[idx]}
+                        alt={monthName}
+                        className="absolute inset-0 w-full h-full object-cover bg-bg-main"
+                      />
                     </div>
 
                     <span className={`text-[10px] font-black uppercase tracking-wider transition-all
