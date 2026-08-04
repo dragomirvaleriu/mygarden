@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { Search, ArrowLeft, Check, Sprout, Sun, Droplets, Gauge, Ruler, SlidersHorizontal, MapPin, Layers, Flower2, Scissors, Bug, Shuffle, X } from 'lucide-react';
+import { Search, ArrowLeft, Check, Sprout, Sun, Droplets, Gauge, Ruler, SlidersHorizontal, MapPin, Layers, Flower2, Scissors, Bug, Shuffle, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useModalBackNavigation } from '../src/hooks/useModalBackNavigation';
 import {
   plantCatalog,
@@ -55,6 +55,8 @@ const Explore: React.FC<Props> = ({ organizationId }) => {
   const [waterFilter, setWaterFilter] = useState<WaterFilter>('toate');
   const [lightFilter, setLightFilter] = useState<LightFilter>('toate');
   const [showMoreFilters, setShowMoreFilters] = useState(false);
+  const [pageSize, setPageSize] = useState(20);
+  const [currentPage, setCurrentPage] = useState(1);
   const [selectedPlant, setSelectedPlant] = useState<PlantCatalogEntry | null>(null);
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
   const [addingId, setAddingId] = useState<string | null>(null);
@@ -85,6 +87,18 @@ const Explore: React.FC<Props> = ({ organizationId }) => {
       return true;
     });
   }, [localizedCatalog, search, typeFilter, difficultyFilter, categoryFilter, heightFilter, waterFilter, lightFilter]);
+
+  // Any change to the result set invalidates the current page — e.g. page 4
+  // of an unfiltered list is nonsense once a filter drops it to 15 results.
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, typeFilter, difficultyFilter, categoryFilter, heightFilter, waterFilter, lightFilter, pageSize]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredPlants.length / pageSize));
+  const pagedPlants = useMemo(
+    () => filteredPlants.slice((currentPage - 1) * pageSize, currentPage * pageSize),
+    [filteredPlants, currentPage, pageSize]
+  );
 
   const activeExtraFilterCount = [categoryFilter, heightFilter, waterFilter, lightFilter].filter(f => f !== 'toate').length;
   const totalActiveFilterCount = activeExtraFilterCount + [typeFilter, difficultyFilter].filter(f => f !== 'toate').length;
@@ -302,24 +316,72 @@ const Explore: React.FC<Props> = ({ organizationId }) => {
           <p className="text-sm mt-1">{t('Încearcă alți termeni de căutare sau alte filtre.')}</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {filteredPlants.map((plant) => (
-            <button
-              key={plant.id}
-              onClick={() => setSelectedPlant(plant)}
-              className="text-left bg-bg-card border border-border-color rounded-3xl p-4 shadow-sm hover:shadow-md hover:border-accent-color/30 hover:-translate-y-1 transition-all active:translate-y-0"
-            >
-              <div className="w-12 h-12 rounded-2xl bg-bg-main flex items-center justify-center text-2xl shadow-inner mb-3">
-                {plant.emoji}
-              </div>
-              <h3 className="font-black text-text-main text-sm leading-tight mb-1 truncate">{plant.name}</h3>
-              <p className="text-[11px] text-text-secondary italic truncate mb-2">{plant.scientificName}</p>
-              <span className={`inline-block px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wide border ${difficultyColor(plant.difficulty)}`}>
-                {difficultyLabel(plant.difficulty)}
+        <>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-xs font-bold text-text-secondary">
+              {t('Afișare')} {(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, filteredPlants.length)} {t('din')} {filteredPlants.length}
+            </p>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-text-secondary">{t('Pe pagină')}:</span>
+              {[20, 50, 100].map((size) => (
+                <button
+                  key={size}
+                  onClick={() => setPageSize(size)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-black transition ${
+                    pageSize === size
+                      ? 'bg-accent-color text-white'
+                      : 'bg-bg-card border border-border-color text-text-secondary hover:border-accent-color/30 hover:text-text-main'
+                  }`}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {pagedPlants.map((plant) => (
+              <button
+                key={plant.id}
+                onClick={() => setSelectedPlant(plant)}
+                className="text-left bg-bg-card border border-border-color rounded-3xl p-4 shadow-sm hover:shadow-md hover:border-accent-color/30 hover:-translate-y-1 transition-all active:translate-y-0"
+              >
+                <div className="w-12 h-12 rounded-2xl bg-bg-main flex items-center justify-center text-2xl shadow-inner mb-3">
+                  {plant.emoji}
+                </div>
+                <h3 className="font-black text-text-main text-sm leading-tight mb-1 truncate">{plant.name}</h3>
+                <p className="text-[11px] text-text-secondary italic truncate mb-2">{plant.scientificName}</p>
+                <span className={`inline-block px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wide border ${difficultyColor(plant.difficulty)}`}>
+                  {difficultyLabel(plant.difficulty)}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 pt-2">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="p-2 rounded-lg bg-bg-card border border-border-color text-text-secondary hover:border-accent-color/30 hover:text-text-main disabled:opacity-30 disabled:pointer-events-none transition"
+                aria-label={t('Pagina anterioară')}
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <span className="text-xs font-bold text-text-secondary px-2">
+                {t('Pagina')} {currentPage} / {totalPages}
               </span>
-            </button>
-          ))}
-        </div>
+              <button
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="p-2 rounded-lg bg-bg-card border border-border-color text-text-secondary hover:border-accent-color/30 hover:text-text-main disabled:opacity-30 disabled:pointer-events-none transition"
+                aria-label={t('Pagina următoare')}
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       <AnimatePresence>
