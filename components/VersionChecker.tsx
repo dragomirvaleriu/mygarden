@@ -1,59 +1,77 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { RefreshCw } from 'lucide-react';
 
-const POLLING_INTERVAL = 5 * 60 * 1000; // 5 minutes
+interface VersionInfo {
+  version: number;
+  commit?: string;
+}
+
+declare global {
+  interface Window {
+    __APP_VERSION__?: VersionInfo;
+  }
+}
+
+const POLLING_INTERVAL = 5 * 60 * 1000; // 5 minutes — within the 5-10min window
 // Brief courtesy heads-up before the automatic reload fires — long enough to
 // notice, short enough that this still reads as "automatic", not "asking
 // permission". No click required; this is not a countdown the user can
 // cancel, just a beat so the page doesn't vanish with zero warning.
 const AUTO_UPDATE_DELAY = 1800;
 
+const fetchVersion = async (): Promise<VersionInfo | null> => {
+  try {
+    // `cache: 'no-store'` bypasses the browser's HTTP cache outright — the
+    // `?t=` cache-buster plus firebase.json's no-cache header on
+    // /version.json already cover this, but belt-and-suspenders costs
+    // nothing here and protects against any CDN/proxy in between.
+    const response = await fetch(`/version.json?t=${Date.now()}`, { cache: 'no-store' });
+    if (!response.ok) return null;
+    return await response.json();
+  } catch (err) {
+    console.error('Failed to fetch version.json:', err);
+    return null;
+  }
+};
+
 export const VersionChecker: React.FC = () => {
   const [hasUpdate, setHasUpdate] = useState(false);
-  const [currentVersion, setCurrentVersion] = useState<number | null>(null);
+  const [currentVersion, setCurrentVersion] = useState<VersionInfo | null>(null);
   const triggeredRef = useRef(false);
 
   useEffect(() => {
-    const fetchInitialVersion = async () => {
-      try {
-        const response = await fetch(`/version.json?t=${Date.now()}`);
-        if (response.ok) {
-          const data = await response.json();
-          setCurrentVersion(data.version);
-        }
-      } catch (err) {
-        console.error('Failed to fetch initial version:', err);
-      }
-    };
-
-    fetchInitialVersion();
+    fetchVersion().then((data) => {
+      if (!data) return;
+      window.__APP_VERSION__ = data;
+      setCurrentVersion(data);
+    });
   }, []);
 
   useEffect(() => {
-    if (currentVersion === null) return;
+    if (!currentVersion) return;
 
     const checkForUpdates = async () => {
-      try {
-        const response = await fetch(`/version.json?t=${Date.now()}`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.version && data.version !== currentVersion) {
-            setHasUpdate(true);
-          }
-        }
-      } catch (err) {
-        console.error('Failed to check for updates:', err);
+      const data = await fetchVersion();
+      if (data && (data.version !== currentVersion.version || data.commit !== currentVersion.commit)) {
+        setHasUpdate(true);
       }
     };
 
     const interval = setInterval(checkForUpdates, POLLING_INTERVAL);
 
+    // Both listeners cover "user comes back to an already-open tab" —
+    // `focus` for a desktop window/tab switch, `visibilitychange` for the
+    // mobile/PWA case where the tab never loses window focus but does go
+    // to background (app-switcher, phone lock).
     const handleFocus = () => checkForUpdates();
+    const handleVisibility = () => { if (document.visibilityState === 'visible') checkForUpdates(); };
     window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibility);
 
     return () => {
       clearInterval(interval);
       window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibility);
     };
   }, [currentVersion]);
 
@@ -72,6 +90,13 @@ export const VersionChecker: React.FC = () => {
         const cacheNames = await caches.keys();
         await Promise.all(cacheNames.map(name => caches.delete(name)));
       }
+
+      // Deliberately NOT touching localStorage/sessionStorage: everything
+      // this app keeps there (read-article progress, ph logs, mowing
+      // reminders, remembered email) is real user data, not a fetched-data
+      // cache — there's nothing stale in it a new deploy would invalidate.
+      // Firebase Auth itself persists via IndexedDB, not localStorage, so
+      // it's untouched either way — the user stays logged in.
     } catch (err) {
       console.error('Failed to clear caches:', err);
     } finally {
