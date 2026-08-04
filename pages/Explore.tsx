@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Search, ArrowLeft, Check, Sprout, Sun, Droplets, Gauge, Ruler, SlidersHorizontal, MapPin, Layers, Flower2, Scissors, Bug, Shuffle, X, ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
@@ -71,6 +71,32 @@ const Explore: React.FC<Props> = ({ organizationId }) => {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
   const [addingId, setAddingId] = useState<string | null>(null);
+
+  // Mobile quick-search FAB: the full search bar collapses into a floating
+  // icon (bottom-right) once scrolled out of view, so search stays one tap
+  // away instead of requiring a scroll back to the top of a 262-plant list.
+  const searchBarRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const [searchBarVisible, setSearchBarVisible] = useState(true);
+  const [fabSearchOpen, setFabSearchOpen] = useState(false);
+
+  useEffect(() => {
+    const el = searchBarRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(([entry]) => setSearchBarVisible(entry.isIntersecting), { threshold: 0 });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // Closing the gap once the real bar is back in view keeps the FAB's
+  // expanded state from being stuck open after scrolling back to the top.
+  useEffect(() => {
+    if (searchBarVisible) setFabSearchOpen(false);
+  }, [searchBarVisible]);
+
+  useEffect(() => {
+    if (fabSearchOpen) searchInputRef.current?.focus();
+  }, [fabSearchOpen]);
 
   const { requestClose: closePlantDetail } = useModalBackNavigation(!!selectedPlant, () => setSelectedPlant(null));
 
@@ -172,7 +198,7 @@ const Explore: React.FC<Props> = ({ organizationId }) => {
         </div>
       </div>
 
-      <div className="relative">
+      <div ref={searchBarRef} className="relative">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary" />
         <input
           type="text"
@@ -668,6 +694,56 @@ const Explore: React.FC<Props> = ({ organizationId }) => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Mobile quick-search FAB — collapses/expands with the real search
+          bar's visibility rather than page scroll position directly, so it
+          reacts correctly however the bar leaves view (scroll, filters
+          panel opening and pushing it up, etc). Sits above MobileDock. */}
+      <div
+        className="md:hidden fixed right-4 z-40 pointer-events-none"
+        style={{ bottom: 'calc(96px + env(safe-area-inset-bottom))' }}
+      >
+        <AnimatePresence>
+          {!searchBarVisible && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.85 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.85 }}
+              transition={{ duration: 0.2 }}
+              className="pointer-events-auto flex items-center justify-end"
+            >
+              {fabSearchOpen ? (
+                <div className="flex items-center gap-2 bg-bg-card border border-border-color rounded-full shadow-2xl pl-4 pr-2 py-2 w-[min(80vw,320px)]">
+                  <Search className="w-4 h-4 text-text-secondary shrink-0" />
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder={t('Caută o plantă după nume...') as string}
+                    className="flex-1 min-w-0 bg-transparent text-sm text-text-main font-semibold placeholder:text-text-secondary outline-none"
+                  />
+                  <button
+                    onClick={() => setFabSearchOpen(false)}
+                    aria-label={t('Închide') as string}
+                    className="shrink-0 w-7 h-7 rounded-full bg-bg-main flex items-center justify-center text-text-secondary hover:text-text-main transition"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setFabSearchOpen(true)}
+                  aria-label={t('Caută o plantă după nume...') as string}
+                  className="w-12 h-12 rounded-full bg-accent-color text-white shadow-2xl shadow-accent-color/40 flex items-center justify-center hover:brightness-95 active:scale-95 transition"
+                >
+                  <Search className="w-5 h-5" />
+                </button>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 };
