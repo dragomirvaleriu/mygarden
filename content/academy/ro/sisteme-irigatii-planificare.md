@@ -66,13 +66,36 @@ Pentru suprafețe mici și medii (3-5m rază). Udă rapid, printr-un model de pu
 
 Nemenționată explicit ca "aspersor", dar merită inclusă pentru orice sistem modern: tuburi cu emițători mici care lasă apa să curgă lent, direct la baza plantei. Ideală pentru straturi de arbuști, garduri vii, grădini de legume — economisește apă masiv (nu se pierde nimic prin evaporare sau vânt) și ține frunzișul uscat (reducând riscul de boli fungice). Nu are sens pentru gazon (ar fi nevoie de prea multe linii de picurare ca să acopere uniform o suprafață mare), dar e superioară aspersoarelor clasice pentru orice altă zonă plantată.
 
-### Reguli de poziționare pentru aspersoare
+### Cele două reguli nenegociabile — 70-80% din calitatea execuției depinde de ele
 
-- **Rotoarele** se pun la 8-12m distanță unul de altul.
-- **Aspersoarele spray**, la 3-5m distanță.
-- **Aspersoarele vecine trebuie să-și suprapună razele** — pare contraintuitiv (de ce aș vrea suprapunere?), dar fără ea rămân mereu zone uscate exact la mijloc, între raza a două aspersoare care nu se ating.
+Poți greși aproape orice altceva din acest ghid și tot obții un sistem funcțional, doar sub-optim. Dacă greșești însă una din următoarele două reguli, ai un sistem cu zone uscate sau bălți garantate, indiferent cât de scump e echipamentul. Sunt exact regulile pe care Hunter și Rain Bird — cei doi mari producători de referință din industrie — le pun în centrul oricărui ghid de proiectare profesională.
+
+### 1. Acoperire cap-la-cap (head-to-head)
+
+Regula de aur: **fiecare aspersor trebuie să arunce apa până la aspersorul vecin — și puțin peste el, nu doar până la el.** Nu e o exagerare de siguranță, e cerința reală: doi aspersori cu rază de 5m, poziționați la exact 5m distanță unul de altul, ar trebui teoretic să se atingă chiar la limită — dar în practică (vânt, presiune variabilă, uzura duzei) "chiar la limită" devine ușor "aproape, dar nu chiar", iar rezultatul e o dungă uscată exact la mijloc, între cele două raze.
+
+**De aceea regula practică e să spațiezi aspersoarele la o distanță egală cu raza lor de acoperire, nu la diametrul complet** — astfel încât jetul fiecăruia să treacă vizibil de poziția vecinului său, nu doar să-l atingă tangențial. Un aspersor cu rază de 5m se poziționează la 5m de vecinul lui (nu la 8-9m "ca să acoperi mai mult teren cu mai puține capete") — asta garantează suprapunere reală, nu doar teoretică.
+
+- **Rotoarele** se pun la 8-12m distanță unul de altul (rază tipică 8-12m).
+- **Aspersoarele spray**, la 3-5m distanță (rază tipică 3-5m).
 - **Nu amesteca tipuri diferite pe aceeași zonă/circuit** — rotoarele și spray-urile au debite și viteze de udare diferite; pe același circuit, unul dintre ele va uda incorect (fie prea puțin, fie prea mult) pentru că timpul de funcționare programat nu poate fi optim pentru amândouă simultan.
 - **Respectă limitele de distanță ale producătorului**, indicate de regulă pe ambalaj sau fișa tehnică — nu le pune "mai rar ca să economisești echipament" (rămân goluri de udare) și nici "mai des ca să fie sigur" (suprapunere excesivă, apă irosită, posibilă băltire).
+
+### 2. Debitul duzei trebuie calculat în funcție de arcul ei (90°, 180°, 270°, 360°) — "precipitare potrivită"
+
+Asta e regula pe care aproape toată lumea o ratează la un sistem DIY, pentru că nu e intuitivă: **un aspersor cu duză pe arc de 360° (cerc complet) trebuie să dea de două ori mai mult debit decât unul identic, montat alături, dar cu duză pe 180° (semicerc)** — și de patru ori mai mult decât unul pe 90° (sfert de cerc).
+
+De ce: un aspersor pe 360° stropește o singură dată fiecare metru pătrat din raza lui, la fiecare rotație completă. Unul pe 180°, montat pe un colț, stropește ACELAȘI metru pătrat din raza lui de DOUĂ ori mai des (parcurge doar jumătate din traseu, deci trece prin fiecare punct de două ori mai frecvent, în același interval de timp). Dacă ambele ar avea același debit (aceeași cantitate de apă pe minut), colțul pe 180° ar primi dublu față de zona din mijloc pe 360° — o zonă udată excesiv lângă alta udată corect, în același program, cu aceeași durată de funcționare.
+
+**Regula practică de dozare a debitului, proporțional cu arcul** (exemplu orientativ, la aceeași rază de acoperire și presiune):
+- Cerc complet (360°): debit de referință, 100%
+- Trei sferturi (270°): ~75% din debitul aspersorului pe 360°
+- Semicerc (180°): ~50%
+- Sfert de cerc (90°): ~25%
+
+Producătorii serioși rezolvă asta pentru tine cu **duze de precipitare potrivită (matched precipitation rate — MPR la Rain Bird, sau tehnologia MP Rotator la Hunter)**: seturi de duze marcate explicit cu arcul lor, calibrate din fabrică să scoată exact proporția corectă de debit pentru arcul respectiv, astfel încât să poți amesteca liber arce diferite (90°, 180°, 270°, 360°) pe aceeași zonă, cu același timp de funcționare programat, fără să faci niciun calcul manual — atât timp cât alegi duze din aceeași familie/serie de produs.
+
+**Ce se întâmplă dacă ignori regula asta:** e cea mai frecventă cauză de "zone permanent ude lângă zone permanent uscate" pe un gazon altfel bine acoperit — nu lipsa de suprapunere (regula 1), ci un colț pe arc mic care primește, din greșeală, același debit ca un cap pe cerc complet.
 
 ## Al treilea pas: împarte grădina pe zone
 
