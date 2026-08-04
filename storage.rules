@@ -37,13 +37,15 @@ service firebase.storage {
     }
 
     // App-level content images (Academy article covers/inline images, plant
-    // photos for the Encyclopedia) — deliberately separate from `uploads/`
-    // above, which is per-user/per-organization gallery content. These are
-    // shared reference images, the same for every user, structured by the
-    // content's own ID: content-images/academy/{articleId}/... and
-    // content-images/plants/{plantId}/.... Keep this in sync with
-    // services/contentImages.ts, the single place in the app code that
-    // builds these paths.
+    // photos for the Encyclopedia, Calendar monthly-guide covers) —
+    // deliberately separate from `uploads/` above, which is
+    // per-user/per-organization gallery content. These are shared reference
+    // images, the same for every user, structured by the content's own ID:
+    // content-images/academy/{articleId}/..., content-images/plants/{plantId}/...,
+    // content-images/calendar/{01-12}/.... The {contentType} segment below is
+    // a wildcard, so any new kind added to services/contentImages.ts (the
+    // single place in the app code that builds these paths) is covered
+    // automatically — no rules change needed when a new category is added.
     function isSuperAdmin() {
       return isSignedIn() && (
         request.auth.token.email == 'dragomirvaleriu@gmail.com' ||

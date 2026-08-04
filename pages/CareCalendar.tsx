@@ -25,6 +25,8 @@ import {
 } from 'lucide-react';
 import { format, isAfter, addDays, addWeeks, isToday, parseISO, getMonth } from 'date-fns';
 import { db, collection, addDoc, updateDoc, doc, serverTimestamp, storage, ref, uploadBytes, getDownloadURL, auth } from '../services/firebase';
+import { calendarCoverPath } from '../services/contentImages';
+import ContentImage from '../components/ContentImage';
 import { compressImage } from '../utils/image';
 import toast from 'react-hot-toast';
 
@@ -590,9 +592,16 @@ const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
               <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
                  <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 mb-8">
                     <div className="flex items-center gap-6 min-w-0">
-                       <div className="w-20 h-20 shrink-0 rounded-[2rem] bg-accent-color text-white flex items-center justify-center shadow-2xl shadow-accent-color/30 rotate-3 transition-transform hover:rotate-0">
-                          <CalendarIcon size={32} />
-                       </div>
+                       <ContentImage
+                         path={calendarCoverPath(currentMonthGuide.month)}
+                         alt={currentMonthGuide.title}
+                         className="w-20 h-20 shrink-0 rounded-[2rem] object-cover shadow-2xl rotate-3 transition-transform hover:rotate-0"
+                         fallback={
+                           <div className="w-20 h-20 shrink-0 rounded-[2rem] bg-accent-color text-white flex items-center justify-center shadow-2xl shadow-accent-color/30 rotate-3 transition-transform hover:rotate-0">
+                              <CalendarIcon size={32} />
+                           </div>
+                         }
+                       />
                        <div className="min-w-0">
                           <h2 className="text-4xl font-black text-main uppercase tracking-tighter leading-none mb-2 truncate">
                              {currentMonthGuide.title}
