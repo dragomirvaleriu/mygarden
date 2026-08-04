@@ -100,8 +100,21 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
     try {
       return await getDocFromServer(doc(db, 'users', uid));
     } catch (e) {
-      console.warn("Profile server read failed, falling back to cache", e);
-      return await getDoc(doc(db, 'users', uid));
+      // Right after sign-in, Firestore's connection can take a moment to pick
+      // up the freshly-issued auth token, so the first server read often
+      // fails with a transient permission error even for a valid, existing
+      // user. Retry once after a short pause before falling back to cache —
+      // without this, that transient failure used to surface as a scary
+      // (and instantly-dismissed, since App.tsx's own listener resolves the
+      // login moments later regardless) error banner on almost every login.
+      console.warn("Profile server read failed, retrying once", e);
+      try {
+        await new Promise((r) => setTimeout(r, 400));
+        return await getDocFromServer(doc(db, 'users', uid));
+      } catch (e2) {
+        console.warn("Profile server retry failed, falling back to cache", e2);
+        return await getDoc(doc(db, 'users', uid));
+      }
     }
   };
 
