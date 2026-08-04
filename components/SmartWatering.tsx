@@ -109,11 +109,11 @@ const SmartWatering: React.FC = () => {
           </motion.div>
 
           {/* Best Window Tip */}
-          <div className="mt-3 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3 flex items-start gap-3">
-            <Clock className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+          <div className="mt-3 bg-accent-subtle border border-accent-border rounded-xl px-4 py-3 flex items-start gap-3">
+            <Clock className="w-4 h-4 text-accent-ink shrink-0 mt-0.5" />
             <div>
-              <p className="text-xs font-black text-emerald-700">Cel mai bun interval: 04:00 – 08:00</p>
-              <p className="text-[11px] text-emerald-600 font-medium mt-0.5">Minimizezi evaporarea și riscul de boli fungice (Brown Patch)</p>
+              <p className="text-xs font-black text-accent-ink">Cel mai bun interval: 04:00 – 08:00</p>
+              <p className="text-[11px] text-accent-ink font-medium mt-0.5">Minimizezi evaporarea și riscul de boli fungice (Brown Patch)</p>
             </div>
           </div>
         </section>
@@ -125,7 +125,7 @@ const SmartWatering: React.FC = () => {
               <span className="w-2 h-2 rounded-full bg-purple-500" /> Ferestre de Tratament (Spray Windows)
             </h3>
             {bestDay && (
-              <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100">
+              <span className="text-[10px] font-black text-accent-ink bg-accent-subtle px-2.5 py-1 rounded-lg border border-accent-border">
                 ✓ Optim: {bestDay.day}
               </span>
             )}
@@ -183,9 +183,9 @@ const SmartWatering: React.FC = () => {
                   </div>
 
                   {/* Status Badge */}
-                  <div className={`rounded-xl p-2.5 border flex items-center justify-center gap-1.5 ${isGood ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-red-100/60 border-red-200 text-red-700'}`}>
+                  <div className={`rounded-xl p-2.5 border flex items-center justify-center gap-1.5 ${isGood ? 'bg-accent-subtle border-accent-border text-accent-ink' : 'bg-red-100/60 border-red-200 text-red-700'}`}>
                     {isGood
-                      ? <><CheckCircle2 className="w-4 h-4 text-emerald-500" /><span className="text-[10px] font-black uppercase tracking-wide">Optim</span></>
+                      ? <><CheckCircle2 className="w-4 h-4 text-accent-color" /><span className="text-[10px] font-black uppercase tracking-wide">Optim</span></>
                       : <><AlertTriangle className="w-4 h-4 text-red-500" /><span className="text-[10px] font-black uppercase tracking-wide">Blocat</span></>
                     }
                   </div>

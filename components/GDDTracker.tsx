@@ -81,7 +81,7 @@ const GDDTracker: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6 border-b border-gray-100 pb-5">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
+          <div className="w-11 h-11 rounded-xl bg-accent-subtle text-accent-ink flex items-center justify-center border border-accent-border">
             <ThermometerSun className="w-5 h-5" />
           </div>
           <div>
@@ -98,19 +98,19 @@ const GDDTracker: React.FC = () => {
       </div>
 
       {/* Total GDD Sezon */}
-      <div className="bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-2xl p-5 text-white shadow-lg shadow-emerald-500/25 relative overflow-hidden mb-6">
+      <div className="bg-gradient-to-br from-accent-color to-accent-hover rounded-2xl p-5 text-white shadow-lg shadow-accent-glow/25 relative overflow-hidden mb-6">
         <div className="absolute -right-6 -top-6 w-28 h-28 bg-white/10 rounded-full blur-2xl" />
         <div className="relative z-10 flex justify-between items-start">
           <div>
-            <p className="text-emerald-100 font-medium text-xs uppercase tracking-wider mb-1">GDD Total Sezon Curent</p>
+            <p className="text-accent-ink font-medium text-xs uppercase tracking-wider mb-1">GDD Total Sezon Curent</p>
             <h3 className="text-5xl font-black tracking-tight">{totalGdd}</h3>
-            <p className="text-emerald-200 text-xs mt-1">acumulați din 1 Ianuarie</p>
+            <p className="text-accent-ink text-xs mt-1">acumulați din 1 Ianuarie</p>
           </div>
           <div className="text-right">
-            <span className="px-3 py-1.5 bg-black/20 backdrop-blur-md rounded-xl text-[10px] font-black uppercase tracking-wider text-emerald-50 block mb-2">
+            <span className="px-3 py-1.5 bg-black/20 backdrop-blur-md rounded-xl text-[10px] font-black uppercase tracking-wider text-accent-ink block mb-2">
               Bază: 10°C
             </span>
-            <span className="text-emerald-100 text-xs font-bold">~{AVG_GDD_PER_DAY} GDD/zi azi</span>
+            <span className="text-accent-ink text-xs font-bold">~{AVG_GDD_PER_DAY} GDD/zi azi</span>
           </div>
         </div>
       </div>

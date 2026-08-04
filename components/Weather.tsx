@@ -330,7 +330,7 @@ const Weather: React.FC<Props> = ({
                  <span className="text-[10px] font-black text-main">{currentInfo.windSpeed} m/s</span>
                </div>
                <div className="flex items-center gap-1.5 bg-black/5 dark:bg-white/5 rounded-lg px-2.5 py-1.5 backdrop-blur-md border border-white/10 shadow-sm">
-                 <Gauge size={12} className="text-emerald-500" />
+                 <Gauge size={12} className="text-accent-color" />
                  <span className="text-[10px] font-black text-main">{currentInfo.pressure} hPa</span>
                </div>
                <div className="flex items-center gap-1.5 bg-black/5 dark:bg-white/5 rounded-lg px-2.5 py-1.5 backdrop-blur-md border border-white/10 shadow-sm">

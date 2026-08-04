@@ -63,7 +63,7 @@ export const SmartTroubleshooter: React.FC<Props> = ({ onNavigate }) => {
       options: [
         { label: 'Pete Uscate sau Galbene', subtext: 'Zone în care iarba moare sau se îngălbenește.', nextNodeId: 'dry_patches', icon: <ThermometerSun size={20} className="text-amber-500" /> },
         { label: 'Buruieni sau Mușchi', subtext: 'Plante nedorite care sufocă gazonul.', nextNodeId: 'weeds_moss', icon: <Leaf size={20} className="text-green-500" /> },
-        { label: 'Culoare Palidă / Creștere Lentă', subtext: 'Gazonul este verde deschis sau crește greu.', nextNodeId: 'growth_color', icon: <Sprout size={20} className="text-emerald-400" /> },
+        { label: 'Culoare Palidă / Creștere Lentă', subtext: 'Gazonul este verde deschis sau crește greu.', nextNodeId: 'growth_color', icon: <Sprout size={20} className="text-accent-color" /> },
         { label: 'Sol Compact / Bălți', subtext: 'Apa stagnează după irigare sau ploaie.', nextNodeId: 'soil_water', icon: <Waves size={20} className="text-blue-500" /> },
         { label: 'Dăunători', subtext: 'Cârtițe, mușuroaie, viermi sau insecte.', nextNodeId: 'pests', icon: <Bug size={20} className="text-red-500" /> },
       ]
@@ -363,11 +363,11 @@ export const SmartTroubleshooter: React.FC<Props> = ({ onNavigate }) => {
                     try { sessionStorage.setItem('academy_open_slug', 'asistent-peloza'); } catch {}
                     onNavigate(Page.Academy);
                   }}
-                  className="p-4 bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-950 dark:to-emerald-900/50 border-2 border-emerald-200 dark:border-emerald-800 rounded-2xl text-left hover:border-emerald-300 dark:hover:border-emerald-700 transition-all shadow-sm hover:shadow-md group"
+                  className="p-4 bg-gradient-to-br from-accent-color to-accent-hover/50 dark:from-accent-color dark:to-accent-hover/50 border-2 border-accent-border dark:border-accent-border rounded-2xl text-left hover:border-accent-color dark:hover:border-accent-color transition-all shadow-sm hover:shadow-md group"
                 >
                   <div className="text-2xl mb-2">🌱</div>
-                  <p className="text-xs font-black text-emerald-900 dark:text-emerald-100 uppercase tracking-wider">Asistent Noua Peluzã</p>
-                  <p className="text-[10px] text-emerald-700 dark:text-emerald-300 font-medium mt-1">Sfaturi de specialitate</p>
+                  <p className="text-xs font-black text-accent-dark dark:text-accent-ink uppercase tracking-wider">Asistent Noua Peluzã</p>
+                  <p className="text-[10px] text-accent-ink dark:text-accent-ink font-medium mt-1">Sfaturi de specialitate</p>
                 </button>
                 <button
                   onClick={() => {

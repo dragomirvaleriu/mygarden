@@ -110,7 +110,7 @@ export const YardMapper: React.FC<YardMapperProps> = ({ onSave, onClose }) => {
       <div className="absolute top-6 left-6 right-16 flex justify-between items-start pointer-events-none z-[4001]">
         <div className="bg-black/60 backdrop-blur-md border border-white/10 rounded-2xl p-4 text-white pointer-events-auto shadow-2xl max-w-sm">
           <h2 className="text-lg font-bold flex items-center gap-2 mb-1">
-            <MapPin className="w-5 h-5 text-emerald-400" />
+            <MapPin className="w-5 h-5 text-accent-color" />
             Cartografiere Curte
           </h2>
           <p className="text-xs text-gray-300 font-medium leading-relaxed">
@@ -118,9 +118,9 @@ export const YardMapper: React.FC<YardMapperProps> = ({ onSave, onClose }) => {
           </p>
           
           {area > 0 && (
-            <div className="mt-4 p-3 bg-emerald-500/20 border border-emerald-500/30 rounded-xl">
-              <p className="text-[10px] text-emerald-300 font-bold uppercase tracking-widest mb-1">Suprafață Calculată</p>
-              <p className="text-3xl font-black text-white">{area} <span className="text-sm text-emerald-200">mp</span></p>
+            <div className="mt-4 p-3 bg-accent-subtle border border-accent-border rounded-xl">
+              <p className="text-[10px] text-accent-ink font-bold uppercase tracking-widest mb-1">Suprafață Calculată</p>
+              <p className="text-3xl font-black text-white">{area} <span className="text-sm text-accent-ink">mp</span></p>
             </div>
           )}
         </div>
@@ -143,7 +143,7 @@ export const YardMapper: React.FC<YardMapperProps> = ({ onSave, onClose }) => {
           </button>
           <button 
             onClick={handleSave}
-            className="px-8 py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-2xl transition shadow-[0_0_30px_rgba(16,185,129,0.3)] flex items-center gap-2"
+            className="px-8 py-4 bg-accent-hover hover:bg-accent-color text-white font-bold rounded-2xl transition shadow-[0_0_30px_rgba(16,185,129,0.3)] flex items-center gap-2"
           >
             <Save className="w-5 h-5" />
             Salvează Curtea

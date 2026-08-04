@@ -25,7 +25,7 @@ const grassSpecies = [
 
 const getToleranceColor = (level: string) => {
   switch (level.toLowerCase()) {
-    case 'excelentă': return 'bg-emerald-500 text-emerald-900 border-emerald-200';
+    case 'excelentă': return 'bg-accent-color text-accent-dark border-accent-border';
     case 'bună': return 'bg-green-400 text-green-900 border-green-200';
     case 'medie spre bună': return 'bg-green-300 text-green-900 border-green-200';
     case 'medie': return 'bg-amber-400 text-amber-900 border-amber-200';
@@ -57,7 +57,7 @@ const GrassDictionary: React.FC = () => {
       
       {/* Header */}
       <div className="flex items-center gap-3 mb-6 border-b border-gray-100 pb-6">
-        <div className="w-12 h-12 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center border border-teal-100 shadow-inner shrink-0">
+        <div className="w-12 h-12 rounded-xl bg-accent-subtle text-accent-ink flex items-center justify-center border border-accent-border shadow-inner shrink-0">
           <BookOpen className="w-6 h-6" />
         </div>
         <div>
@@ -73,7 +73,7 @@ const GrassDictionary: React.FC = () => {
         <div className="flex flex-col sm:flex-row bg-gray-50 border border-gray-100 rounded-2xl p-1.5 shadow-inner gap-1">
           <button 
             onClick={() => setActiveTab('Sezon Rece')}
-            className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 ${activeTab === 'Sezon Rece' ? 'bg-teal-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'}`}
+            className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 ${activeTab === 'Sezon Rece' ? 'bg-accent-hover text-white shadow-md' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'}`}
           >
             <Snowflake className="w-4 h-4" /> Sezon Rece (Adaptate EU)
           </button>
@@ -105,14 +105,14 @@ const GrassDictionary: React.FC = () => {
               >
                 {/* Fundal subtil decorativ funcție de categorie */}
                 <div className={`absolute -right-10 -top-10 w-32 h-32 rounded-full blur-2xl transition opacity-50 ${
-                  species.category === 'Sezon Rece' ? 'bg-teal-500/10 group-hover:bg-teal-500/20' :
+                  species.category === 'Sezon Rece' ? 'bg-accent-subtle group-hover:bg-accent-glow/20' :
                   species.category === 'Sezon Cald' ? 'bg-amber-500/10 group-hover:bg-amber-500/20' :
                   'bg-rose-500/10 group-hover:bg-rose-500/20'
                 }`}></div>
 
                 <div>
                   <h3 className={`text-2xl font-black tracking-tight ${
-                    species.category === 'Sezon Rece' ? 'text-teal-700' :
+                    species.category === 'Sezon Rece' ? 'text-accent-ink' :
                     species.category === 'Sezon Cald' ? 'text-amber-700' :
                     'text-rose-700'
                   }`}>

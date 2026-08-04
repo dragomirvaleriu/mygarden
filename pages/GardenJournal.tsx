@@ -538,7 +538,7 @@ const GardenJournal: React.FC<Props> = ({ organizationId, onNavigate, userId, is
                         alt="Activity" 
                       />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-emerald-950/40 via-slate-900 to-emerald-950/20 flex flex-col items-center justify-center text-emerald-500/30 gap-2 p-6 text-center">
+                      <div className="w-full h-full bg-gradient-to-br from-accent-color/40 via-slate-900 to-accent-hover/20 flex flex-col items-center justify-center text-accent-color/30 gap-2 p-6 text-center">
                         <Sprout size={44} className="opacity-40 animate-pulse" />
                         <span className="text-[9px] font-black uppercase tracking-widest text-text-secondary/50">Jurnal Activitate</span>
                       </div>
@@ -558,10 +558,10 @@ const GardenJournal: React.FC<Props> = ({ organizationId, onNavigate, userId, is
                             return <span className="bg-red-600/60 backdrop-blur-md text-white px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border border-white/10 shadow-sm">Dăunători</span>;
                           }
                           if (cat === 'fertilizing' || cat?.toLowerCase().includes('îngrășământ')) {
-                            return <span className="bg-emerald-600/60 backdrop-blur-md text-white px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border border-white/10 shadow-sm">Fertilizare</span>;
+                            return <span className="bg-accent-subtle backdrop-blur-md text-white px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border border-white/10 shadow-sm">Fertilizare</span>;
                           }
                           if (cat === 'ai_diagnosis') {
-                            return <span className="bg-emerald-600/60 backdrop-blur-md text-white px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border border-white/10 shadow-sm flex items-center gap-1"><ScanLine size={10} /> Diagnoză AI</span>;
+                            return <span className="bg-accent-subtle backdrop-blur-md text-white px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border border-white/10 shadow-sm flex items-center gap-1"><ScanLine size={10} /> Diagnoză AI</span>;
                           }
                           return (
                             <div className="bg-black/50 backdrop-blur-md px-2.5 py-0.5 rounded-full text-[10px] font-black text-white uppercase tracking-wider border border-white/10 shadow-sm">

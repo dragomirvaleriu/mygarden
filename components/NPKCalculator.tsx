@@ -273,18 +273,18 @@ const NPKCalculator: React.FC = () => {
               className="overflow-hidden"
             >
               {/* Hero Number */}
-              <div className="bg-gradient-to-br from-[#2D8C3C] to-emerald-700 rounded-2xl p-6 text-white text-center relative overflow-hidden shadow-xl shadow-green-900/20 mb-3">
+              <div className="bg-gradient-to-br from-[#2D8C3C] to-accent-hover rounded-2xl p-6 text-white text-center relative overflow-hidden shadow-xl shadow-green-900/20 mb-3">
                 <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
                 <div className="absolute -left-8 -bottom-8 w-24 h-24 bg-black/10 rounded-full blur-2xl" />
-                <p className="text-emerald-100 text-xs font-bold uppercase tracking-widest mb-2">Ai nevoie pentru {result.zoneName}</p>
+                <p className="text-accent-ink text-xs font-bold uppercase tracking-widest mb-2">Ai nevoie pentru {result.zoneName}</p>
                 <h3 className="text-5xl font-black tracking-tight">
                   {resultKg >= 1 ? resultKg.toFixed(2) : result.totalRequired.toFixed(0)}
-                  <span className="text-2xl font-bold text-emerald-200 ml-2">{resultKg >= 1 ? 'kg' : 'g'}</span>
+                  <span className="text-2xl font-bold text-accent-ink ml-2">{resultKg >= 1 ? 'kg' : 'g'}</span>
                 </h3>
-                <p className="text-emerald-100 text-sm mt-2">produs comercial pentru <strong className="text-white">{result.area} mp</strong></p>
+                <p className="text-accent-ink text-sm mt-2">produs comercial pentru <strong className="text-white">{result.area} mp</strong></p>
                 <div className="mt-3 pt-3 border-t border-white/20 flex items-center justify-center gap-1.5">
-                  <ArrowRight className="w-3 h-3 text-emerald-200" />
-                  <span className="text-xs text-emerald-100 font-bold">{targetN} g N / mp · doza solicitată</span>
+                  <ArrowRight className="w-3 h-3 text-accent-ink" />
+                  <span className="text-xs text-accent-ink font-bold">{targetN} g N / mp · doza solicitată</span>
                 </div>
               </div>
 
@@ -316,7 +316,7 @@ const NPKCalculator: React.FC = () => {
               {result.productId && (
                 <button onClick={handleApplyTreatment}
                   className="w-full bg-gray-900 hover:bg-black text-white font-bold py-4 rounded-xl transition flex items-center justify-center gap-2 shadow-sm active:scale-[0.98]">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                  <CheckCircle2 className="w-5 h-5 text-accent-color" />
                   Aplică și Înregistrează Tratamentul
                 </button>
               )}

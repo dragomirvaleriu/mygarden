@@ -634,7 +634,7 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
           )}
 
           {info && !error && (
-            <div className="p-4 bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 text-xs rounded-md flex items-center gap-3 font-bold">
+            <div className="p-4 bg-accent-subtle dark:bg-accent-subtle border border-accent-border dark:border-accent-border text-accent-ink dark:text-accent-ink text-xs rounded-md flex items-center gap-3 font-bold">
               <CheckCircle2 size={16} className="shrink-0" />
               <span>{info}</span>
             </div>
@@ -785,7 +785,7 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="p-4 rounded-lg border-2 border-emerald-500/30 bg-emerald-500/5">
+                    <div className="p-4 rounded-lg border-2 border-accent-border bg-accent-subtle">
                       <div className="text-2xl mb-2">🌱</div>
                       <p className="text-xs font-black text-main mb-1">FREE</p>
                       <p className="text-[9px] font-bold text-text-secondary">Pân la 3 proprietăți</p>

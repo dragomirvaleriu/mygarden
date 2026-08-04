@@ -11,6 +11,17 @@
   --color-border-color: var(--border-color);
   --color-accent-color: var(--accent-color);
   --color-accent-text: var(--accent-text);
+  /* Derived accent tokens (defined in index.html, recomputed via color-mix
+     whenever --accent-color changes) — exposed as real Tailwind utilities
+     (bg-accent-subtle, border-accent-border, hover:bg-accent-hover, etc.)
+     so every surface can pick up the user's theme color without one-off
+     inline color-mix() calls scattered through JSX. */
+  --color-accent-subtle: var(--accent-subtle);
+  --color-accent-light: var(--accent-light);
+  --color-accent-border: var(--accent-border);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-dark: var(--accent-dark);
+  --color-accent-ink: var(--accent-ink);
 }
 
 body {

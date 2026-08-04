@@ -53,21 +53,21 @@ export const PFTools: React.FC = () => {
           {gardenTasks.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {gardenTasks.map(task => (
-                <div key={task.id} className="bg-white rounded-3xl p-6 shadow-sm border border-emerald-100 relative overflow-hidden group hover:shadow-md transition">
-                  <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition"></div>
+                <div key={task.id} className="bg-white rounded-3xl p-6 shadow-sm border border-accent-border relative overflow-hidden group hover:shadow-md transition">
+                  <div className="absolute -right-4 -top-4 w-24 h-24 bg-accent-subtle rounded-full blur-2xl group-hover:bg-accent-glow/20 transition"></div>
                   <h3 className="text-lg font-black text-gray-900 mb-2">{task.title}</h3>
                   <p className="text-sm text-gray-500 font-medium leading-relaxed mb-4">
                     {task.notes || 'Această sarcină a fost programată automat de asistentul tău My Garden.'}
                   </p>
-                  <button className="flex items-center gap-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:text-emerald-700 px-4 py-2 rounded-xl text-sm font-bold transition w-full justify-center">
+                  <button className="flex items-center gap-2 bg-accent-subtle text-accent-ink hover:bg-accent-subtle hover:text-accent-hover px-4 py-2 rounded-xl text-sm font-bold transition w-full justify-center">
                     <Zap size={16} /> Începe Acțiunea
                   </button>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-3xl p-10 text-center">
-              <div className="w-16 h-16 bg-emerald-500/10 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="bg-accent-subtle border border-accent-border rounded-3xl p-10 text-center">
+              <div className="w-16 h-16 bg-accent-subtle text-accent-color rounded-full flex items-center justify-center mx-auto mb-4">
                 <CheckCircle2 size={32} />
               </div>
               <h3 className="text-xl font-black text-gray-900 mb-2">Totul este la zi!</h3>
@@ -80,21 +80,21 @@ export const PFTools: React.FC = () => {
           <div className="mt-8">
             <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-4">Acțiuni Rapide</h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <button onClick={() => setActiveTool('mowing')} className="bg-white border border-gray-100 p-4 rounded-2xl text-left hover:border-emerald-500/30 hover:shadow-lg transition flex items-center justify-between group">
-                <span className="font-bold text-gray-700 group-hover:text-emerald-600 transition">Vreau să tund iarba</span>
-                <div className="w-8 h-8 rounded-full bg-gray-50 group-hover:bg-emerald-50 flex items-center justify-center text-gray-400 group-hover:text-emerald-500 transition">
+              <button onClick={() => setActiveTool('mowing')} className="bg-white border border-gray-100 p-4 rounded-2xl text-left hover:border-accent-color/30 hover:shadow-lg transition flex items-center justify-between group">
+                <span className="font-bold text-gray-700 group-hover:text-accent-color transition">Vreau să tund iarba</span>
+                <div className="w-8 h-8 rounded-full bg-gray-50 group-hover:bg-accent-subtle flex items-center justify-center text-gray-400 group-hover:text-accent-color transition">
                   <ArrowRightLeft size={14} />
                 </div>
               </button>
-              <button onClick={() => setActiveTool('watering')} className="bg-white border border-gray-100 p-4 rounded-2xl text-left hover:border-emerald-500/30 hover:shadow-lg transition flex items-center justify-between group">
-                <span className="font-bold text-gray-700 group-hover:text-emerald-600 transition">Vreau să ud curtea</span>
-                <div className="w-8 h-8 rounded-full bg-gray-50 group-hover:bg-emerald-50 flex items-center justify-center text-gray-400 group-hover:text-emerald-500 transition">
+              <button onClick={() => setActiveTool('watering')} className="bg-white border border-gray-100 p-4 rounded-2xl text-left hover:border-accent-color/30 hover:shadow-lg transition flex items-center justify-between group">
+                <span className="font-bold text-gray-700 group-hover:text-accent-color transition">Vreau să ud curtea</span>
+                <div className="w-8 h-8 rounded-full bg-gray-50 group-hover:bg-accent-subtle flex items-center justify-center text-gray-400 group-hover:text-accent-color transition">
                   <ArrowRightLeft size={14} />
                 </div>
               </button>
-              <button onClick={() => setActiveTool('sos')} className="bg-white border border-gray-100 p-4 rounded-2xl text-left hover:border-emerald-500/30 hover:shadow-lg transition flex items-center justify-between group">
-                <span className="font-bold text-gray-700 group-hover:text-emerald-600 transition">Văd o problemă (SOS)</span>
-                <div className="w-8 h-8 rounded-full bg-gray-50 group-hover:bg-emerald-50 flex items-center justify-center text-gray-400 group-hover:text-emerald-500 transition">
+              <button onClick={() => setActiveTool('sos')} className="bg-white border border-gray-100 p-4 rounded-2xl text-left hover:border-accent-color/30 hover:shadow-lg transition flex items-center justify-between group">
+                <span className="font-bold text-gray-700 group-hover:text-accent-color transition">Văd o problemă (SOS)</span>
+                <div className="w-8 h-8 rounded-full bg-gray-50 group-hover:bg-accent-subtle flex items-center justify-center text-gray-400 group-hover:text-accent-color transition">
                   <ArrowRightLeft size={14} />
                 </div>
               </button>
@@ -401,8 +401,8 @@ export const PFTools: React.FC = () => {
             onClick={() => setActiveTool('gdd')}
             className="bg-white/80 backdrop-blur-xl border border-gray-100 rounded-3xl p-6 shadow-sm cursor-pointer hover:shadow-md transition relative overflow-hidden group"
           >
-            <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition"></div>
-            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4">
+            <div className="absolute -right-4 -top-4 w-24 h-24 bg-accent-subtle rounded-full blur-2xl group-hover:bg-accent-glow/20 transition"></div>
+            <div className="w-12 h-12 rounded-2xl bg-accent-subtle text-accent-ink flex items-center justify-center mb-4">
               <ThermometerSun className="w-6 h-6" />
             </div>
             <h3 className="text-lg font-bold text-gray-900 mb-1">Tracker GDD & Tratamente</h3>
@@ -513,8 +513,8 @@ export const PFTools: React.FC = () => {
             onClick={() => setActiveTool('dict')}
             className="bg-white/80 backdrop-blur-xl border border-gray-100 rounded-3xl p-6 shadow-sm cursor-pointer hover:shadow-md transition relative overflow-hidden group"
           >
-            <div className="absolute -right-4 -top-4 w-24 h-24 bg-teal-500/10 rounded-full blur-2xl group-hover:bg-teal-500/20 transition"></div>
-            <div className="w-12 h-12 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center mb-4">
+            <div className="absolute -right-4 -top-4 w-24 h-24 bg-accent-subtle rounded-full blur-2xl group-hover:bg-accent-glow/20 transition"></div>
+            <div className="w-12 h-12 rounded-2xl bg-accent-subtle text-accent-ink flex items-center justify-center mb-4">
               <BookOpen className="w-6 h-6" />
             </div>
             <h3 className="text-lg font-bold text-gray-900 mb-1">Dicționar Specii (EU/SUA)</h3>

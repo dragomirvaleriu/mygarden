@@ -61,7 +61,7 @@ const MobileDock: React.FC<Props> = ({ activePage, onNavigate, profile }) => {
               className="relative flex items-center justify-center transition-all duration-500 ease-out py-1 group"
             >
               {isActive && (
-                <div className="absolute -top-[7px] left-1/2 -translate-x-1/2 w-6 h-[3px] bg-accent-color rounded-b-full shadow-[0_2px_8px_rgba(var(--accent-color-rgb),0.8)]" />
+                <div className="absolute -top-[7px] left-1/2 -translate-x-1/2 w-6 h-[3px] bg-accent-color rounded-b-full shadow-[0_2px_8px_var(--accent-glow)]" />
               )}
               <div className={`flex flex-row items-center gap-1 ${isActive ? 'px-3 py-1.5' : 'px-1.5 py-1.5'} rounded-full transition-all duration-500 ${isActive ? 'bg-accent-color/15' : 'bg-transparent'}`}>
                 <Icon 

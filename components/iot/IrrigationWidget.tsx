@@ -73,7 +73,7 @@ export const IrrigationWidget: React.FC = () => {
         <button
           onClick={() => setIsSmartSync(!isSmartSync)}
           title="Smart Sync Meteo"
-          className={`relative w-9 h-5 rounded-full transition-colors duration-300 shrink-0 ${isSmartSync ? 'bg-emerald-500' : 'bg-border-color'}`}
+          className={`relative w-9 h-5 rounded-full transition-colors duration-300 shrink-0 ${isSmartSync ? 'bg-accent-color' : 'bg-border-color'}`}
         >
           <div className={`absolute top-0.5 left-0.5 bg-white w-4 h-4 rounded-full transition-transform duration-300 ${isSmartSync ? 'translate-x-4 shadow-sm' : ''}`} />
         </button>

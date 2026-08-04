@@ -98,7 +98,7 @@ const ProductInventory: React.FC = () => {
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'Îngrășământ': return <Leaf className="w-5 h-5 text-emerald-500" />;
+      case 'Îngrășământ': return <Leaf className="w-5 h-5 text-accent-color" />;
       case 'Fungicid': return <ShieldAlert className="w-5 h-5 text-purple-500" />;
       case 'Erbicid': return <Bug className="w-5 h-5 text-amber-500" />;
       default: return <Package className="w-5 h-5 text-blue-500" />;
@@ -107,7 +107,7 @@ const ProductInventory: React.FC = () => {
 
   const getTypeStyles = (type: string) => {
     switch (type) {
-      case 'Îngrășământ': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
+      case 'Îngrășământ': return 'bg-accent-subtle text-accent-ink border-accent-border';
       case 'Fungicid': return 'bg-purple-50 text-purple-600 border-purple-100';
       case 'Erbicid': return 'bg-amber-50 text-amber-600 border-amber-100';
       default: return 'bg-blue-50 text-blue-600 border-blue-100';

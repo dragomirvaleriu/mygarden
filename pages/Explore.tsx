@@ -235,7 +235,7 @@ const Explore: React.FC<Props> = ({ organizationId }) => {
       </div>
 
       {showMoreFilters && (
-        <div className="bg-bg-card border border-border-color rounded-2xl p-4 space-y-4">
+        <div className="bg-accent-subtle border border-accent-border/50 rounded-2xl p-4 space-y-4">
           <div>
             <p className="text-[10px] font-black uppercase tracking-wider text-text-secondary mb-2">{t('Categorie')}</p>
             <div className="flex flex-wrap gap-2">
@@ -372,7 +372,7 @@ const Explore: React.FC<Props> = ({ organizationId }) => {
               <button
                 key={plant.id}
                 onClick={() => setSelectedPlant(plant)}
-                className="text-left bg-bg-card border border-border-color rounded-3xl p-4 shadow-sm hover:shadow-md hover:border-accent-color/30 hover:-translate-y-1 transition-all active:translate-y-0"
+                className="text-left bg-accent-subtle border border-accent-border/50 rounded-3xl p-4 shadow-sm hover:shadow-md hover:border-accent-border hover:-translate-y-1 transition-all active:translate-y-0"
               >
                 <div className="w-12 h-12 rounded-2xl bg-bg-main flex items-center justify-center text-2xl shadow-inner mb-3">
                   {plant.emoji}

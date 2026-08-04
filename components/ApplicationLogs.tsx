@@ -23,9 +23,9 @@ const TYPE_STYLES: Record<TreatmentType, {
   icon: string; dot: string; label: string; nextInterval: number;
 }> = {
   fertilizer: {
-    bg: 'bg-emerald-50/60', border: 'border-emerald-200', text: 'text-emerald-700',
-    badge: 'bg-emerald-100', badgeText: 'text-emerald-700',
-    icon: '🌱', dot: 'bg-emerald-500', label: 'Îngrășământ', nextInterval: 30
+    bg: 'bg-accent-subtle/60', border: 'border-accent-border', text: 'text-accent-ink',
+    badge: 'bg-accent-subtle', badgeText: 'text-accent-ink',
+    icon: '🌱', dot: 'bg-accent-color', label: 'Îngrășământ', nextInterval: 30
   },
   fungicide: {
     bg: 'bg-violet-50/60', border: 'border-violet-200', text: 'text-violet-700',
@@ -140,7 +140,7 @@ const ApplicationLogs: React.FC = () => {
       <div className="space-y-3">
         {loading ? (
           <div className="py-16 flex flex-col items-center justify-center text-gray-400">
-            <Loader2 className="w-8 h-8 animate-spin text-emerald-500 mb-4" />
+            <Loader2 className="w-8 h-8 animate-spin text-accent-color mb-4" />
             <p className="font-medium">Se încarcă jurnalul...</p>
           </div>
         ) : (

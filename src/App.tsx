@@ -484,7 +484,16 @@ const App: React.FC = () => {
             case Page.GardenSetup:
               return <GardenSetup />;
             case Page.Administration:
-              return <AccountSettings userProfile={profile} onNavigate={navigateTo} subscriptionTier={subscriptionTier} />;
+              return <AccountSettings
+                userProfile={profile}
+                onNavigate={navigateTo}
+                subscriptionTier={subscriptionTier}
+                theme={currentTheme}
+                onToggleTheme={toggleTheme}
+                accentColors={organization?.accentColors || ['#4A7C59', '#68B0AB', '#3b82f6', '#a855f7', '#ef4444']}
+                selectedAccentColor={profile.accentColor || '#4A7C59'}
+                onSelectAccentColor={selectAccentColor}
+              />;
             case Page.CareCalendar: return <CareCalendar {...commonProps} />;
             case Page.GardenJournal: return <GardenJournal organizationId={profile.organizationId} onNavigate={navigateTo} userId={profile.uid} isPF={true} />;
             case Page.Gallery: return <GardenJournal organizationId={profile.organizationId} onNavigate={navigateTo} userId={profile.uid} isPF={true} />;

@@ -90,7 +90,7 @@ const UnitConverter: React.FC = () => {
           </button>
           <button 
             onClick={() => handleCategoryChange('area')}
-            className={`flex-1 min-w-[100px] py-2.5 px-4 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 ${activeCategory === 'area' ? 'bg-emerald-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'}`}
+            className={`flex-1 min-w-[100px] py-2.5 px-4 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 ${activeCategory === 'area' ? 'bg-accent-hover text-white shadow-md' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'}`}
           >
             <Map className="w-4 h-4" /> Suprafață
           </button>

@@ -66,7 +66,7 @@ const DesktopSidebar: React.FC<Props> = ({
   }
 
   return (
-    <div className="relative h-full bg-bg-card border-r border-border-color p-4 flex flex-col">
+    <div className="relative h-full bg-accent-subtle border-r border-border-color p-4 flex flex-col">
       {/* Online/Offline status dot — pinned to top-left edge of sidebar */}
       <span
         className={`absolute top-3 left-1 w-2.5 h-2.5 rounded-full z-50 ${
@@ -120,8 +120,8 @@ const DesktopSidebar: React.FC<Props> = ({
               className={`w-full min-w-0 flex items-center gap-3 transition-all relative group
                 ${
                   isActive
-                    ? 'px-2 py-2 my-0.5 rounded-2xl bg-bg-main border border-accent-color/25 shadow-lg shadow-accent-color/10 scale-[1.02] z-10'
-                    : 'px-2 py-1 rounded-xl border border-transparent hover:bg-bg-main/40'
+                    ? 'px-2 py-2 my-0.5 rounded-2xl bg-bg-card border border-accent-border shadow-lg shadow-accent-color/10 scale-[1.02] z-10'
+                    : 'px-2 py-1 rounded-xl border border-transparent hover:bg-bg-card/60'
                 }`}
             >
               <div className={`shrink-0 flex items-center justify-center transition-all duration-300
@@ -249,7 +249,7 @@ const DesktopSidebar: React.FC<Props> = ({
                   {subscriptionTier === 'enterprise' ? 'Enterprise' : 'PRO'}
                 </span>
               ) : (
-                <span className="px-1.5 py-0.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-[7px] font-black rounded-full uppercase tracking-widest shadow-sm shrink-0">
+                <span className="px-1.5 py-0.5 bg-gradient-to-r from-accent-color to-accent-hover text-white text-[7px] font-black rounded-full uppercase tracking-widest shadow-sm shrink-0">
                   Free
                 </span>
               )}

@@ -66,7 +66,7 @@ export const FinancialDashboard: React.FC = () => {
   if (loading) {
     return (
       <div className="bg-white/80 backdrop-blur-xl rounded-[2rem] p-12 shadow-sm border border-gray-100 flex flex-col items-center justify-center max-w-5xl mx-auto">
-        <Loader2 className="w-10 h-10 animate-spin text-emerald-500 mb-4" />
+        <Loader2 className="w-10 h-10 animate-spin text-accent-color mb-4" />
         <p className="font-bold text-gray-500">Calculăm datele financiare...</p>
       </div>
     );
@@ -94,10 +94,10 @@ export const FinancialDashboard: React.FC = () => {
           <p className="text-3xl font-black relative z-10">{totalCost.toLocaleString('ro-RO', {maximumFractionDigits:0})} <span className="text-sm font-medium text-gray-400">RON</span></p>
         </div>
         
-        <div className="bg-emerald-50 border border-emerald-100 p-5 rounded-2xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-4 opacity-10"><Package className="w-12 h-12 text-emerald-600" /></div>
-          <p className="text-[10px] text-emerald-600/80 font-bold uppercase tracking-wider mb-1 relative z-10">Cost Tratamente (Real)</p>
-          <p className="text-2xl font-black text-emerald-700 relative z-10">{treatmentsCost.toLocaleString('ro-RO', {maximumFractionDigits:0})} <span className="text-sm font-medium text-emerald-600/60">RON</span></p>
+        <div className="bg-accent-subtle border border-accent-border p-5 rounded-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-10"><Package className="w-12 h-12 text-accent-ink" /></div>
+          <p className="text-[10px] text-accent-ink/80 font-bold uppercase tracking-wider mb-1 relative z-10">Cost Tratamente (Real)</p>
+          <p className="text-2xl font-black text-accent-ink relative z-10">{treatmentsCost.toLocaleString('ro-RO', {maximumFractionDigits:0})} <span className="text-sm font-medium text-accent-ink/60">RON</span></p>
         </div>
 
         <div className="bg-blue-50 border border-blue-100 p-5 rounded-2xl relative overflow-hidden">
@@ -166,13 +166,13 @@ export const FinancialDashboard: React.FC = () => {
 
           <div className="bg-[#2D8C3C] rounded-3xl p-6 text-white relative overflow-hidden shadow-lg shadow-green-900/20">
             <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl -mr-10 -mt-10"></div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-200 mb-1">Eficiență Cost</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-accent-ink mb-1">Eficiență Cost</p>
             <h3 className="text-sm font-bold mb-4">Cost per metru pătrat</h3>
             <div className="flex items-baseline gap-1.5">
               <span className="text-4xl font-black">{costPerSqm}</span>
-              <span className="text-sm font-bold text-emerald-200">RON / an</span>
+              <span className="text-sm font-bold text-accent-ink">RON / an</span>
             </div>
-            <p className="text-xs text-emerald-100 mt-3 font-medium leading-relaxed">
+            <p className="text-xs text-accent-ink mt-3 font-medium leading-relaxed">
               Bazat pe suprafața totală salvată de {totalArea} mp. Include tratamente, estimări apă și utilaje.
             </p>
           </div>

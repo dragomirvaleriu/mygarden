@@ -192,14 +192,14 @@ const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
     },
     Spring: {
       icon: Sprout,
-      dot: 'bg-emerald-500',
-      iconActive: 'bg-emerald-500/10 text-emerald-500',
-      topBarActive: 'bg-emerald-500',
-      borderActive: 'border-emerald-500/30',
-      legendActive: 'bg-emerald-500/10 text-emerald-500',
-      legendIcon: 'text-emerald-500',
-      panelBorder: 'border-emerald-500/20',
-      panelGradient: 'from-emerald-500/5 via-transparent to-emerald-500/5',
+      dot: 'bg-accent-color',
+      iconActive: 'bg-accent-color/10 text-accent-color',
+      topBarActive: 'bg-accent-color',
+      borderActive: 'border-accent-color/30',
+      legendActive: 'bg-accent-color/10 text-accent-color',
+      legendIcon: 'text-accent-color',
+      panelBorder: 'border-accent-color/20',
+      panelGradient: 'from-accent-color/5 via-transparent to-accent-color/5',
     },
     Summer: {
       icon: ThermometerSun,
@@ -339,17 +339,17 @@ const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6 animate-in fade-in duration-700">
       {/* ── PREMIUM TERMINAL HEADER ── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between bg-gradient-to-r from-emerald-500/10 via-transparent to-transparent p-4 md:p-6 md:min-h-[104px] rounded-3xl border border-emerald-500/20 mb-6 shadow-sm gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between bg-gradient-to-r from-accent-color/10 via-transparent to-transparent p-4 md:p-6 md:min-h-[104px] rounded-3xl border border-accent-color/20 mb-6 shadow-sm gap-4">
         
         <div className="flex items-center gap-4 md:gap-5">
-          <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-emerald-500 flex items-center justify-center text-white shadow-lg shadow-emerald-500/30 transform -rotate-3 hover:rotate-0 transition-transform duration-300 shrink-0">
+          <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-accent-color flex items-center justify-center text-white shadow-lg shadow-accent-color/30 transform -rotate-3 hover:rotate-0 transition-transform duration-300 shrink-0">
             <CalendarIcon className="w-6 h-6 md:w-7 md:h-7" strokeWidth={2.5} />
           </div>
           <div>
             <div className="flex items-center gap-2 mb-1">
               <img src="/logo.png" alt="My Garden" className="w-3 h-3 md:w-4 md:h-4 object-contain drop-shadow-sm" />
-              <h2 className="text-[9px] md:text-[11px] font-black text-emerald-500 uppercase tracking-[0.4em] leading-none">My Garden</h2>
-              <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500 text-white text-[8px] font-black uppercase tracking-tighter shadow-sm">{t('Intelligence Terminal')}</span>
+              <h2 className="text-[9px] md:text-[11px] font-black text-accent-color uppercase tracking-[0.4em] leading-none">My Garden</h2>
+              <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent-color text-white text-[8px] font-black uppercase tracking-tighter shadow-sm">{t('Intelligence Terminal')}</span>
             </div>
             <h1 className="text-xl md:text-2xl font-black text-main tracking-tight leading-tight mb-1">
               {t('Care Calendar')}
@@ -399,7 +399,7 @@ const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
           {/* Add Event Button */}
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-all"
+            className="flex items-center gap-2 px-4 py-2.5 bg-accent-color text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-accent-color/20 hover:scale-105 active:scale-95 transition-all"
           >
             <Plus size={14} />
             <span className="hidden sm:inline">{t('Register Activity')}</span>
@@ -409,16 +409,16 @@ const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
            <div className="stihl-card bg-bg-card border border-border-color rounded-2xl p-4 flex flex-col justify-between shadow-lg relative overflow-hidden group">
-              <div className="absolute -top-10 -right-10 w-24 h-24 bg-emerald-500/5 rounded-full blur-3xl group-hover:bg-emerald-500/10 transition-colors"></div>
+              <div className="absolute -top-10 -right-10 w-24 h-24 bg-accent-color/5 rounded-full blur-3xl group-hover:bg-accent-color/10 transition-colors"></div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[10px] font-black uppercase tracking-widest text-text-secondary opacity-60">{t('Vegetation Phase')}</span>
                 <div className={`px-2 py-0.5 bg-${(() => {
-                  if (selectedMonth >= 2 && selectedMonth <= 4) return 'emerald-500';
+                  if (selectedMonth >= 2 && selectedMonth <= 4) return 'accent-color';
                   if (selectedMonth >= 5 && selectedMonth <= 7) return 'amber-500';
                   if (selectedMonth >= 8 && selectedMonth <= 10) return 'orange-600';
                   return 'blue-500';
                 })()}/10 text-${(() => {
-                  if (selectedMonth >= 2 && selectedMonth <= 4) return 'emerald-600';
+                  if (selectedMonth >= 2 && selectedMonth <= 4) return 'accent-color';
                   if (selectedMonth >= 5 && selectedMonth <= 7) return 'amber-600';
                   if (selectedMonth >= 8 && selectedMonth <= 10) return 'orange-700';
                   return 'blue-600';
@@ -787,8 +787,8 @@ const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
                     </div>
                     <p className="text-[11px] font-bold leading-relaxed text-text-secondary opacity-80">{t('Deep irrigation: Target 2.5cm of water per week for structural root depth.')}</p>
                  </div>
-                 <div className="p-5 rounded-2xl bg-white/50 dark:bg-black/20 border border-white hover:border-emerald-500/20 transition-all group shadow-sm">
-                    <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600 mb-3 group-hover:scale-110 transition-transform">
+                 <div className="p-5 rounded-2xl bg-white/50 dark:bg-black/20 border border-white hover:border-accent-color/20 transition-all group shadow-sm">
+                    <div className="w-8 h-8 rounded-lg bg-accent-color/10 flex items-center justify-center text-accent-color mb-3 group-hover:scale-110 transition-transform">
                       <Scissors size={16} />
                     </div>
                     <p className="text-[11px] font-bold leading-relaxed text-text-secondary opacity-80">{t('Blade Maintenance: Sharpen blades every 25 hours of use to prevent tissue tearing.')}</p>
@@ -859,12 +859,12 @@ const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity" onClick={() => setTaskToComplete(null)}></div>
           <div className="stihl-card w-full max-w-md bg-bg-card rounded-[2.5rem] p-10 relative animate-in zoom-in slide-in-from-bottom-8 duration-500 shadow-[0_32px_64px_rgba(0,0,0,0.5)] border border-white/10 overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-bl-full -z-10 blur-3xl"></div>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-accent-color/10 rounded-bl-full -z-10 blur-3xl"></div>
             
             <div className="flex items-center justify-between mb-8">
               <div>
                  <h2 className="text-3xl font-black text-main uppercase tracking-tighter">{t('Complete')}</h2>
-                 <p className="text-[11px] font-black text-emerald-500 uppercase tracking-[0.3em]">{taskToComplete.title}</p>
+                 <p className="text-[11px] font-black text-accent-color uppercase tracking-[0.3em]">{taskToComplete.title}</p>
               </div>
               <button onClick={() => setTaskToComplete(null)} className="w-10 h-10 flex items-center justify-center bg-bg-main rounded-2xl hover:bg-red-500 hover:text-white transition-all">
                 <X size={20} />
@@ -877,7 +877,7 @@ const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
                 <textarea 
                   value={completionNote}
                   onChange={e => setCompletionNote(e.target.value)}
-                  className="w-full bg-bg-main border border-border-color rounded-2xl px-5 py-4 text-sm font-bold text-main outline-none focus:border-emerald-500 transition-all shadow-inner min-h-[100px]"
+                  className="w-full bg-bg-main border border-border-color rounded-2xl px-5 py-4 text-sm font-bold text-main outline-none focus:border-accent-color transition-all shadow-inner min-h-[100px]"
                   placeholder={t('Add notes for your garden journal...')}
                 />
               </div>
@@ -885,7 +885,7 @@ const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
               <div className="space-y-2">
                 <label className="text-[11px] font-black text-text-secondary uppercase tracking-widest ml-1">{t('Photo (Optional)')}</label>
                 <div className="flex items-center justify-center w-full">
-                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-2xl cursor-pointer hover:bg-bg-main border-border-color hover:border-emerald-500 transition-all">
+                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-2xl cursor-pointer hover:bg-bg-main border-border-color hover:border-accent-color transition-all">
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                       <Camera className="w-8 h-8 mb-3 text-text-secondary" />
                       <p className="mb-2 text-sm text-text-secondary font-bold">
@@ -905,7 +905,7 @@ const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
               <button 
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-emerald-500 text-white py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] flex items-center justify-center gap-3 shadow-2xl shadow-emerald-500/30 hover:bg-emerald-600 active:scale-95 transition-all mt-4"
+                className="w-full bg-accent-color text-white py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] flex items-center justify-center gap-3 shadow-2xl shadow-accent-color/30 hover:bg-accent-color active:scale-95 transition-all mt-4"
               >
                 {isSubmitting ? t('Saving...') : t('Save to Journal')}
                 <CheckCircle2 size={20} />

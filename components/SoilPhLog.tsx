@@ -77,14 +77,14 @@ const SoilPhLog: React.FC = () => {
       );
     } else if (ph >= 6.0 && ph <= 7.0) {
       return (
-        <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 mt-6 shadow-sm">
-          <div className="flex items-center gap-2 mb-2 text-emerald-700">
+        <div className="bg-accent-subtle border border-accent-border rounded-2xl p-5 mt-6 shadow-sm">
+          <div className="flex items-center gap-2 mb-2 text-accent-ink">
             <CheckCircle2 className="w-5 h-5" />
             <h4 className="font-bold text-lg">pH Ideal (6.0 - 7.0)</h4>
           </div>
-          <p className="text-emerald-800 text-sm font-medium leading-relaxed">
+          <p className="text-accent-dark text-sm font-medium leading-relaxed">
             Nutrienții sunt asimilați la capacitate maximă de către sistemul radicular.
-            <strong className="block mt-2 text-emerald-900">Nu necesită amendamente corective. Continuă programul normal de nutriție.</strong>
+            <strong className="block mt-2 text-accent-dark">Nu necesită amendamente corective. Continuă programul normal de nutriție.</strong>
           </p>
         </div>
       );
@@ -207,11 +207,11 @@ const SoilPhLog: React.FC = () => {
                   className="absolute top-0 h-full border-x-2 border-dashed border-gray-300 bg-gray-50/50" 
                   style={{ left: `${calculateMarkerPosition(6.0)}%`, width: `${calculateMarkerPosition(7.0) - calculateMarkerPosition(6.0)}%` }}
                 >
-                  <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">Ideal</span>
+                  <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase text-accent-ink bg-accent-subtle px-2 py-0.5 rounded-full border border-accent-border">Ideal</span>
                 </div>
 
                 {/* Bara de culori */}
-                <div className="h-4 w-full rounded-full relative overflow-hidden bg-gradient-to-r from-red-500 via-emerald-500 to-purple-600 shadow-inner"></div>
+                <div className="h-4 w-full rounded-full relative overflow-hidden bg-gradient-to-r from-red-500 via-accent-color to-purple-600 shadow-inner"></div>
                 
                 {/* Etichete scală */}
                 <div className="flex justify-between mt-2 text-[10px] font-bold text-gray-400">

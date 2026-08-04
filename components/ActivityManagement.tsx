@@ -247,7 +247,7 @@ export const ActivityManagement: React.FC<Props> = ({ userId, organizationId }) 
                   <div className="flex gap-2 pt-2">
                     <button
                       onClick={() => handleSave(activity.id)}
-                      className="flex-1 px-3 py-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 rounded-lg text-xs font-black uppercase tracking-wider hover:bg-emerald-500 hover:text-white transition-all flex items-center justify-center gap-2"
+                      className="flex-1 px-3 py-2 bg-accent-subtle text-accent-ink dark:text-accent-ink border border-accent-border rounded-lg text-xs font-black uppercase tracking-wider hover:bg-accent-color hover:text-white transition-all flex items-center justify-center gap-2"
                     >
                       <Save size={14} /> Salvează
                     </button>

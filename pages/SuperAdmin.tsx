@@ -1316,7 +1316,7 @@ const SuperAdmin: React.FC<Props> = ({ userProfile }) => {
                         <div className={`w-8 h-8 shrink-0 rounded-lg flex items-center justify-center ${
                           meta.tone === 'danger' ? 'bg-red-500/10 text-red-500'
                           : meta.tone === 'warn' ? 'bg-amber-500/10 text-amber-500'
-                          : meta.tone === 'success' ? 'bg-emerald-500/10 text-emerald-500'
+                          : meta.tone === 'success' ? 'bg-accent-subtle text-accent-color'
                           : 'bg-accent-color/10 text-accent-color'
                         }`}>
                           <Icon size={15} />

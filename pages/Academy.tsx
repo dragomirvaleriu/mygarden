@@ -35,8 +35,8 @@ const BuyButton: React.FC<{ onClick: () => void; loading: boolean }> = ({ onClic
       className="relative w-full group overflow-hidden"
       aria-label={t('Cumpără abonament anual My Garden PRO')}
     >
-      <div className="absolute -inset-1 bg-gradient-to-r from-emerald-400 via-amber-300 to-emerald-500 md:min-h-[104px] rounded-3xl blur opacity-60 group-hover:opacity-90 animate-pulse transition-opacity" />
-      <div className="relative flex items-center justify-center gap-3 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-black py-5 px-8 md:min-h-[104px] rounded-2xl transition-all duration-300 active:scale-95 shadow-xl shadow-emerald-500/30">
+      <div className="absolute -inset-1 bg-gradient-to-r from-accent-color via-amber-300 to-accent-color md:min-h-[104px] rounded-3xl blur opacity-60 group-hover:opacity-90 animate-pulse transition-opacity" />
+      <div className="relative flex items-center justify-center gap-3 bg-gradient-to-r from-accent-color to-accent-hover hover:brightness-110 text-white font-black py-5 px-8 md:min-h-[104px] rounded-2xl transition-all duration-300 active:scale-95 shadow-xl shadow-accent-color/30">
         {loading ? (
           <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
         ) : (
@@ -53,8 +53,8 @@ const BuyButton: React.FC<{ onClick: () => void; loading: boolean }> = ({ onClic
 // ─── Benefit Row ───────────────────────────────────────
 const BenefitRow: React.FC<{ text: string; subtext?: string }> = ({ text, subtext }) => (
   <div className="flex items-start gap-3">
-    <div className="mt-0.5 w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-      <CheckCircle2 size={13} className="text-emerald-400" />
+    <div className="mt-0.5 w-5 h-5 rounded-full bg-accent-color/20 flex items-center justify-center shrink-0">
+      <CheckCircle2 size={13} className="text-accent-color" />
     </div>
     <div>
       <p className="text-sm font-bold text-white/90">{text}</p>
@@ -144,7 +144,7 @@ const PremiumUpgradeModal: React.FC<{
 
             <h2 id="paywall-title" className="text-2xl sm:text-3xl font-black text-white tracking-tighter leading-tight mb-3">
               {t('Deblochează')}{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-amber-400">Master Academy.</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-color to-amber-400">Master Academy.</span>
               <br />{t('Devino expertul propriei grădini.')}
             </h2>
             <p className="text-sm text-white/75 leading-relaxed max-w-md">
@@ -165,7 +165,7 @@ const PremiumUpgradeModal: React.FC<{
               </div>
               <div className="relative bg-white/5 border border-white/10 rounded-3xl p-6 text-center overflow-hidden">
                 <div className="absolute inset-0 pointer-events-none">
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-24 bg-emerald-500/10 blur-3xl rounded-full" />
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-24 bg-accent-color/10 blur-3xl rounded-full" />
                 </div>
                 <div className="relative flex items-center justify-center gap-3 mb-1">
                   <span className="text-white/30 line-through text-lg font-black">119 RON</span>
@@ -174,11 +174,11 @@ const PremiumUpgradeModal: React.FC<{
                 <div className="relative flex items-end justify-center gap-2">
                   <span className="text-6xl font-black text-white leading-none tracking-tighter">29</span>
                   <div className="flex flex-col items-start mb-2">
-                    <span className="text-xl font-black text-emerald-400">RON</span>
+                    <span className="text-xl font-black text-accent-color">RON</span>
                     <span className="text-xs font-bold text-white/40 uppercase tracking-wider">{t('/ an')}</span>
                   </div>
                 </div>
-                <p className="relative text-[12px] text-emerald-300/80 font-bold mt-2">{t('≈ 0.08 RON pe zi • Mai puțin decât o cafea pe lună')}</p>
+                <p className="relative text-[12px] text-accent-color font-bold mt-2">{t('≈ 0.08 RON pe zi • Mai puțin decât o cafea pe lună')}</p>
                 <div className="relative mt-3 pt-3 border-t border-white/5">
                   <span className="text-[10px] font-black text-white/70 uppercase tracking-widest">{t('Facturat anual · O singură plată')}</span>
                 </div>
@@ -196,10 +196,10 @@ const PremiumUpgradeModal: React.FC<{
           <div className="space-y-4">
             <BuyButton onClick={handleUpgrade} loading={loading} />
             <div className="flex items-start gap-3 bg-white/3 border border-white/5 rounded-2xl px-5 py-4">
-              <ShieldCheck size={18} className="text-emerald-400 shrink-0 mt-0.5" />
+              <ShieldCheck size={18} className="text-accent-color shrink-0 mt-0.5" />
               <p className="text-xs text-white/75 leading-relaxed">
                 <span className="font-black text-white/80">{t('Fără reînnoire automată ascunsă.')}</span>{' '}
-                {t('Plătești o dată, ai acces complet')} <span className="font-black text-emerald-400">{t('365 de zile')}</span>. {t('Nicio surpriză pe card.')}
+                {t('Plătești o dată, ai acces complet')} <span className="font-black text-accent-color">{t('365 de zile')}</span>. {t('Nicio surpriză pe card.')}
               </p>
             </div>
             <button onClick={onClose} className="w-full text-center text-[11px] text-white/70 hover:text-white/90 font-medium py-2 transition-colors">
@@ -224,7 +224,7 @@ const PremiumUpgradeModal: React.FC<{
                 <React.Fragment key={i}>
                   <div className="text-left py-2 border-t border-white/5 text-white/50 text-[11px]">{feat}</div>
                   <div className={`py-2 border-t border-white/5 text-[11px] ${free === '—' ? 'text-white/20' : 'text-white/60'}`}>{free}</div>
-                  <div className="py-2 border-t border-white/5 text-[11px] text-emerald-400 font-bold">{pro}</div>
+                  <div className="py-2 border-t border-white/5 text-[11px] text-accent-color font-bold">{pro}</div>
                 </React.Fragment>
               ))}
             </div>
@@ -263,7 +263,7 @@ const ArticleCard: React.FC<{
       onClick={onClick}
       className={`group relative w-full text-left rounded-3xl overflow-hidden transition-all duration-300
         bg-bg-card border border-border-color hover:shadow-2xl hover:border-accent-color/30 hover:-translate-y-1 active:translate-y-0
-        ${isRead ? 'ring-2 ring-emerald-500/30' : ''}
+        ${isRead ? 'ring-2 ring-accent-color/30' : ''}
       `}
     >
       <div className={`absolute inset-0 bg-gradient-to-br ${article.coverGradient} opacity-5 dark:opacity-100 transition-opacity`} />
@@ -273,13 +273,13 @@ const ArticleCard: React.FC<{
           <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border backdrop-blur-sm shadow-sm
             ${article.isPremium
               ? 'bg-amber-100/80 border-amber-200 text-amber-700 dark:bg-amber-500/20 dark:border-amber-500/40 dark:text-amber-300'
-              : 'bg-emerald-100/80 border-emerald-200 text-emerald-700 dark:bg-emerald-500/20 dark:border-emerald-500/40 dark:text-emerald-300'
+              : 'bg-accent-light/80 border-accent-light text-accent-ink dark:bg-accent-color/20 dark:border-accent-color/40 dark:text-accent-ink'
             }`}>
             {article.isPremium ? '👑 Premium' : `✓ ${t('Gratuit')}`}
           </span>
           <div className="flex items-center gap-2">
             {isRead && (
-              <div className="w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center shadow-md">
+              <div className="w-6 h-6 bg-accent-color rounded-full flex items-center justify-center shadow-md">
                 <CheckCircle2 size={14} className="text-white" />
               </div>
             )}
@@ -612,11 +612,11 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
     <div className="p-4 md:p-6 max-w-7xl mx-auto pb-20 animate-in fade-in duration-500">
 
       {/* ── Hero Header ── */}
-      <div className="relative overflow-hidden rounded-3xl mb-8 p-8 md:p-10 border border-emerald-500/20 dark:border-none shadow-xl shadow-emerald-500/5 dark:shadow-none">
+      <div className="relative overflow-hidden rounded-3xl mb-8 p-8 md:p-10 border border-accent-color/20 dark:border-none shadow-xl shadow-accent-color/5 dark:shadow-none">
         {/* Light Mode Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-white to-teal-50 dark:hidden" />
+        <div className="absolute inset-0 bg-gradient-to-br from-accent-subtle via-white to-accent-subtle dark:hidden" />
         {/* Dark Mode Background */}
-        <div className="absolute inset-0 hidden dark:block bg-gradient-to-br from-slate-950 via-emerald-950 to-slate-950" />
+        <div className="absolute inset-0 hidden dark:block bg-gradient-to-br from-slate-950 via-accent-dark to-slate-950" />
         
         <div className="absolute inset-0 opacity-40 dark:opacity-30" style={{ backgroundImage: 'radial-gradient(ellipse at 20% 50%, rgba(16,185,129,0.3) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(6,182,212,0.2) 0%, transparent 50%)' }} />
         <div className="absolute inset-0 opacity-[0.03] dark:opacity-5" style={{ backgroundImage: 'linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
@@ -624,47 +624,47 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
         <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-8">
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/30">
+              <div className="w-12 h-12 rounded-2xl bg-accent-color flex items-center justify-center shadow-lg shadow-accent-color/30">
                 <GraduationCap size={24} className="text-white" />
               </div>
               <div>
-                <p className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-[0.3em]">My Garden</p>
-                <h1 className="text-2xl md:text-3xl font-black text-emerald-950 dark:text-white tracking-tighter leading-none">{t('Academie')}</h1>
+                <p className="text-[10px] font-black text-accent-color dark:text-accent-color uppercase tracking-[0.3em]">My Garden</p>
+                <h1 className="text-2xl md:text-3xl font-black text-accent-dark dark:text-white tracking-tighter leading-none">{t('Academie')}</h1>
               </div>
             </div>
-            <p className="text-emerald-900/70 dark:text-white/60 text-sm font-medium max-w-lg leading-relaxed">
+            <p className="text-accent-dark/70 dark:text-white/60 text-sm font-medium max-w-lg leading-relaxed">
               {t('Enciclopedie Horticolă. Protocoale scrise de agronomi cu experiență de teren, bazate pe știință, nu pe intuiție.')}
             </p>
             <div className="flex flex-wrap items-center gap-4 mt-5">
-              <div className="flex items-center gap-2 bg-emerald-900/5 dark:bg-white/5 border border-emerald-900/10 dark:border-white/10 rounded-xl px-3 py-2">
-                <BookOpen size={14} className="text-emerald-600 dark:text-emerald-400" />
-                <span className="text-xs font-black text-emerald-950 dark:text-white">{totalCount} {t('Ghiduri')}</span>
+              <div className="flex items-center gap-2 bg-accent-dark/5 dark:bg-white/5 border border-accent-dark/10 dark:border-white/10 rounded-xl px-3 py-2">
+                <BookOpen size={14} className="text-accent-color dark:text-accent-color" />
+                <span className="text-xs font-black text-accent-dark dark:text-white">{totalCount} {t('Ghiduri')}</span>
               </div>
-              <div className="flex items-center gap-2 bg-emerald-900/5 dark:bg-white/5 border border-emerald-900/10 dark:border-white/10 rounded-xl px-3 py-2">
+              <div className="flex items-center gap-2 bg-accent-dark/5 dark:bg-white/5 border border-accent-dark/10 dark:border-white/10 rounded-xl px-3 py-2">
                 <CheckCircle2 size={14} className="text-cyan-600 dark:text-cyan-400" />
-                <span className="text-xs font-black text-emerald-950 dark:text-white">{freeCount} {t('Gratuite')}</span>
+                <span className="text-xs font-black text-accent-dark dark:text-white">{freeCount} {t('Gratuite')}</span>
               </div>
-              <div className="flex items-center gap-2 bg-emerald-900/5 dark:bg-white/5 border border-emerald-900/10 dark:border-white/10 rounded-xl px-3 py-2">
+              <div className="flex items-center gap-2 bg-accent-dark/5 dark:bg-white/5 border border-accent-dark/10 dark:border-white/10 rounded-xl px-3 py-2">
                 <Globe size={14} className="text-purple-600 dark:text-purple-400" />
-                <span className="text-xs font-black text-emerald-950 dark:text-white">10+ {t('Limbi')}</span>
+                <span className="text-xs font-black text-accent-dark dark:text-white">10+ {t('Limbi')}</span>
               </div>
             </div>
           </div>
 
           {/* Progress widget */}
-          <div className="shrink-0 bg-white/60 dark:bg-white/5 border border-emerald-900/10 dark:border-white/10 rounded-3xl p-6 backdrop-blur-md min-w-[200px] shadow-sm dark:shadow-none">
+          <div className="shrink-0 bg-white/60 dark:bg-white/5 border border-accent-dark/10 dark:border-white/10 rounded-3xl p-6 backdrop-blur-md min-w-[200px] shadow-sm dark:shadow-none">
             <div className="flex items-center gap-2 mb-3">
-              <TrendingUp size={16} className="text-emerald-600 dark:text-emerald-400" />
-              <span className="text-xs font-black text-emerald-900/70 dark:text-white/70 uppercase tracking-widest">{t('Progresul Tău')}</span>
+              <TrendingUp size={16} className="text-accent-color dark:text-accent-color" />
+              <span className="text-xs font-black text-accent-dark/70 dark:text-white/70 uppercase tracking-widest">{t('Progresul Tău')}</span>
             </div>
-            <div className="text-4xl font-black text-emerald-950 dark:text-white mb-1">
-              {readCount}<span className="text-xl text-emerald-900/40 dark:text-white/40">/{totalCount}</span>
+            <div className="text-4xl font-black text-accent-dark dark:text-white mb-1">
+              {readCount}<span className="text-xl text-accent-dark/40 dark:text-white/40">/{totalCount}</span>
             </div>
-            <p className="text-xs text-emerald-900/50 dark:text-white/40 font-bold mb-4">{t('ghiduri citite')}</p>
-            <div className="w-full h-2 bg-emerald-900/10 dark:bg-white/10 rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 dark:to-cyan-400 rounded-full transition-all duration-700" style={{ width: `${progressPct}%` }} />
+            <p className="text-xs text-accent-dark/50 dark:text-white/40 font-bold mb-4">{t('ghiduri citite')}</p>
+            <div className="w-full h-2 bg-accent-dark/10 dark:bg-white/10 rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-accent-color to-cyan-500 dark:to-cyan-400 rounded-full transition-all duration-700" style={{ width: `${progressPct}%` }} />
             </div>
-            <p className="text-[10px] font-black text-emerald-900/40 dark:text-white/30 mt-2 text-right">{progressPct}% {t('complet')}</p>
+            <p className="text-[10px] font-black text-accent-dark/40 dark:text-white/30 mt-2 text-right">{progressPct}% {t('complet')}</p>
             {!isPro && (
               <button onClick={onNavigateToUpgrade} className="mt-4 w-full py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 dark:from-amber-400 dark:to-amber-600 text-black text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-amber-500/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2">
                 <Crown size={14} /> Upgrade PRO

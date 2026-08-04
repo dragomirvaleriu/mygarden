@@ -329,13 +329,13 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
         <div className={`absolute inset-0 opacity-40 mix-blend-multiply dark:mix-blend-screen transition-colors duration-1000 ${
           isRainingToday
             ? 'bg-gradient-to-br from-slate-200 via-cyan-100 to-blue-200 dark:from-slate-900 dark:via-cyan-900 dark:to-blue-900'
-            : 'bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-emerald-500/5 dark:from-amber-500/20 dark:via-orange-500/10 dark:to-emerald-500/10'
+            : 'bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-accent-color/5 dark:from-amber-500/20 dark:via-orange-500/10 dark:to-accent-color/10'
         }`} />
 
         <div className="relative z-10 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-10 h-10 rounded-xl bg-bg-main/50 dark:bg-white/5 backdrop-blur-md border border-border-color dark:border-white/10 flex items-center justify-center shrink-0">
-              <Sprout className="w-5 h-5 text-emerald-500 dark:text-emerald-400" strokeWidth={2} />
+              <Sprout className="w-5 h-5 text-accent-color dark:text-accent-color" strokeWidth={2} />
             </div>
             <div className="min-w-0">
               <motion.h1
@@ -348,7 +348,7 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
                 {greeting}
               </motion.h1>
               <p className="text-text-secondary text-[10px] md:text-xs font-black uppercase tracking-[0.15em] flex items-center gap-1.5">
-                <Calendar size={11} className="text-emerald-500 shrink-0" />
+                <Calendar size={11} className="text-accent-color shrink-0" />
                 {format(now, 'EEEE, dd MMMM', { locale })}
                 {myGarden && <span className="hidden sm:inline"> · {myGarden.name}</span>}
               </p>
@@ -383,7 +383,7 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
       >
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-xs font-black uppercase tracking-[0.2em] text-text-secondary flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${upcomingTasks.length > 0 ? 'bg-accent-color animate-pulse' : 'bg-emerald-500'}`} />
+            <div className={`w-2 h-2 rounded-full ${upcomingTasks.length > 0 ? 'bg-accent-color animate-pulse' : 'bg-accent-color'}`} />
             {t('Tasks & Reminders')}
           </h2>
           <div className="flex items-center gap-3">
@@ -391,7 +391,7 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
               <span className="text-[10px] font-bold text-text-secondary uppercase tracking-wider hidden sm:block">✨ Autopilot {isAutopilotEnabled ? 'Activ' : 'Oprit'}</span>
               <button
                 onClick={() => setIsAutopilotEnabled(!isAutopilotEnabled)}
-                className={`relative w-9 h-5 rounded-full transition-colors duration-300 ${isAutopilotEnabled ? 'bg-emerald-500' : 'bg-border-color'}`}
+                className={`relative w-9 h-5 rounded-full transition-colors duration-300 ${isAutopilotEnabled ? 'bg-accent-color' : 'bg-border-color'}`}
               >
                 <div className={`absolute top-0.5 left-0.5 bg-white w-4 h-4 rounded-full transition-transform duration-300 ${isAutopilotEnabled ? 'translate-x-4 shadow-sm' : ''}`} />
               </button>
@@ -428,9 +428,9 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
                 <motion.div
                   animate={{ rotate: [0, 360] }}
                   transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                  className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-4"
+                  className="w-16 h-16 bg-accent-color/10 rounded-full flex items-center justify-center mx-auto mb-4"
                 >
-                  <CheckCircle2 size={28} className="text-emerald-500 drop-shadow-md" />
+                  <CheckCircle2 size={28} className="text-accent-color drop-shadow-md" />
                 </motion.div>
                 <p className="text-sm font-black text-main mb-1">{t('All caught up!')} 🌿</p>
                 <p className="text-xs text-text-secondary font-medium">{t('No pending tasks. Your garden is happy!')}</p>
@@ -440,7 +440,7 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => onNavigate(Page.CareCalendar)}
-              className="mt-4 flex items-center gap-2 px-4 py-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-xl text-[11px] font-black uppercase tracking-wider mx-auto hover:bg-emerald-500 hover:text-white transition-all shadow-lg"
+              className="mt-4 flex items-center gap-2 px-4 py-2 bg-accent-color/10 text-accent-color border border-accent-color/20 rounded-xl text-[11px] font-black uppercase tracking-wider mx-auto hover:bg-accent-color hover:text-white transition-all shadow-lg"
             >
               <Plus size={12} /> {t('Add Task')}
             </motion.button>
@@ -494,16 +494,16 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
                     whileHover={{ y: -4, scale: 1.01 }}
                     className={`flex items-center gap-4 rounded-2xl p-4 border backdrop-blur-sm cursor-pointer group transition-colors ${
                       todayTask
-                        ? 'bg-emerald-500/5 border-emerald-500/30 hover:shadow-[0_8px_30px_rgba(16,185,129,0.15)]'
-                        : 'bg-white/5 dark:bg-black/20 border-white/10 hover:border-emerald-500/30 hover:shadow-[0_8px_30px_rgba(255,255,255,0.05)]'
+                        ? 'bg-accent-color/5 border-accent-color/30 hover:shadow-[0_8px_30px_rgba(16,185,129,0.15)]'
+                        : 'bg-white/5 dark:bg-black/20 border-white/10 hover:border-accent-color/30 hover:shadow-[0_8px_30px_rgba(255,255,255,0.05)]'
                     }`}
                   >
-                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 border ${colorClass} group-hover:bg-emerald-500 group-hover:text-white transition-colors`}>
+                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 border ${colorClass} group-hover:bg-accent-color group-hover:text-white transition-colors`}>
                       <Icon size={20} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-black text-main truncate group-hover:text-emerald-500 transition-colors">{task.title}</p>
-                      <p className={`text-[10px] font-bold uppercase tracking-wider ${todayTask ? 'text-emerald-500' : 'text-text-secondary/60'}`}>
+                      <p className="text-sm font-black text-main truncate group-hover:text-accent-color transition-colors">{task.title}</p>
+                      <p className={`text-[10px] font-bold uppercase tracking-wider ${todayTask ? 'text-accent-color' : 'text-text-secondary/60'}`}>
                         {todayTask ? `📅 ${t('Today')}!` : format(due, 'dd MMM', { locale })}
                         {task.notes ? ` · ${task.notes}` : ''}
                       </p>
@@ -512,7 +512,7 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                       onClick={() => handleCompleteTask(task)}
-                      className="w-9 h-9 rounded-xl bg-bg-card/50 text-text-secondary flex items-center justify-center hover:bg-emerald-500 hover:text-white hover:shadow-[0_0_15px_rgba(16,185,129,0.5)] transition-all shrink-0"
+                      className="w-9 h-9 rounded-xl bg-bg-card/50 text-text-secondary flex items-center justify-center hover:bg-accent-color hover:text-white hover:shadow-[0_0_15px_rgba(16,185,129,0.5)] transition-all shrink-0"
                     >
                       <CheckCircle2 size={16} />
                     </motion.button>
@@ -554,12 +554,12 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15, type: 'spring' }}
-          className="relative overflow-hidden rounded-3xl border border-emerald-500/20 shadow-xl"
+          className="relative overflow-hidden rounded-3xl border border-accent-color/20 shadow-xl"
         >
-          {/* Gradient Background — same pale-mint family as the ADAUGĂ SARCINA button (emerald-500), no dark overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-emerald-100 to-teal-100 dark:from-emerald-950/60 dark:via-emerald-900/40 dark:to-teal-900/40" />
-          <div className="absolute -right-16 -bottom-16 w-64 h-64 bg-emerald-200/30 dark:bg-emerald-500/10 rounded-full blur-3xl" />
-          <div className="absolute -left-8 -top-8 w-40 h-40 bg-emerald-200/30 dark:bg-emerald-500/10 rounded-full blur-2xl" />
+          {/* Gradient Background — same pale-mint family as the ADAUGĂ SARCINA button (accent-color), no dark overlay */}
+          <div className="absolute inset-0 bg-gradient-to-br from-accent-subtle via-accent-light to-accent-light dark:from-accent-dark/60 dark:via-accent-dark/40 dark:to-accent-dark/40" />
+          <div className="absolute -right-16 -bottom-16 w-64 h-64 bg-accent-light/30 dark:bg-accent-color/10 rounded-full blur-3xl" />
+          <div className="absolute -left-8 -top-8 w-40 h-40 bg-accent-light/30 dark:bg-accent-color/10 rounded-full blur-2xl" />
 
           <div className="relative z-10 p-6 md:p-8">
             <div className="flex flex-col md:flex-row md:items-center gap-6">
@@ -567,23 +567,23 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
               {/* Left: Title */}
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-[10px] font-black text-emerald-700/80 dark:text-emerald-300/70 uppercase tracking-[0.2em]">
+                  <span className="text-[10px] font-black text-accent-ink/80 uppercase tracking-[0.2em]">
                     {[5, 6, 7, 8].includes(currentMonth) ? '🌞 Sezon Cald' : [2, 3, 4].includes(currentMonth) ? '🌱 Primăvară' : '❄️ Sezon Rece'}
                   </span>
-                  <span className="text-emerald-700/30 dark:text-emerald-300/30 text-[10px]">•</span>
-                  <span className="text-[10px] font-black text-emerald-700/80 dark:text-emerald-300/70 uppercase tracking-[0.2em]">Focus Luna Aceasta</span>
+                  <span className="text-accent-ink/30 text-[10px]">•</span>
+                  <span className="text-[10px] font-black text-accent-ink/80 uppercase tracking-[0.2em]">Focus Luna Aceasta</span>
                 </div>
-                <h2 className="text-2xl md:text-3xl font-black text-emerald-900 dark:text-emerald-50 leading-tight tracking-tight mb-1">
+                <h2 className="text-2xl md:text-3xl font-black text-accent-ink leading-tight tracking-tight mb-1">
                   {seasonalTip.title}
                 </h2>
-                <p className="text-emerald-700/80 dark:text-emerald-200/70 text-sm font-medium">
+                <p className="text-accent-ink/80 text-sm font-medium">
                   {seasonalTip.tip?.split('.')[0]}.
                 </p>
               </div>
 
               {/* Right: Task Badges */}
               <div className="flex flex-col gap-2 md:min-w-[260px]">
-                <p className="text-[10px] font-black text-emerald-700/70 dark:text-emerald-300/60 uppercase tracking-widest mb-1">Priorități Cheie</p>
+                <p className="text-[10px] font-black text-accent-ink/70 uppercase tracking-widest mb-1">Priorități Cheie</p>
                 {seasonalTip.tasks.slice(0, 3).map((task: any, idx: number) => {
                   const catEmoji: Record<string, string> = {
                     mowing: '✂️', watering: '💧', fertilizing: '🌱', pruning: '🌿', treatment: '🪲', other: '📋',
@@ -595,12 +595,12 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.2 + idx * 0.08 }}
-                      className="flex items-center gap-3 px-4 py-3 rounded-2xl border bg-white/60 dark:bg-emerald-900/30 border-emerald-500/20 text-emerald-900 dark:text-emerald-50 backdrop-blur-sm"
+                      className="flex items-center gap-3 px-4 py-3 rounded-2xl border bg-white/60 dark:bg-accent-dark/30 border-accent-color/20 text-accent-ink backdrop-blur-sm"
                     >
                       <span className="text-base shrink-0">{emoji}</span>
                       <span className="text-sm font-bold leading-tight flex-1">{task.title}</span>
                       {task.important && (
-                        <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 bg-emerald-500/15 dark:bg-emerald-500/25 rounded-md text-emerald-800 dark:text-emerald-100 shrink-0">Urgent</span>
+                        <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 bg-accent-color/15 dark:bg-accent-color/25 rounded-md text-accent-ink shrink-0">Urgent</span>
                       )}
                     </motion.div>
                   );
@@ -757,7 +757,7 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
                 {myGarden.zones.slice(0, 4).map((zone: any, i: number) => (
                   <div key={zone.id || i} className="flex items-center justify-between py-1.5">
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                      <div className="w-2 h-2 rounded-full bg-accent-color" />
                       <span className="text-[11px] font-bold text-main">{zone.name || `Zona ${i+1}`}</span>
                     </div>
                     {zone.size > 0 && (

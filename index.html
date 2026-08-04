@@ -44,6 +44,25 @@
             --chart-rem-today: color-mix(in srgb, var(--accent-color) 30%, #ffffff);
             --chart-rem-past: color-mix(in srgb, var(--accent-color) 40%, #ffffff);
             --chart-rem-future: color-mix(in srgb, var(--accent-color) 15%, #ffffff);
+
+            /* Derived accent tokens — recompute automatically whenever
+               --accent-color changes (picker click or theme swap), via
+               color-mix(), so no JS is needed to keep them in sync.
+               --accent-subtle is the "3-5% tint" wash for card/sidebar
+               backgrounds called for by the 60-30-10 rule; --accent-border
+               is the matching hairline border for the same surfaces. */
+            --accent-subtle: color-mix(in srgb, var(--accent-color) 5%, var(--bg-card));
+            --accent-light: color-mix(in srgb, var(--accent-color) 16%, white);
+            --accent-border: color-mix(in srgb, var(--accent-color) 28%, transparent);
+            --accent-hover: color-mix(in srgb, var(--accent-color) 88%, black);
+            --accent-dark: color-mix(in srgb, var(--accent-color) 70%, black);
+            --accent-glow: color-mix(in srgb, var(--accent-color) 80%, transparent);
+            /* Readable TEXT on an accent-tinted surface (headlines/labels on
+               the accent-subtle/light cards) — deliberately theme-inverted
+               from --accent-dark/--accent-light, which are tuned for
+               backgrounds, not foreground text. Mixing toward black here
+               keeps it dark/legible on the pale tint light mode produces. */
+            --accent-ink: color-mix(in srgb, var(--accent-color) 55%, black);
         }
         [data-theme='dark'] {
             --bg-main: #0B0F0E; /* Deep petrol-black for stronger depth */
@@ -76,6 +95,20 @@
             --chart-rem-today: color-mix(in srgb, var(--dark-chart-base) 35%, transparent);
             --chart-rem-past: color-mix(in srgb, var(--dark-chart-base) 45%, transparent);
             --chart-rem-future: color-mix(in srgb, var(--dark-chart-base) 15%, transparent);
+
+            /* Derived accent tokens for dark mode — same names as light,
+               mixed against black/the dark card color instead of white so
+               they stay readable on dark surfaces. */
+            --accent-subtle: color-mix(in srgb, var(--accent-color) 8%, var(--bg-card));
+            --accent-light: color-mix(in srgb, var(--accent-color) 25%, black);
+            --accent-border: color-mix(in srgb, var(--accent-color) 35%, transparent);
+            --accent-hover: color-mix(in srgb, var(--accent-color) 85%, white);
+            --accent-dark: color-mix(in srgb, var(--accent-color) 60%, black);
+            --accent-glow: color-mix(in srgb, var(--accent-color) 80%, transparent);
+            /* Readable TEXT on an accent-tinted surface — mixed toward white
+               in dark mode, so it stays legible against the dark tinted
+               cards instead of disappearing like --accent-light does. */
+            --accent-ink: color-mix(in srgb, var(--accent-color) 55%, white);
         }
 
         body {

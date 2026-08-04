@@ -43,11 +43,11 @@ const IrrigationCalibration: React.FC = () => {
   const getScoreUI = (score: number) => {
     if (score >= 80) {
       return {
-        color: 'text-emerald-600',
-        bg: 'bg-emerald-50',
-        border: 'border-emerald-200',
+        color: 'text-accent-ink',
+        bg: 'bg-accent-subtle',
+        border: 'border-accent-border',
         text: 'Excelent (Sistem eficient)',
-        icon: <CheckCircle2 className="w-6 h-6 text-emerald-500" />
+        icon: <CheckCircle2 className="w-6 h-6 text-accent-color" />
       };
     } else if (score >= 60) {
       return {

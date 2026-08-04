@@ -96,17 +96,17 @@ const MowingTracker: React.FC = () => {
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`border rounded-2xl p-6 ${isShockRisk ? 'bg-red-50 border-red-200' : 'bg-emerald-50 border-emerald-200'}`}
+            className={`border rounded-2xl p-6 ${isShockRisk ? 'bg-red-50 border-red-200' : 'bg-accent-subtle border-accent-border'}`}
           >
             <div className="flex items-start gap-4">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-sm ${isShockRisk ? 'bg-white text-red-500' : 'bg-white text-emerald-500'}`}>
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-sm ${isShockRisk ? 'bg-white text-red-500' : 'bg-white text-accent-color'}`}>
                 {isShockRisk ? <AlertOctagon className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}
               </div>
               <div>
-                <h4 className={`font-bold text-lg mb-1 ${isShockRisk ? 'text-red-700' : 'text-emerald-700'}`}>
+                <h4 className={`font-bold text-lg mb-1 ${isShockRisk ? 'text-red-700' : 'text-accent-ink'}`}>
                   {isShockRisk ? 'RISC DE ȘOC: Taie prea mult!' : 'Tundere optimă respectând regula 1/3'}
                 </h4>
-                <p className={`text-sm font-medium leading-relaxed ${isShockRisk ? 'text-red-600/90' : 'text-emerald-600/90'}`}>
+                <p className={`text-sm font-medium leading-relaxed ${isShockRisk ? 'text-red-600/90' : 'text-accent-ink/90'}`}>
                   {isShockRisk 
                     ? `Vrei să tai ${actualCut.toFixed(1)} cm, dar limita de siguranță este de doar ${maxCut.toFixed(1)} cm (o treime din ${current} cm). Ajustează înălțimea de tăiere a mașinii sau tunde mai des pentru a evita șocarea și îngălbenirea gazonului.` 
                     : `Vei tăia ${actualCut.toFixed(1)} cm, ceea ce se încadrează perfect în limita maximă permisă de ${maxCut.toFixed(1)} cm.`}

@@ -36,8 +36,11 @@ export const Card: React.FC<CardProps> = ({
 }) => {
   const pad = { none: '', sm: 'p-4', md: 'p-5', lg: 'p-6 md:p-8' }[padding];
   const surface = {
-    solid: 'bg-bg-card border border-border-color shadow-sm',
-    glass: 'bg-bg-card/50 backdrop-blur-md border border-border-color',
+    // `accent-subtle` is a 5-8% wash of the user's theme color over the card
+    // background (see index.html) — this is what makes cards read as "on
+    // brand" everywhere without a loud accent-colored border on every box.
+    solid: 'bg-accent-subtle border border-accent-border/50 shadow-sm',
+    glass: 'bg-bg-card/50 backdrop-blur-md border border-accent-border/50',
     ghost: 'bg-transparent',
   }[variant];
   return (
@@ -46,7 +49,7 @@ export const Card: React.FC<CardProps> = ({
         'rounded-2xl',
         surface,
         pad,
-        interactive && 'transition-all hover:border-accent-color/30 hover:shadow-md cursor-pointer',
+        interactive && 'transition-all hover:border-accent-border hover:shadow-md cursor-pointer',
         className
       )}
       {...rest}
@@ -111,7 +114,7 @@ export const Pill: React.FC<{
     neutral: 'bg-bg-main text-text-secondary border-border-color',
     accent: 'bg-accent-color/10 text-accent-color border-accent-color/20',
     water: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-    success: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+    success: 'bg-accent-subtle text-accent-ink dark:text-accent-ink border-accent-border',
     warn: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
     danger: 'bg-red-500/10 text-red-500 border-red-500/20',
   };

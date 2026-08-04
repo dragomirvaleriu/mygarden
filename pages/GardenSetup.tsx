@@ -29,7 +29,7 @@ export const GardenSetup: React.FC = () => {
 
   const getZoneIcon = (type: string) => {
     switch(type) {
-      case 'Gazon': return <Leaf className="w-6 h-6 text-emerald-500" />;
+      case 'Gazon': return <Leaf className="w-6 h-6 text-accent-color" />;
       case 'Pomi Fructiferi': return <Apple className="w-6 h-6 text-red-500" />;
       case 'Plante Ornamentale': return <Flower2 className="w-6 h-6 text-fuchsia-500" />;
       case 'Legume': return <Sprout className="w-6 h-6 text-amber-500" />;
@@ -107,7 +107,7 @@ export const GardenSetup: React.FC = () => {
       
       {/* Header */}
       <div className="flex items-center gap-4 mb-2 border-b border-gray-100 pb-6">
-        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#2D8C3C] to-emerald-700 flex items-center justify-center text-white shadow-lg shadow-green-500/30">
+        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#2D8C3C] to-accent-hover flex items-center justify-center text-white shadow-lg shadow-green-500/30">
           <Map className="w-7 h-7" />
         </div>
         <div>
@@ -131,7 +131,7 @@ export const GardenSetup: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {loading ? (
               <div className="col-span-1 sm:col-span-2 flex flex-col items-center justify-center py-12 text-gray-400">
-                <Loader2 className="w-8 h-8 animate-spin text-emerald-500 mb-4" />
+                <Loader2 className="w-8 h-8 animate-spin text-accent-color mb-4" />
                 <p className="font-medium">Se încarcă zonele din grădina ta...</p>
               </div>
             ) : (
@@ -172,12 +172,12 @@ export const GardenSetup: React.FC = () => {
                       {zone.ph && (
                         <div>
                           <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5 flex items-center gap-1"><TestTube className="w-3 h-3" /> pH</p>
-                          <p className="font-bold text-lg text-emerald-600">{zone.ph}</p>
+                          <p className="font-bold text-lg text-accent-ink">{zone.ph}</p>
                         </div>
                       )}
                     </div>
                   </div>
-                  <div className="absolute right-0 bottom-0 w-24 h-24 bg-gray-50 rounded-tl-full blur-2xl group-hover:bg-emerald-50 transition -z-0"></div>
+                  <div className="absolute right-0 bottom-0 w-24 h-24 bg-gray-50 rounded-tl-full blur-2xl group-hover:bg-accent-subtle transition -z-0"></div>
                 </motion.div>
                 ))}
               </AnimatePresence>
@@ -225,7 +225,7 @@ export const GardenSetup: React.FC = () => {
                   value={newArea} 
                   onChange={(e) => setNewArea(e.target.value)} 
                   placeholder="ex: 50"
-                  className={`w-full bg-gray-50 border ${newBoundaryCoords.length > 0 ? 'border-emerald-300 ring-2 ring-emerald-100' : 'border-gray-100'} rounded-xl py-3 px-4 text-gray-800 font-semibold placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-[#2D8C3C] focus:border-transparent outline-none transition shadow-inner`}
+                  className={`w-full bg-gray-50 border ${newBoundaryCoords.length > 0 ? 'border-accent-border ring-2 ring-accent-color' : 'border-gray-100'} rounded-xl py-3 px-4 text-gray-800 font-semibold placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-[#2D8C3C] focus:border-transparent outline-none transition shadow-inner`}
                   required
                 />
               </div>
@@ -248,7 +248,7 @@ export const GardenSetup: React.FC = () => {
               <div>
                 <label className="text-xs font-bold text-gray-700 flex justify-between items-end mb-1.5">
                   <span>Nivel pH (Opțional)</span>
-                  <span className="text-emerald-600 font-bold">{newPh || '-'}</span>
+                  <span className="text-accent-ink font-bold">{newPh || '-'}</span>
                 </label>
                 <input 
                   type="range" 

@@ -17,7 +17,10 @@ import {
   Copy,
   Share2,
   CheckCircle,
-  Download
+  Download,
+  Sun,
+  Moon,
+  Palette
 } from 'lucide-react';
 import { Card, Pill } from '../components/ui/primitives';
 import { ActivityManagement } from '../components/ActivityManagement';
@@ -39,6 +42,11 @@ interface Props {
   userProfile: UserProfile;
   onNavigate: (page: Page) => void;
   subscriptionTier: 'free' | 'pro' | 'enterprise' | 'lifetime';
+  theme?: 'light' | 'dark';
+  onToggleTheme?: () => void;
+  accentColors?: string[];
+  selectedAccentColor?: string;
+  onSelectAccentColor?: (color: string) => void;
 }
 
 const TIER_META: Record<Props['subscriptionTier'], { label: string; tone: 'neutral' | 'accent' | 'success' }> = {
@@ -71,7 +79,10 @@ const SectionCard: React.FC<{
   </Card>
 );
 
-const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptionTier }) => {
+const AccountSettings: React.FC<Props> = ({
+  userProfile, onNavigate, subscriptionTier,
+  theme, onToggleTheme, accentColors, selectedAccentColor, onSelectAccentColor,
+}) => {
   const { t, i18n } = useTranslation();
   const [displayName, setDisplayName] = useState(userProfile.displayName || '');
   const [phone, setPhone] = useState(userProfile.phoneNumber || '');
@@ -511,6 +522,60 @@ const AccountSettings: React.FC<Props> = ({ userProfile, onNavigate, subscriptio
                     🇬🇧 English
                   </button>
                 </div>
+
+                {onToggleTheme && (
+                  <div className="mt-5">
+                    <label className="block text-[11px] font-black text-text-secondary uppercase tracking-wide mb-2">
+                      {t('Temă')}
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => theme === 'dark' && onToggleTheme()}
+                        className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm transition ${
+                          theme === 'light'
+                            ? 'bg-accent-color text-accent-text'
+                            : 'bg-bg-main border border-border-color text-main hover:border-accent-color/30'
+                        }`}
+                      >
+                        <Sun size={16} /> {t('Luminos')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => theme === 'light' && onToggleTheme()}
+                        className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm transition ${
+                          theme === 'dark'
+                            ? 'bg-accent-color text-accent-text'
+                            : 'bg-bg-main border border-border-color text-main hover:border-accent-color/30'
+                        }`}
+                      >
+                        <Moon size={16} /> {t('Întunecat')}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {accentColors && accentColors.length > 0 && onSelectAccentColor && (
+                  <div className="mt-5">
+                    <label className="flex items-center gap-1.5 text-[11px] font-black text-text-secondary uppercase tracking-wide mb-2">
+                      <Palette size={13} /> {t('Culoare Temă')}
+                    </label>
+                    <div className="flex flex-wrap gap-3">
+                      {accentColors.map(color => (
+                        <button
+                          key={color}
+                          type="button"
+                          onClick={() => onSelectAccentColor(color)}
+                          style={{ backgroundColor: color }}
+                          className={`w-9 h-9 rounded-full transition ring-offset-2 ring-offset-bg-card ${
+                            selectedAccentColor === color ? 'ring-2 ring-text-main scale-110' : 'hover:scale-105'
+                          }`}
+                          aria-label={color}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </SectionCard>
 
               {/* Gift code */}

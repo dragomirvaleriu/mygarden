@@ -19,7 +19,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ title, description, type
             <div className="absolute inset-0 flex items-center justify-center text-accent-color">
               <ClipboardCheck size={64} strokeWidth={1} />
             </div>
-            <div className="absolute -top-2 -right-2 bg-emerald-500 text-white rounded-full p-2 shadow-lg animate-bounce">
+            <div className="absolute -top-2 -right-2 bg-accent-color text-white rounded-full p-2 shadow-lg animate-bounce">
               <Sprout size={20} />
             </div>
           </div>

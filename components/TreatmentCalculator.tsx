@@ -28,7 +28,7 @@ export const TreatmentCalculator: React.FC = () => {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-24 right-6 md:bottom-6 z-50 flex items-center justify-center w-14 h-14 bg-emerald-500 text-white rounded-full shadow-lg shadow-emerald-500/30 hover:scale-110 transition-transform duration-300 group"
+        className="fixed bottom-24 right-6 md:bottom-6 z-50 flex items-center justify-center w-14 h-14 bg-accent-color text-white rounded-full shadow-lg shadow-accent-glow/30 hover:scale-110 transition-transform duration-300 group"
       >
         <Beaker size={24} />
         <span className="absolute right-full mr-4 bg-bg-card border border-border-color text-main text-[11px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-sm">
@@ -41,12 +41,12 @@ export const TreatmentCalculator: React.FC = () => {
   return (
     <div className="fixed bottom-24 right-4 left-4 sm:left-auto sm:right-6 sm:bottom-6 z-50 w-[calc(100%-2rem)] sm:w-full sm:max-w-sm animate-in slide-in-from-bottom-8 duration-300">
       <div className="bg-bg-card border border-border-color shadow-2xl rounded-3xl overflow-hidden relative">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-bl-full -z-10 blur-3xl"></div>
+        <div className="absolute top-0 right-0 w-32 h-32 bg-accent-subtle rounded-bl-full -z-10 blur-3xl"></div>
         
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-border-color/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+            <div className="w-10 h-10 rounded-2xl bg-accent-subtle flex items-center justify-center text-accent-color">
               <Calculator size={20} />
             </div>
             <div>
@@ -76,7 +76,7 @@ export const TreatmentCalculator: React.FC = () => {
                 step="0.5"
                 value={pumpLiters}
                 onChange={(e) => setPumpLiters(parseFloat(e.target.value) || 0)}
-                className="w-full bg-bg-main border border-border-color rounded-2xl px-4 py-3 text-sm font-bold text-main outline-none focus:border-emerald-500 transition-all shadow-inner"
+                className="w-full bg-bg-main border border-border-color rounded-2xl px-4 py-3 text-sm font-bold text-main outline-none focus:border-accent-color transition-all shadow-inner"
               />
               <div className="px-4 py-3 bg-bg-main border border-border-color rounded-2xl text-sm font-black text-text-secondary">
                 L
@@ -92,7 +92,7 @@ export const TreatmentCalculator: React.FC = () => {
             <select
               value={selectedProductId}
               onChange={(e) => setSelectedProductId(e.target.value)}
-              className="w-full bg-bg-main border border-border-color rounded-2xl px-4 py-3 text-sm font-bold text-main outline-none focus:border-emerald-500 transition-all shadow-inner appearance-none"
+              className="w-full bg-bg-main border border-border-color rounded-2xl px-4 py-3 text-sm font-bold text-main outline-none focus:border-accent-color transition-all shadow-inner appearance-none"
             >
               {PRODUCTS.map(p => (
                 <option key={p.id} value={p.id}>
@@ -103,13 +103,13 @@ export const TreatmentCalculator: React.FC = () => {
           </div>
 
           {/* Result */}
-          <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-5 text-center relative overflow-hidden mt-2">
-            <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">Cantitate Necesară</p>
+          <div className="bg-accent-subtle border border-accent-border rounded-2xl p-5 text-center relative overflow-hidden mt-2">
+            <p className="text-[10px] font-black text-accent-ink uppercase tracking-widest mb-1">Cantitate Necesară</p>
             <div className="flex items-end justify-center gap-1">
-              <span className="text-3xl font-black text-emerald-500 tracking-tighter">
+              <span className="text-3xl font-black text-accent-color tracking-tighter">
                 {requiredAmount.toFixed(1).replace(/\.0$/, '')}
               </span>
-              <span className="text-sm font-black text-emerald-600 mb-1">{selectedProduct.unit}</span>
+              <span className="text-sm font-black text-accent-ink mb-1">{selectedProduct.unit}</span>
             </div>
             <p className="text-xs font-bold text-main mt-2">
               {selectedProduct.name}

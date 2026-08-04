@@ -91,8 +91,8 @@ const GardenActivitySettings: React.FC<Props> = ({
   return (
     <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-lg border border-slate-200 dark:border-slate-700">
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-          <Calendar size={20} className="text-emerald-600 dark:text-emerald-400" />
+        <div className="w-10 h-10 rounded-lg bg-accent-subtle dark:bg-accent-subtle flex items-center justify-center">
+          <Calendar size={20} className="text-accent-ink dark:text-accent-ink" />
         </div>
         <div className="flex-1">
           <h2 className="text-2xl font-black text-main">Activități Grădină</h2>
@@ -102,7 +102,7 @@ const GardenActivitySettings: React.FC<Props> = ({
         </div>
         <button
           onClick={onAddActivity}
-          className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold rounded-lg hover:shadow-lg transition flex items-center gap-2"
+          className="px-4 py-2 bg-gradient-to-r from-accent-color to-accent-hover text-white font-bold rounded-lg hover:shadow-lg transition flex items-center gap-2"
         >
           <Plus size={18} />
           Adaugă
@@ -139,7 +139,7 @@ const GardenActivitySettings: React.FC<Props> = ({
                     key={activity.id}
                     className={`p-4 rounded-lg border transition ${
                       isToday
-                        ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-300 dark:border-emerald-700'
+                        ? 'bg-accent-subtle dark:bg-accent-subtle border-accent-border dark:border-accent-border'
                         : isSoon
                         ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-300 dark:border-amber-700'
                         : 'bg-slate-50 dark:bg-slate-700/50 border-slate-200 dark:border-slate-600'
@@ -207,7 +207,7 @@ const GardenActivitySettings: React.FC<Props> = ({
                         <div className="flex gap-2 pt-2">
                           <button
                             onClick={() => handleSaveEdit(activity.id)}
-                            className="flex-1 px-3 py-2 bg-emerald-500 text-white font-bold text-xs rounded hover:bg-emerald-600 transition"
+                            className="flex-1 px-3 py-2 bg-accent-color text-white font-bold text-xs rounded hover:bg-accent-hover transition"
                           >
                             Salvează
                           </button>
@@ -230,7 +230,7 @@ const GardenActivitySettings: React.FC<Props> = ({
                             <span className="text-lg">{activity.icon}</span>
                             <span className="font-bold text-sm text-main">{activity.name}</span>
                             {isToday && (
-                              <span className="text-[10px] font-black bg-emerald-500 text-white px-2 py-0.5 rounded-full">
+                              <span className="text-[10px] font-black bg-accent-color text-white px-2 py-0.5 rounded-full">
                                 AZI
                               </span>
                             )}

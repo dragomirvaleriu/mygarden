@@ -221,7 +221,7 @@ const ActivityScheduleModal: React.FC<Props> = ({
           <button
             type="submit"
             disabled={isSubmitting || !selectedActivity}
-            className="w-full py-3 px-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold rounded-lg hover:shadow-lg disabled:opacity-50 transition flex items-center justify-center gap-2"
+            className="w-full py-3 px-4 bg-gradient-to-r from-accent-color to-accent-hover text-white font-bold rounded-lg hover:shadow-lg disabled:opacity-50 transition flex items-center justify-center gap-2"
           >
             <Plus size={18} />
             Programează Activitate

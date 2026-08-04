@@ -120,7 +120,7 @@ const ScheduledActivitiesList: React.FC<Props> = ({
               key={activity.id}
               className={`p-3 rounded-lg border transition flex items-center gap-3 ${
                 isToday
-                  ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-300 dark:border-emerald-700'
+                  ? 'bg-accent-subtle dark:bg-accent-subtle border-accent-border dark:border-accent-border'
                   : isSoon
                   ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-300 dark:border-amber-700'
                   : 'bg-bg-main border-border-color'
@@ -159,7 +159,7 @@ const ScheduledActivitiesList: React.FC<Props> = ({
               <div className="flex gap-1 shrink-0">
                 <button
                   onClick={() => handleMarkComplete(activity)}
-                  className="p-2 rounded-lg hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 transition"
+                  className="p-2 rounded-lg hover:bg-accent-color/20 text-accent-ink dark:text-accent-ink transition"
                   title="Marcheaza ca executata"
                 >
                   <Check size={16} />

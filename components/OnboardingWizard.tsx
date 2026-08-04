@@ -30,7 +30,7 @@ const OnboardingWizard: React.FC<Props> = ({ organizationId, onComplete }) => {
   const CONCERN_OPTIONS: { value: string; label: string; subtext: string; icon: React.ReactNode }[] = [
     { value: 'dry_patches', label: t('Pete Uscate sau Galbene'), subtext: t('Zone în care iarba moare sau se îngălbenește.'), icon: <ThermometerSun size={20} className="text-amber-500" /> },
     { value: 'weeds_moss', label: t('Buruieni sau Mușchi'), subtext: t('Plante nedorite care sufocă gazonul.'), icon: <Leaf size={20} className="text-green-500" /> },
-    { value: 'growth_color', label: t('Culoare Palidă / Creștere Lentă'), subtext: t('Gazonul este verde deschis sau crește greu.'), icon: <Sprout size={20} className="text-emerald-400" /> },
+    { value: 'growth_color', label: t('Culoare Palidă / Creștere Lentă'), subtext: t('Gazonul este verde deschis sau crește greu.'), icon: <Sprout size={20} className="text-accent-color" /> },
     { value: 'soil_water', label: t('Sol Compact / Bălți'), subtext: t('Apa stagnează după irigare sau ploaie.'), icon: <Waves size={20} className="text-blue-500" /> },
     { value: 'pests', label: t('Dăunători'), subtext: t('Cârtițe, mușuroaie, viermi sau insecte.'), icon: <Bug size={20} className="text-red-500" /> },
   ];
