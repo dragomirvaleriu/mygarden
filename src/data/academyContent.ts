@@ -768,6 +768,23 @@ export const ARTICLES_RO: ArticleMeta[] = [
     contentPath: 'content/academy/ro/amenajare-gradina-ghid-complet.md'
   },
   {
+    id: 'ro-gradini-celebre-inspiratie-design',
+    slug: 'gradini-celebre-inspiratie-design',
+    lang: 'ro',
+    title: '15 Grădini Celebre Care Îți Pot Inspira Propriul Design',
+    excerpt: 'De la simetria geometrică a Versailles-ului la stâncile zen din Kyoto — 15 grădini care au definit stiluri întregi de amenajare, cu ce anume le face memorabile și ce poți fura din fiecare pentru curtea ta.',
+    category: 'amenajare-design',
+    categoryLabel: 'Amenajare & Design',
+    isPremium: false,
+    readTime: 8,
+    difficulty: 'Începător',
+    author: 'Echipa My Garden',
+    coverGradient: 'from-fuchsia-950 via-purple-950 to-indigo-950',
+    coverEmoji: '🏛️',
+    tags: ['design', 'inspiratie', 'amenajare', 'stiluri', 'istorie'],
+    contentPath: 'content/academy/ro/gradini-celebre-inspiratie-design.md'
+  },
+  {
     id: 'ro-mulch-tundere-greseli-frecvente-gazon',
     slug: 'mulch-tundere-greseli-frecvente-gazon',
     lang: 'ro',
