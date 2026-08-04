@@ -6,7 +6,6 @@ import { monthlyGuide } from '../src/data/monthlyGuide';
 import Weather from '../components/Weather';
 import { IrrigationWidget } from '../components/iot/IrrigationWidget';
 import { TreatmentCalculator } from '../components/TreatmentCalculator';
-import { AILensScanner } from '../components/vision/AILensScanner';
 import { GardenVitalityRing } from '../components/gamification/GardenVitalityRing';
 import { DoctorulGradiniiDashboard } from '../components/DoctorulGradiniiDashboard';
 import OnboardingWizard from '../components/OnboardingWizard';
@@ -21,7 +20,7 @@ import {
 } from 'lucide-react';
 import { format, isToday, isAfter, isBefore, addDays } from 'date-fns';
 import { ro, enUS } from 'date-fns/locale';
-import { db, collection, onSnapshot, query, where, updateDoc, doc, serverTimestamp, addDoc, getDoc } from '../services/firebase';
+import { db, collection, onSnapshot, query, where, updateDoc, doc, serverTimestamp, getDoc } from '../services/firebase';
 import { runAutopilot } from '../src/utils/AutopilotEngine';
 import toast from 'react-hot-toast';
 
@@ -618,17 +617,6 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
         {/* LEFT (3 cols): "ce problemă am?" — the core beginner diagnostic tools, given the most room */}
         <div className="lg:col-span-3 space-y-4">
           <DoctorulGradiniiDashboard onNavigate={onNavigate} />
-
-          {/* AI LENS */}
-          {userProfile?.uid && (
-            <AILensScanner
-              organizationId={organizationId}
-              userId={userProfile.uid}
-              userName={userProfile.displayName || ''}
-              onNavigate={onNavigate}
-              asCard={true}
-            />
-          )}
         </div>
 
         {/* RIGHT (2 cols): weather (compact) + irrigation + vitality + Journal + Zones */}
@@ -782,47 +770,6 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
           <AdBanner userSubscriptionProduct={organization?.subscriptionProduct} />
         </div>
       </div>
-
-      {/* TEMP DEV BUTTON — only ever rendered in the local dev build (import.meta.env.DEV),
-          never in a production bundle, so homeowners can't see or trigger it. */}
-      {import.meta.env.DEV && (
-      <button
-        onClick={async () => {
-          try {
-            const mockEntries = [
-              { type: 'mowing', name: 'Tundere Gazon', details: 'Gazon tuns la 5cm. Margini ajustate.', photo: 'https://images.unsplash.com/photo-1592424005688-573e8e19c00b?w=800&q=80' },
-              { type: 'watering', name: 'Udare Suplimentară', details: 'Program de irigații pornit manual.', photo: 'https://images.unsplash.com/photo-1563514222-d860d8e27c75?w=800&q=80' },
-              { type: 'treatment', name: 'Aplicare Ingrășământ', details: 'Îngrășământ solid aplicat.', photo: 'https://images.unsplash.com/photo-1416879598056-f73b52af0eb1?w=800&q=80' },
-              { type: 'pruning', name: 'Tăieri', details: 'Curățare ramuri uscate.', photo: 'https://images.unsplash.com/photo-1558904541-efa843a96f09?w=800&q=80' },
-              { type: 'ai_diagnosis', name: 'Diagnoză AI', details: 'A fost detectat un atac incipient.', photo: 'https://images.unsplash.com/photo-1611843467160-25afb8df1074?w=800&q=80' }
-            ];
-
-            for (let i = 0; i < 5; i++) {
-              const entry = mockEntries[i];
-              await addDoc(collection(db, 'garden_journal'), {
-                organizationId,
-                userId: userProfile?.uid,
-                type: entry.type,
-                propertyName: entry.name,
-                details: entry.details,
-                date: new Date(Date.now() - Math.random() * 10000000000), // Random past date
-                photos: [entry.photo],
-                services: [{ name: entry.name }],
-                performedByName: 'Sistem',
-                createdAt: serverTimestamp()
-              });
-            }
-            toast.success('Istoric mock generat cu succes!');
-          } catch (e) {
-            console.error(e);
-            toast.error('Eroare la generare mock');
-          }
-        }}
-        className="w-full mt-4 py-3 border border-dashed border-red-500/50 bg-red-500/10 text-red-500 text-xs font-black uppercase tracking-widest rounded-xl hover:bg-red-500 hover:text-white transition-all"
-      >
-        DEV: Generează Istoric Aleatoriu (5 intrări)
-      </button>
-      )}
 
       {isExpertMode && <TreatmentCalculator />}
 

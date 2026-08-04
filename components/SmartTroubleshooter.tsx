@@ -355,34 +355,6 @@ export const SmartTroubleshooter: React.FC<Props> = ({ onNavigate }) => {
         {!isDiagnosis(currentNodeId) ? (
           // RENDER DECISION NODE
           <div className="animate-in fade-in slide-in-from-right-4 duration-300 max-w-2xl mx-auto w-full">
-            {/* Featured Shortcuts at Root */}
-            {currentNodeId === 'root' && onNavigate && (
-              <div className="mb-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <button
-                  onClick={() => {
-                    try { sessionStorage.setItem('academy_open_slug', 'asistent-peloza'); } catch {}
-                    onNavigate(Page.Academy);
-                  }}
-                  className="p-4 bg-gradient-to-br from-accent-color to-accent-hover/50 dark:from-accent-color dark:to-accent-hover/50 border-2 border-accent-border dark:border-accent-border rounded-2xl text-left hover:border-accent-color dark:hover:border-accent-color transition-all shadow-sm hover:shadow-md group"
-                >
-                  <div className="text-2xl mb-2">🌱</div>
-                  <p className="text-xs font-black text-accent-dark dark:text-accent-ink uppercase tracking-wider">Asistent Noua Peluzã</p>
-                  <p className="text-[10px] text-accent-ink dark:text-accent-ink font-medium mt-1">Sfaturi de specialitate</p>
-                </button>
-                <button
-                  onClick={() => {
-                    try { sessionStorage.setItem('academy_open_slug', 'doctorul-gradinii'); } catch {}
-                    onNavigate(Page.Academy);
-                  }}
-                  className="p-4 bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-950 dark:to-red-900/50 border-2 border-red-200 dark:border-red-800 rounded-2xl text-left hover:border-red-300 dark:hover:border-red-700 transition-all shadow-sm hover:shadow-md group"
-                >
-                  <div className="text-2xl mb-2">🔍</div>
-                  <p className="text-xs font-black text-red-900 dark:text-red-100 uppercase tracking-wider">Lentila Expert</p>
-                  <p className="text-[10px] text-red-700 dark:text-red-300 font-medium mt-1">Analize detaliate</p>
-                </button>
-              </div>
-            )}
-
             {decisions[currentNodeId].title && (
               <div className="inline-block px-3 py-1 bg-accent-color/10 text-accent-color text-[10px] font-black uppercase tracking-widest rounded-lg mb-4">
                 {decisions[currentNodeId].title}
