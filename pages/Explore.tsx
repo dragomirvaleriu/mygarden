@@ -31,6 +31,7 @@ import { db, collection, addDoc, serverTimestamp } from '../services/firebase';
 import { auth } from '../services/firebase';
 import { plantMainImagePath } from '../services/contentImages';
 import ContentImage from '../components/ContentImage';
+import PlantCard from '../components/PlantCard';
 import toast from 'react-hot-toast';
 
 interface Props {
@@ -371,31 +372,20 @@ const Explore: React.FC<Props> = ({ organizationId }) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4">
             {pagedPlants.map((plant) => (
-              <button
+              <PlantCard
                 key={plant.id}
+                plant={plant}
+                heightLabel={heightLabels[plant.heightCategory]}
+                waterLabel={waterLabels[plant.waterNeed]}
+                lightLabel={lightLabels[plant.lightNeed]}
+                seasonLabel={plant.seasons.map((s) => seasonLabels[s]).join(', ')}
+                categoryLabel={categoryLabels[plant.category]}
+                difficultyLabel={difficultyLabel(plant.difficulty)}
+                difficultyColorClass={difficultyColor(plant.difficulty)}
                 onClick={() => { setSelectedPlant(plant); setGalleryIndex(0); }}
-                className="text-left bg-accent-subtle border border-accent-border/50 rounded-3xl p-4 shadow-sm hover:shadow-md hover:border-accent-border hover:-translate-y-1 transition-all active:translate-y-0"
-              >
-                {plant.images && plant.images.length > 0 ? (
-                  <img
-                    src={`/${plant.images[0]}`}
-                    alt={plant.name}
-                    loading="lazy"
-                    className="w-[72px] h-[72px] rounded-2xl object-cover shadow-inner mb-3"
-                  />
-                ) : (
-                  <div className="w-[72px] h-[72px] rounded-2xl bg-bg-main flex items-center justify-center text-3xl shadow-inner mb-3">
-                    {plant.emoji}
-                  </div>
-                )}
-                <h3 className="font-black text-text-main text-sm leading-tight mb-1 truncate">{plant.name}</h3>
-                <p className="text-[11px] text-text-secondary italic truncate mb-2">{plant.scientificName}</p>
-                <span className={`inline-block px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wide border ${difficultyColor(plant.difficulty)}`}>
-                  {difficultyLabel(plant.difficulty)}
-                </span>
-              </button>
+              />
             ))}
           </div>
 
