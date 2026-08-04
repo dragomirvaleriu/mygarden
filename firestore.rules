@@ -171,6 +171,13 @@ service cloud.firestore {
       allow read, write: if request.auth.uid == userId || isSuperAdmin();
     }
 
+    // Progresul de citire din Academie — un document per utilizator, ca să
+    // supraviețuiască schimbării de dispozitiv/browser (înainte trăia doar
+    // în localStorage, deci se "pierdea" la fiecare terminal nou).
+    match /academy_progress/{userId} {
+      allow read, write: if request.auth.uid == userId || isSuperAdmin();
+    }
+
     // Organizații
     // Entitlement fields (licenseType/subscriptionTier/plan/isLifetime/
     // trialExpiresAt/planExpires) are what usePlan() reads to decide if an

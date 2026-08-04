@@ -11,7 +11,7 @@ import {
   ARTICLES_RO, ARTICLES_EN, ACADEMY_CATEGORIES,
   ArticleMeta, ArticleCategory, getArticlesByLang, getFreeArticleCount, getTotalArticleCount, articleMatchesCategory
 } from '../src/data/academyContent';
-import { auth, functions, httpsCallable } from '../services/firebase';
+import { auth, db, doc, getDoc, setDoc, arrayUnion, functions, httpsCallable } from '../services/firebase';
 import { academyCoverPath } from '../services/contentImages';
 import ContentImage from '../components/ContentImage';
 import { usePlan } from '../src/hooks/usePlan';
@@ -509,6 +509,31 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
     } catch { return new Set(); }
   });
 
+  // Reading progress used to live only in localStorage, so it reset on
+  // every new browser/device. On login, pull the Firestore copy and merge
+  // it with whatever's already local (union, not replace) — that way an
+  // article read on this device before the merge lands isn't lost, and
+  // anything read elsewhere shows up here too.
+  useEffect(() => {
+    const uid = auth.currentUser?.uid;
+    if (!uid) return;
+    (async () => {
+      try {
+        const snap = await getDoc(doc(db, 'academy_progress', uid));
+        const remoteIds: string[] = snap.exists() ? (snap.data().readArticleIds || []) : [];
+        if (remoteIds.length === 0) return;
+        setReadArticles(prev => {
+          const next = new Set(prev);
+          remoteIds.forEach(id => next.add(id));
+          try { localStorage.setItem('landscapeos_read_articles', JSON.stringify([...next])); } catch {}
+          return next;
+        });
+      } catch (err) {
+        console.error('Failed to load Academy reading progress:', err);
+      }
+    })();
+  }, []);
+
   const articles = getArticlesByLang(lang);
   const freeCount = getFreeArticleCount(lang);
   const totalCount = getTotalArticleCount(lang);
@@ -554,6 +579,11 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
       try { localStorage.setItem('landscapeos_read_articles', JSON.stringify([...next])); } catch {}
       return next;
     });
+    const uid = auth.currentUser?.uid;
+    if (uid) {
+      setDoc(doc(db, 'academy_progress', uid), { readArticleIds: arrayUnion(id) }, { merge: true })
+        .catch(err => console.error('Failed to save Academy reading progress:', err));
+    }
   };
 
   const handleArticleClick = async (article: ArticleMeta) => {
