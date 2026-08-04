@@ -724,8 +724,19 @@ const Explore: React.FC<Props> = ({ organizationId }) => {
                     className="flex-1 min-w-0 bg-transparent text-sm text-text-main font-semibold placeholder:text-text-secondary outline-none"
                   />
                   <button
-                    onClick={() => setFabSearchOpen(false)}
-                    aria-label={t('Închide') as string}
+                    onClick={() => {
+                      // Mirrors the standard search-field convention: the X
+                      // clears the query first (so it doubles as a reset,
+                      // not just a close button) and only collapses the box
+                      // back to the icon once there's nothing left to clear.
+                      if (search) {
+                        setSearch('');
+                        searchInputRef.current?.focus();
+                      } else {
+                        setFabSearchOpen(false);
+                      }
+                    }}
+                    aria-label={(search ? t('Resetează căutarea') : t('Închide')) as string}
                     className="shrink-0 w-7 h-7 rounded-full bg-bg-main flex items-center justify-center text-text-secondary hover:text-text-main transition"
                   >
                     <X className="w-4 h-4" />

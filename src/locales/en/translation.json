@@ -1019,6 +1019,7 @@
   "Rescheduled": "Rescheduled {{name}} on {{date}}",
   "Rescheduled Info": "Rescheduled {{name}} on {{date}}",
   "Reset Database": "RESET DATABASE",
+  "Resetează căutarea": "Reset search",
   "Resetează filtrele": "Reset filters",
   "Responsible": "Responsible",
   "Restore Backup": "Restore from Backup",
