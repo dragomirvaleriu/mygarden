@@ -1,12 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { RefreshCw } from 'lucide-react';
 
 const POLLING_INTERVAL = 5 * 60 * 1000; // 5 minutes
+// Brief courtesy heads-up before the automatic reload fires — long enough to
+// notice, short enough that this still reads as "automatic", not "asking
+// permission". No click required; this is not a countdown the user can
+// cancel, just a beat so the page doesn't vanish with zero warning.
+const AUTO_UPDATE_DELAY = 1800;
 
 export const VersionChecker: React.FC = () => {
   const [hasUpdate, setHasUpdate] = useState(false);
   const [currentVersion, setCurrentVersion] = useState<number | null>(null);
-  const [isUpdating, setIsUpdating] = useState(false);
+  const triggeredRef = useRef(false);
 
   useEffect(() => {
     const fetchInitialVersion = async () => {
@@ -42,7 +47,7 @@ export const VersionChecker: React.FC = () => {
     };
 
     const interval = setInterval(checkForUpdates, POLLING_INTERVAL);
-    
+
     const handleFocus = () => checkForUpdates();
     window.addEventListener('focus', handleFocus);
 
@@ -52,10 +57,7 @@ export const VersionChecker: React.FC = () => {
     };
   }, [currentVersion]);
 
-  const handleUpdate = async () => {
-    if (isUpdating) return;
-    setIsUpdating(true);
-    
+  const applyUpdate = async () => {
     try {
       // Unregister all service workers
       if ('serviceWorker' in navigator) {
@@ -64,7 +66,7 @@ export const VersionChecker: React.FC = () => {
           await registration.unregister();
         }
       }
-      
+
       // Clear all CacheStorage
       if ('caches' in window) {
         const cacheNames = await caches.keys();
@@ -73,36 +75,33 @@ export const VersionChecker: React.FC = () => {
     } catch (err) {
       console.error('Failed to clear caches:', err);
     } finally {
-      setTimeout(() => {
-        // Force a hard reload from server
-        // @ts-ignore
-        window.location.reload(true);
-      }, 300);
+      // Force a hard reload from server
+      // @ts-ignore
+      window.location.reload(true);
     }
   };
 
+  // Fully automatic: no click required — the moment a new build is
+  // detected, this fires on its own after the brief courtesy delay above.
+  useEffect(() => {
+    if (!hasUpdate || triggeredRef.current) return;
+    triggeredRef.current = true;
+    const timer = setTimeout(applyUpdate, AUTO_UPDATE_DELAY);
+    return () => clearTimeout(timer);
+  }, [hasUpdate]);
+
   if (!hasUpdate) return null;
 
+  // Small non-blocking corner toast — not a modal the user has to act on.
+  // The reload happens regardless of anything the user does here.
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="bg-bg-card border border-accent-color/30 rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl animate-in zoom-in-95 duration-500">
-        <div className="w-20 h-20 bg-accent-color/10 rounded-full flex items-center justify-center mx-auto mb-6">
-          <RefreshCw className={`w-10 h-10 text-accent-color ${isUpdating ? 'animate-spin' : 'animate-spin-slow'}`} />
-        </div>
-        <h2 className="text-2xl font-black text-main mb-3 uppercase tracking-tight">
-          Actualizare Disponibilă
-        </h2>
-        <p className="text-text-secondary text-sm font-medium mb-8 leading-relaxed">
-          Am lansat o nouă versiune a aplicației cu îmbunătățiri importante. Apasă butonul de mai jos pentru a o actualiza.
-        </p>
-        <button
-          onClick={handleUpdate}
-          disabled={isUpdating}
-          className={`w-full py-4 bg-accent-color hover:bg-accent-color/90 text-white font-black uppercase tracking-wider rounded-xl shadow-lg shadow-accent-color/20 transition-all flex items-center justify-center gap-2 ${isUpdating ? 'opacity-80 cursor-wait' : 'hover:scale-105 active:scale-95'}`}
-        >
-          <RefreshCw className={`w-5 h-5 ${isUpdating ? 'animate-spin' : ''}`} />
-          {isUpdating ? 'Se actualizează...' : 'Actualizează Acum'}
-        </button>
+    <div className="fixed bottom-4 right-4 z-[9999] flex items-center gap-3 bg-bg-card border border-accent-color/30 rounded-2xl px-4 py-3 shadow-2xl animate-in slide-in-from-bottom-4 fade-in duration-300">
+      <div className="w-8 h-8 shrink-0 bg-accent-color/10 rounded-full flex items-center justify-center">
+        <RefreshCw className="w-4 h-4 text-accent-color animate-spin" />
+      </div>
+      <div className="min-w-0">
+        <p className="text-xs font-black text-main uppercase tracking-wide">Versiune nouă</p>
+        <p className="text-[11px] text-text-secondary font-medium">Se actualizează automat...</p>
       </div>
     </div>
   );

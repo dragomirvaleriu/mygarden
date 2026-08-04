@@ -358,6 +358,19 @@ const AccountSettings: React.FC<Props> = ({
               {/* Identity */}
               <SectionCard icon={User} title={t('Date Personale')}>
                 <div className="space-y-5">
+                  <div className="space-y-2.5">
+                    <label className="block text-[11px] font-black text-text-secondary uppercase tracking-wide">
+                      Email
+                    </label>
+                    <div className="flex items-center justify-between gap-3 bg-bg-main border border-border-color rounded-xl px-4 py-3">
+                      <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                        <Mail size={16} className="text-accent-color shrink-0" />
+                        <span className="font-medium text-sm text-main truncate">{userProfile.email}</span>
+                      </div>
+                      <Pill tone="success" icon={CheckCircle}>{t('Verificat')}</Pill>
+                    </div>
+                  </div>
+
                   <form onSubmit={handleSaveName} className="space-y-2.5">
                     <label className="block text-[11px] font-black text-text-secondary uppercase tracking-wide">
                       {t('Cum te cheamă?')}
@@ -379,19 +392,6 @@ const AccountSettings: React.FC<Props> = ({
                       </button>
                     </div>
                   </form>
-
-                  <div className="space-y-2.5">
-                    <label className="block text-[11px] font-black text-text-secondary uppercase tracking-wide">
-                      Email
-                    </label>
-                    <div className="flex items-center justify-between gap-3 bg-bg-main border border-border-color rounded-xl px-4 py-3">
-                      <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                        <Mail size={16} className="text-accent-color shrink-0" />
-                        <span className="font-medium text-sm text-main truncate">{userProfile.email}</span>
-                      </div>
-                      <Pill tone="success" icon={CheckCircle}>{t('Verificat')}</Pill>
-                    </div>
-                  </div>
 
                   <form onSubmit={handleSavePhone} className="space-y-2.5">
                     <label className="block text-[11px] font-black text-text-secondary uppercase tracking-wide">

@@ -491,6 +491,19 @@ const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
            <h2 className="shrink-0 text-[10px] font-black uppercase tracking-[0.2em] text-text-secondary flex items-center gap-2 whitespace-nowrap">
               <div className="w-1 h-1 bg-accent-color rounded-full animate-ping"></div>
               {t('Protocol Timeline')}
+              <button
+                onClick={() => {
+                  const now = getMonth(new Date());
+                  setSelectedMonth(now);
+                  setCarouselCenter(now);
+                  setTimeout(() => {
+                    document.getElementById('guide-details')?.scrollIntoView({ behavior: 'smooth' });
+                  }, 50);
+                }}
+                className="shrink-0 px-2 py-0.5 rounded-full bg-accent-subtle border border-accent-border text-accent-ink text-[9px] font-black uppercase tracking-widest hover:bg-accent-color hover:text-accent-text transition-colors"
+              >
+                {t('Acum')}
+              </button>
            </h2>
            {/* All 4 season labels never fit next to the title on a narrow
                phone. Rather than dropping text or making the user swipe to
@@ -505,7 +518,7 @@ const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
                   return (
                     <div
                       key={key}
-                      className={`relative w-8 h-8 rounded-lg overflow-hidden shrink-0 transition-all duration-300 ${
+                      className={`relative w-16 aspect-video rounded-lg overflow-hidden shrink-0 transition-all duration-300 ${
                         isActive ? `ring-2 ${style.ringActive} opacity-100` : 'opacity-40'
                       }`}
                     >
@@ -574,7 +587,7 @@ const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
                       ${isSelected ? `${season.topBarActive} opacity-100` : `${season.topBarActive} opacity-0 group-hover/month:opacity-30`}
                     `}></div>
 
-                    <div className={`relative w-11 h-11 rounded-lg overflow-hidden mb-1 transition-all duration-300
+                    <div className={`relative w-full aspect-[8/5] rounded-lg overflow-hidden mb-1 transition-all duration-300
                       ${isSelected
                         ? `ring-2 ${season.ringActive} opacity-100`
                         : 'opacity-40 group-hover/month:opacity-80'
