@@ -783,6 +783,23 @@ export const ARTICLES_RO: ArticleMeta[] = [
     coverEmoji: '🌱',
     tags: ['gazon', 'tundere', 'mulch', 'fertilizare', 'greseli'],
     contentPath: 'content/academy/ro/mulch-tundere-greseli-frecvente-gazon.md'
+  },
+  {
+    id: 'ro-pomi-arbusti-fructiferi-ghid',
+    slug: 'pomi-arbusti-fructiferi-ghid',
+    lang: 'ro',
+    title: 'Pomi și Arbuști Fructiferi: Ghid pe Specii pentru Grădina de Acasă',
+    excerpt: 'De la afinul care cere strict sol acid la migdalul cu flori sensibile la brumă — 13 specii de pomi și arbuști fructiferi, cu cerințe exacte de sol, polenizare, tăiere și recoltare, pentru grădina de acasă.',
+    category: 'specii-plante',
+    categoryLabel: 'Specii de Plante',
+    isPremium: true,
+    readTime: 12,
+    difficulty: 'Intermediar',
+    author: 'Echipa My Garden',
+    coverGradient: 'from-amber-950 via-orange-950 to-red-950',
+    coverEmoji: '🍇',
+    tags: ['pomi fructiferi', 'arbusti fructiferi', 'afin', 'zmeur', 'nuc', 'specii'],
+    contentPath: 'content/academy/ro/pomi-arbusti-fructiferi-ghid.md'
   }
 ];
 
