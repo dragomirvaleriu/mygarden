@@ -19,9 +19,13 @@ const MobileSettingsModal: React.FC<Props> = ({
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
 
+  // 5 slots, alternating masculine/feminine-coded: green, pink, blue,
+  // purple, red — 3 "boy" colors (green/blue/red) and 2 "girl" colors
+  // (pink/purple), per explicit request. Keep in sync with the same
+  // fallback array in src/App.tsx (organization?.accentColors default).
   const accentColors = [
     '#4A7C59', // Olive Green
-    '#68B0AB', // Teal
+    '#EC4899', // Pink
     '#3b82f6', // Blue
     '#a855f7', // Purple
     '#ef4444', // Red
