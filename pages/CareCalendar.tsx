@@ -487,7 +487,7 @@ const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
         </div>
       {/* ELITE TIMELINE SELECTOR */}
       <section className="space-y-3">
-        <div className="flex items-center justify-between gap-2 px-2">
+        <div className="flex flex-wrap items-center justify-between gap-y-2 gap-x-2 px-2">
            <h2 className="shrink-0 text-[10px] font-black uppercase tracking-[0.2em] text-text-secondary flex items-center gap-2 whitespace-nowrap">
               <div className="w-1 h-1 bg-accent-color rounded-full animate-ping"></div>
               {t('Protocol Timeline')}

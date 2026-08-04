@@ -30,6 +30,19 @@ body {
   transition: background-color 0.2s, color 0.2s;
 }
 
+/* Default heading color/weight. Layered as `base` (not the raw unlayered
+   <style> block index.html used to carry this in) specifically so an
+   explicit Tailwind color utility on a heading — e.g. `text-white` for
+   text overlaid on a photo — always wins. Unlayered CSS beats layered CSS
+   regardless of specificity, which is what silently broke every colored
+   h1-h6 in the app before this moved here. */
+@layer base {
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--text-main);
+    font-weight: 900;
+  }
+}
+
 /* Remove browser focus outline from Recharts chart containers */
 .recharts-wrapper,
 .recharts-wrapper svg,

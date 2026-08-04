@@ -333,7 +333,7 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
         }`} />
 
         <div className="relative z-10 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-start gap-3 min-w-0">
             <div className="w-10 h-10 rounded-xl bg-bg-main/50 dark:bg-white/5 backdrop-blur-md border border-border-color dark:border-white/10 flex items-center justify-center shrink-0">
               <Sprout className="w-5 h-5 text-accent-color dark:text-accent-color" strokeWidth={2} />
             </div>
@@ -343,7 +343,7 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
                 initial={{ opacity: 0, y: -5 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
-                className="text-lg md:text-xl font-black text-main tracking-tight truncate"
+                className="text-base md:text-xl font-black text-main tracking-tight leading-snug"
               >
                 {greeting}
               </motion.h1>
