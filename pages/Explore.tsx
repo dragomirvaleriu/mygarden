@@ -29,6 +29,8 @@ import {
 } from '../src/data/plantCatalogEn';
 import { db, collection, addDoc, serverTimestamp } from '../services/firebase';
 import { auth } from '../services/firebase';
+import { plantMainImagePath } from '../services/contentImages';
+import ContentImage from '../components/ContentImage';
 import toast from 'react-hot-toast';
 
 interface Props {
@@ -445,9 +447,16 @@ const Explore: React.FC<Props> = ({ organizationId }) => {
                   <span className="text-sm font-bold">{t('Înapoi')}</span>
                 </button>
 
-                <div className="w-16 h-16 rounded-2xl bg-bg-main flex items-center justify-center text-3xl shadow-inner mb-4">
-                  {selectedPlant.emoji}
-                </div>
+                <ContentImage
+                  path={plantMainImagePath(selectedPlant.id)}
+                  alt={selectedPlant.name}
+                  className="w-16 h-16 rounded-2xl object-cover shadow-inner mb-4"
+                  fallback={
+                    <div className="w-16 h-16 rounded-2xl bg-bg-main flex items-center justify-center text-3xl shadow-inner mb-4">
+                      {selectedPlant.emoji}
+                    </div>
+                  }
+                />
                 <h2 className="text-xl font-black text-text-main leading-tight">{selectedPlant.name}</h2>
                 <p className="text-sm text-text-secondary italic">{selectedPlant.scientificName}</p>
               </div>

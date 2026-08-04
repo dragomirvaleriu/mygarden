@@ -35,5 +35,37 @@ service firebase.storage {
                        && request.resource.contentType in ['image/jpeg', 'image/png', 'image/webp']
                       ));
     }
+
+    // App-level content images (Academy article covers/inline images, plant
+    // photos for the Encyclopedia) — deliberately separate from `uploads/`
+    // above, which is per-user/per-organization gallery content. These are
+    // shared reference images, the same for every user, structured by the
+    // content's own ID: content-images/academy/{articleId}/... and
+    // content-images/plants/{plantId}/.... Keep this in sync with
+    // services/contentImages.ts, the single place in the app code that
+    // builds these paths.
+    function isSuperAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'dragomirvaleriu@gmail.com' ||
+        (
+          firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) &&
+          firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'superadmin'
+        )
+      );
+    }
+
+    match /content-images/{contentType}/{contentId}/{allPaths=**} {
+      // Readable by any signed-in user — these are reference images shown
+      // throughout the app (Academy, Enciclopedie), not user-private data.
+      allow read: if isSignedIn();
+      // Only the app's superadmin manages this library for now — regular
+      // users/org admins never upload here. Revisit if/when content
+      // curation is delegated to more roles.
+      allow write: if isSuperAdmin()
+                   && (request.resource == null || (
+                       request.resource.size < 5 * 1024 * 1024
+                       && request.resource.contentType in ['image/jpeg', 'image/png', 'image/webp']
+                      ));
+    }
   }
 }

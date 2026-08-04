@@ -12,6 +12,8 @@ import {
   ArticleMeta, getArticlesByLang, getFreeArticleCount, getTotalArticleCount
 } from '../src/data/academyContent';
 import { auth, functions, httpsCallable } from '../services/firebase';
+import { academyCoverPath } from '../services/contentImages';
+import ContentImage from '../components/ContentImage';
 import { usePlan } from '../src/hooks/usePlan';
 import toast from 'react-hot-toast';
 import { SmartTroubleshooter } from '../components/SmartTroubleshooter';
@@ -443,7 +445,12 @@ const ArticleReader: React.FC<{
           >
             <ArrowLeft size={18} className="shrink-0" /> {t('Înapoi')}
           </button>
-          <div className="text-4xl mb-3 drop-shadow-md">{article.coverEmoji}</div>
+          <ContentImage
+            path={academyCoverPath(article.slug)}
+            alt={article.title}
+            className="w-16 h-16 rounded-2xl object-cover shadow-md mb-3"
+            fallback={<div className="text-4xl mb-3 drop-shadow-md">{article.coverEmoji}</div>}
+          />
           <span className="text-[10px] font-black uppercase tracking-widest text-text-secondary dark:text-white/60">{article.categoryLabel}</span>
           <h1 className="text-xl font-black text-text-main dark:text-white leading-tight mt-1 drop-shadow-sm">{article.title}</h1>
           <div className="flex items-center gap-3 mt-3">
