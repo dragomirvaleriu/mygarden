@@ -1,21 +1,21 @@
 ---
-title: "Cuprul la Pomii Fructiferi: Ghidul Complet pe Sezon"
+title: "Cuprul în Grădină: Pomi Fructiferi, Conifere și Gazon — Ghidul Complet pe Sezon"
 slug: "cupru-tratamente-pomi-fructiferi"
 category: "chimie-tratamente"
 categoryLabel: "Erbicide & Tratamente"
-excerpt: "Hidroxid, oxiclorură, sulfat tribazic, piatra vânătă sau zeamă bordeleză? Ce cupru folosești toamna, iarna și la dezmugurire — pe înțelesul tuturor, fără jargon de agronomie."
+excerpt: "Hidroxid, oxiclorură, sulfat tribazic, piatra vânătă sau zeamă bordeleză? Ce cupru folosești toamna, iarna și la dezmugurire la pomii fructiferi — plus ce e diferit la conifere și dacă ajută la ceva pe gazon."
 isPremium: true
-readTime: 9
+readTime: 11
 difficulty: "Intermediar"
 author: "Ing. Agr. Maria Petrescu"
 coverGradient: "from-orange-950 via-amber-900 to-stone-900"
 coverEmoji: "🍎"
-tags: ["cupru", "fungicid", "pomi fructiferi", "repaus vegetativ", "dezmugurire", "piatra vanata"]
+tags: ["cupru", "fungicid", "pomi fructiferi", "conifere", "gazon", "repaus vegetativ", "dezmugurire", "piatra vanata", "rhizosphaera"]
 ---
 
-# Cuprul la Pomii Fructiferi: Ghidul Complet pe Sezon
+# Cuprul în Grădină: Pomi Fructiferi, Conifere și Gazon
 
-Dacă ai măr, prun, cireș, piersic, cais sau viță de vie, cuprul este probabil cel mai important tratament pe care îl faci într-un an întreg — și, în același timp, cel mai des greșit. Nu pentru că e complicat, ci pentru că majoritatea explicațiilor găsite pe internet sunt scrise pentru fermieri, cu termeni de agronomie care sperie mai mult decât lămuresc. Aici e varianta simplă: ce cupru cumperi, când îl pui, și ce se întâmplă dacă greșești.
+Dacă ai măr, prun, cireș, piersic, cais sau viță de vie, cuprul este probabil cel mai important tratament pe care îl faci într-un an întreg — și, în același timp, cel mai des greșit. Nu pentru că e complicat, ci pentru că majoritatea explicațiilor găsite pe internet sunt scrise pentru fermieri, cu termeni de agronomie care sperie mai mult decât lămuresc. Aici e varianta simplă: ce cupru cumperi, când îl pui, și ce se întâmplă dacă greșești. Ai și conifere sau te întrebi dacă merită pe gazon? Sunt secțiuni dedicate mai jos — regulile sunt destul de diferite față de pomii fructiferi.
 
 ## De ce cuprul, și nu altceva
 
@@ -72,6 +72,26 @@ Cuprul formează o peliculă protectoare pe suprafața pomului — dar ploaia o 
 
 **Regula practică:** dacă a plouat consistent după un tratament, reia stropirea — mai ales în perioada critică de la dezmugurire până la sfârșitul înfloritului. Pentru rezistență mai bună la spălare, alege oxiclorură sau sulfat tribazic (se spală mai greu) în locul hidroxidului simplu (se spală ușor).
 
+## Cuprul la conifere: ce e diferit
+
+La molid, brad, pin sau tuia, logica se schimbă complet față de pomii fructiferi — și motivul e simplu: un conifer nu își pierde niciodată tot frunzișul. Nu există un moment de „repaus total, fără frunziș" în care să poți folosi cuprul cel mai puternic fără riscuri, ca la măr sau prun. Practic, la conifere ești mereu în situația „țesut fraged prezent pe plantă" — deci mereu ai nevoie de un cupru blând, niciodată de piatra vânătă simplă.
+
+**Pentru ce boală, de fapt:** cea mai frecventă țintă e Rhizosphaera — o ciupercă ce atacă în special molidul (inclusiv molidul argintiu/albastru, foarte popular ornamental), provocând îngălbenirea și căderea acelor mai vechi, de la interiorul coroanei spre exterior, în timp ce vârfurile rămân verzi. La pini apare frecvent și Diplodia (uscarea vârfurilor de lăstari).
+
+**Momentul aplicării — diferit de pomii fructiferi:** Rhizosphaera infectează exclusiv acele **noi**, în perioada în care acestea abia ies din mugur și se alungesc, nu acele vechi de pe ramurile mature. Asta înseamnă că fereastra critică de tratament e primăvara, când lăstarii noi sunt pe jumătate alungiți — nu iarna, în repaus, ca la pomii fructiferi. Recomandarea practică: o stropire când acele noi ajung la jumătate din lungimea finală, și încă una la 4-6 săptămâni distanță, pentru protecție completă cât timp acele sunt încă fragede și vulnerabile.
+
+**Ce cupru folosești:** hidroxid de cupru sau oxiclorură de cupru, la doza de pe etichetă — niciodată concentrațiile de „stropire albastră" folosite iarna la pomii fructiferi. Aceleași produse recomandate pentru dezmugurirea pomilor fructiferi (Champ 77 WG, Kocide 2000, Flowbrix) sunt potrivite și aici, doar că le aplici la alt moment din an.
+
+**Atenție:** coniferele tratate greșit (concentrații prea mari sau produse prea agresive) pot suferi arsuri vizibile pe acele noi, care rămân apoi permanent decolorate — spre deosebire de un pom fructifer, care produce frunze noi în fiecare primăvară, un conifer „poartă" acele afectate ani de zile. Testează întotdeauna pe o ramură mică înainte de tratamentul pe tot pomul, mai ales la soiuri ornamentale unde aspectul contează la fel de mult ca sănătatea.
+
+## Cuprul pe gazon: ajută sau nu?
+
+Pe scurt: ajută, dar la altceva decât te-ai aștepta. Cuprul **nu** este tratamentul standard pentru bolile mari de gazon — Brown Patch, Pythium sau Dollar Spot se tratează cu fungicide sistemice sau de contact clasice (vezi articolul „Protocolul Complet al Fungicidelor"), nu cu produse cuprice.
+
+Unde chiar funcționează: **mușchiul și algele** de pe gazonul umed, prost drenat sau umbrit. Produsele cuprice (concentrație minimă 8% cupru metalic echivalent) perturbă membrana celulară a algelor și inhibă fotosinteza, oferind un control real — dar au nevoie de mai multe aplicări, la câteva zile distanță, ca să fie eficiente.
+
+**De reținut:** mușchiul de pe gazon aproape niciodată nu e problema în sine, ci un simptom — drenaj slab, umbră excesivă sau pH prea acid. Cuprul curăță temporar mușchiul existent, dar dacă nu corectezi cauza de fond, revine. Și aici, ca peste tot, dozele greșite pot decolora sau arde iarba — respectă strict concentrația de pe etichetă.
+
 ## Greșeli frecvente de evitat
 
 - **Piatra vânătă la dezmugurire** — arde mugurii și frunzele tinere. E strict pentru repausul total, fără frunziș.
@@ -82,8 +102,19 @@ Cuprul formează o peliculă protectoare pe suprafața pomului — dar ploaia o 
 
 ## Rezumat rapid
 
+**Pomi fructiferi:**
 - **Toamna** (după recoltare): oxiclorură sau sulfat tribazic — curăță pomul înainte de iarnă.
 - **Iarna** (frunziș căzut complet): piatra vânătă (2-3%, sau 1% la piersic) sau zeamă bordeleză — cea mai puternică stropire a anului.
 - **Primăvara** (dezmugurire): hidroxid de cupru sau sulfat tribazic — niciodată piatra vânătă simplă în faza asta.
 - După orice ploaie peste 5-6 l/mp, în perioada critică de primăvară, reia tratamentul.
 - Gluconatul de cupru e supliment nutritiv, nu tratament de protecție — nu îl confunda cu celelalte.
+
+**Conifere:**
+- Niciodată piatra vânătă — foliajul nu cade niciodată complet, deci ai mereu nevoie de un cupru blând (hidroxid sau oxiclorură).
+- Momentul cheie: primăvara, când acele noi sunt pe jumătate alungite — nu iarna, ca la pomii fructiferi.
+- Repetă la 4-6 săptămâni pentru protecție completă împotriva Rhizosphaera.
+- Testează pe o ramură mică înainte de tratamentul complet, mai ales la soiuri ornamentale.
+
+**Gazon:**
+- Cuprul nu tratează Brown Patch, Pythium sau Dollar Spot — doar mușchiul și algele.
+- Corectează cauza de fond (drenaj, umbră, pH) sau mușchiul revine oricum.
