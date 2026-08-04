@@ -225,6 +225,24 @@ export const ARTICLES_RO: ArticleMeta[] = [
     tags: ['fungicide', 'boli', 'brown-patch', 'pythium'],
     contentPath: 'content/academy/ro/protocoale-fungicide.md'
   },
+  {
+    id: 'ro-cupru-pomi-fructiferi',
+    slug: 'cupru-tratamente-pomi-fructiferi',
+    lang: 'ro',
+    title: 'Cuprul la Pomii Fructiferi: Ghidul Complet pe Sezon',
+    excerpt: 'Hidroxid, oxiclorură, sulfat tribazic, piatra vânătă sau zeamă bordeleză? Ce cupru folosești toamna, iarna și la dezmugurire — pe înțelesul tuturor, fără jargon de agronomie.',
+    category: 'chimie-tratamente',
+    categoryLabel: 'Erbicide & Tratamente',
+    categories: ['managementul-bolilor'],
+    isPremium: true,
+    readTime: 9,
+    difficulty: 'Intermediar',
+    author: 'Ing. Agr. Maria Petrescu',
+    coverGradient: 'from-orange-950 via-amber-900 to-stone-900',
+    coverEmoji: '🍎',
+    tags: ['cupru', 'fungicid', 'pomi fructiferi', 'repaus vegetativ', 'dezmugurire', 'piatra vanata'],
+    contentPath: 'content/academy/ro/cupru-tratamente-pomi-fructiferi.md'
+  },
   // ── Placeholder articles (to be written) ──
   {
     id: 'ro-regula-o-treime',
