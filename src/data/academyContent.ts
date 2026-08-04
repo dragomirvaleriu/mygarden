@@ -15,6 +15,7 @@ export type ArticleCategory =
   | 'echipamente'
   | 'specii-plante'
   | 'amenajare-design'
+  | 'irigatii'
   | 'core-protocols'
   | 'disease-management'
   | 'chemistry-treatments';
@@ -136,6 +137,17 @@ export const ACADEMY_CATEGORIES: ArticleCategory_Config[] = [
     emoji: '🎨',
     totalFree: 0,
     totalPremium: 0
+  },
+  {
+    id: 'irigatii',
+    labelRo: 'Irigații',
+    labelEn: 'Irrigation',
+    description: 'Reguli de udare, diagnosticul stresului hidric și planificarea unui sistem de irigații pentru curte.',
+    color: 'text-sky-400',
+    bgGradient: 'from-sky-950 via-blue-950 to-slate-950',
+    emoji: '💧',
+    totalFree: 0,
+    totalPremium: 0
   }
 ];
 
@@ -151,6 +163,7 @@ export const ARTICLES_RO: ArticleMeta[] = [
     excerpt: 'Fizica solului, testul caserolelor, diagnosticul stresului hidric și regula critică de udare a semințelor noi.',
     category: 'protocoale-baza',
     categoryLabel: 'Protocoale de Bază',
+    categories: ['irigatii'],
     isPremium: false,
     readTime: 6,
     difficulty: 'Începător',
@@ -641,7 +654,7 @@ export const ARTICLES_RO: ArticleMeta[] = [
     excerpt: 'Vrei să renunți la furtunul cu care alergi prin curte seară de seară? Iată cum se proiectează un sistem de aspersoare de la zero, pas cu pas, înainte să sapi primul șanț.',
     category: 'protocoale-baza',
     categoryLabel: 'Protocoale de Bază',
-    categories: ['amenajare-design'],
+    categories: ['amenajare-design', 'irigatii'],
     isPremium: true,
     readTime: 13,
     difficulty: 'Intermediar',

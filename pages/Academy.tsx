@@ -755,7 +755,12 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
       </div>
 
       {/* ── Category Filters ── */}
-      <div className="flex flex-wrap items-center gap-2.5 mb-8">
+      {/* Horizontally-scrollable single row on every screen size — with
+          8+ categories at their full Romanian labels, a wrapping row
+          stacked one-per-line ate a full mobile screen before a single
+          article was visible. -mx-4 px-4 bleeds the scroll area to the
+          page edges so pills can be swiped past the content padding. */}
+      <div className="flex items-center gap-2.5 mb-8 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
         <CategoryPill label={t('Toate')} emoji="📚" active={activeCategory === 'all'} onClick={() => setActiveCategory('all')} />
         {availableCategories.map(cat => (
           <CategoryPill

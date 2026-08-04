@@ -43,6 +43,16 @@ body {
   }
 }
 
+/* Hides the scrollbar on horizontally-swipeable rows (filter pills, the
+   Calendar month carousel, etc.) while keeping the element scrollable. */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
 /* Remove browser focus outline from Recharts chart containers */
 .recharts-wrapper,
 .recharts-wrapper svg,
