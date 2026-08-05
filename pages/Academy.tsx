@@ -264,22 +264,26 @@ const ArticleCard: React.FC<{
   return (
     <button
       onClick={onClick}
-      className={`group relative w-full text-left rounded-3xl overflow-hidden transition-all duration-300 min-h-[240px] flex flex-col justify-end
+      className={`group relative w-full text-left rounded-3xl overflow-hidden transition-all duration-300 aspect-[4/3] flex flex-col justify-end
         bg-bg-card border border-border-color hover:shadow-2xl hover:border-accent-color/30 hover:-translate-y-1 active:translate-y-0
         ${isRead ? 'ring-2 ring-accent-color/30' : ''}
       `}
     >
-      {/* Layer 0: background — real photo when available, theme gradient otherwise */}
+      {/* Layer 0: background — real photo when available, theme gradient
+          otherwise. The slow, subtle zoom on hover is the one thing in this
+          card that's allowed to move — everything layered on top of it
+          (scrim, badges, text) stays completely still, which is what sells
+          the "premium/cinematic" feel instead of reading as busy. */}
       {hasCoverImage ? (
         <img
           src={`/${article.coverImage}`}
           alt={article.title}
           loading="lazy"
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-105"
         />
       ) : (
         <>
-          <div className={`absolute inset-0 bg-gradient-to-br ${article.coverGradient} opacity-5 dark:opacity-100 transition-opacity`} />
+          <div className={`absolute inset-0 bg-gradient-to-br ${article.coverGradient} opacity-5 dark:opacity-100 transition-all duration-700 ease-in-out group-hover:scale-105`} />
           <div className="absolute inset-0 bg-white/40 dark:bg-black/40" />
         </>
       )}
@@ -298,7 +302,7 @@ const ArticleCard: React.FC<{
       {/* Layer 2: badges, pinned top regardless of where the text block's
           height ends up — glassmorphism reads on any photo, unlike a
           solid tint that has to be picked per-background. */}
-      <div className="absolute top-4 left-4 right-4 z-10 flex items-start justify-between gap-2">
+      <div className="absolute top-5 left-5 right-5 z-10 flex items-start justify-between gap-2">
         <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-md
           ${hasCoverImage
             ? 'bg-white/20 backdrop-blur-md text-white border border-white/30'
@@ -324,20 +328,24 @@ const ArticleCard: React.FC<{
 
       {/* Layer 3: text content, bottom-anchored — forced white/light-gray
           on a photo card so it never depends on theme text colors, which
-          are tuned for a plain background, not an arbitrary image. */}
-      <div className="relative z-10 p-6 pt-10">
+          are tuned for a plain background, not an arbitrary image.
+          Editorial-masthead sizing: a roomier p-8, a category/meta line
+          that reads as a refined label (font-medium, not shouty
+          font-black) rather than a badge, and a title with enough size to
+          anchor the card now that it has room to breathe. */}
+      <div className="relative z-10 p-6 sm:p-8 pt-10">
         {!hasCoverImage && (
           <div className="text-4xl mb-3 select-none drop-shadow-md">{article.coverEmoji}</div>
         )}
-        <div className={`text-[10px] font-black uppercase tracking-widest mb-1 ${hasCoverImage ? 'text-gray-200 [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]' : 'text-text-secondary dark:text-white/60'}`}>{article.categoryLabel}</div>
-        <h3 className={`font-black text-base leading-tight mb-3 transition-colors ${hasCoverImage ? 'text-white group-hover:text-amber-200 [text-shadow:0_1px_4px_rgba(0,0,0,0.9)]' : 'text-text-main dark:text-white group-hover:text-accent-color dark:group-hover:text-amber-200 drop-shadow-sm'}`}>{article.title}</h3>
-        <p className={`text-xs leading-relaxed line-clamp-2 ${hasCoverImage ? 'text-gray-200 [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]' : 'text-text-secondary dark:text-white/60'}`}>{article.excerpt}</p>
+        <div className={`text-xs font-semibold uppercase tracking-wide mb-1.5 ${hasCoverImage ? 'text-gray-200 [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]' : 'text-text-secondary dark:text-white/60'}`}>{article.categoryLabel}</div>
+        <h3 className={`font-black text-xl leading-tight mb-3 transition-colors ${hasCoverImage ? 'text-white group-hover:text-amber-200 [text-shadow:0_1px_4px_rgba(0,0,0,0.9)]' : 'text-text-main dark:text-white group-hover:text-accent-color dark:group-hover:text-amber-200 drop-shadow-sm'}`}>{article.title}</h3>
+        <p className={`text-sm leading-relaxed line-clamp-2 ${hasCoverImage ? 'text-gray-200 [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]' : 'text-text-secondary dark:text-white/60'}`}>{article.excerpt}</p>
         <div className="flex items-center gap-3 mt-4">
-          <span className={`flex items-center gap-1 text-[10px] font-bold ${hasCoverImage ? 'text-gray-200 [text-shadow:0_1px_2px_rgba(0,0,0,0.9)]' : 'text-text-secondary dark:text-white/50'}`}>
-            <Clock size={10} /> {article.readTime} min
+          <span className={`flex items-center gap-1.5 text-sm font-medium tracking-wide ${hasCoverImage ? 'text-gray-200 [text-shadow:0_1px_2px_rgba(0,0,0,0.9)]' : 'text-text-secondary dark:text-white/50'}`}>
+            <Clock size={12} /> {article.readTime} min
           </span>
           <span className={`w-1 h-1 rounded-full ${hasCoverImage ? 'bg-white/50' : 'bg-border-color dark:bg-white/30'}`} />
-          <span className={`text-[10px] font-bold ${hasCoverImage ? 'text-gray-200 [text-shadow:0_1px_2px_rgba(0,0,0,0.9)]' : 'text-text-secondary dark:text-white/50'}`}>{article.difficulty}</span>
+          <span className={`text-sm font-medium tracking-wide ${hasCoverImage ? 'text-gray-200 [text-shadow:0_1px_2px_rgba(0,0,0,0.9)]' : 'text-text-secondary dark:text-white/50'}`}>{article.difficulty}</span>
           {!isLocked && (
             <span className={`ml-auto flex items-center gap-1 text-[10px] font-black transition-colors uppercase tracking-widest ${hasCoverImage ? 'text-white group-hover:text-amber-200 [text-shadow:0_1px_2px_rgba(0,0,0,0.9)]' : 'text-text-main dark:text-white/70 group-hover:text-accent-color dark:group-hover:text-white'}`}>
               {t('Citește')} <ChevronRight size={12} />
@@ -345,7 +353,15 @@ const ArticleCard: React.FC<{
           )}
         </div>
       </div>
-      <div className="absolute inset-0 z-20 ring-1 ring-inset ring-black/5 dark:ring-white/5 rounded-3xl group-hover:ring-black/10 dark:group-hover:ring-white/10 transition-all pointer-events-none" />
+
+      {/* Inner glass border — a hairline ring just inside the card edge,
+          brighter/white on a photo card (reads as a glass-pane edge over
+          the dark scrim) and theme-subtle on the plain fallback card. */}
+      <div className={`absolute inset-0 z-20 rounded-3xl transition-all pointer-events-none ${
+        hasCoverImage
+          ? 'ring-1 ring-inset ring-white/10 group-hover:ring-white/20'
+          : 'ring-1 ring-inset ring-black/5 dark:ring-white/5 group-hover:ring-black/10 dark:group-hover:ring-white/10'
+      }`} />
     </button>
   );
 };
