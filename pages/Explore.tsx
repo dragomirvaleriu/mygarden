@@ -27,15 +27,18 @@ import {
   PLANT_SEASON_LABELS_EN,
   DIFFICULTY_LABELS_EN,
 } from '../src/data/plantCatalogEn';
-import { db, collection, addDoc, serverTimestamp } from '../services/firebase';
+import { db, collection, addDoc, serverTimestamp, functions, httpsCallable } from '../services/firebase';
 import { auth } from '../services/firebase';
 import { plantMainImagePath } from '../services/contentImages';
 import ContentImage from '../components/ContentImage';
 import PlantCard from '../components/PlantCard';
+import PremiumUpgradeModal from '../components/PremiumUpgradeModal';
 import toast from 'react-hot-toast';
 
 interface Props {
   organizationId: string;
+  subscriptionTier?: 'free' | 'pro' | 'enterprise' | 'lifetime';
+  onNavigateToUpgrade?: () => void;
 }
 
 type TypeFilter = 'toate' | 'interior' | 'exterior';
@@ -46,7 +49,7 @@ type WaterFilter = 'toate' | PlantCatalogEntry['waterNeed'];
 type LightFilter = 'toate' | PlantCatalogEntry['lightNeed'];
 type SeasonFilter = 'toate' | PlantCatalogEntry['seasons'][number];
 
-const Explore: React.FC<Props> = ({ organizationId }) => {
+const Explore: React.FC<Props> = ({ organizationId, subscriptionTier = 'free', onNavigateToUpgrade }) => {
   const { t, i18n } = useTranslation();
   const lang = i18n.language?.startsWith('en') ? 'en' : 'ro';
   const categoryLabels = lang === 'en' ? PLANT_CATEGORY_LABELS_EN : PLANT_CATEGORY_LABELS;
@@ -71,6 +74,20 @@ const Explore: React.FC<Props> = ({ organizationId }) => {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
   const [addingId, setAddingId] = useState<string | null>(null);
+  const [paywallPlant, setPaywallPlant] = useState<PlantCatalogEntry | null>(null);
+  const isPro = subscriptionTier !== 'free';
+
+  // "Vitrină" paywall: every plant stays visible and browsable in the grid
+  // for free users — only opening the detail view of an isPremium plant is
+  // gated, so the catalog itself still reads as generous, not locked-down.
+  const handlePlantClick = (plant: PlantCatalogEntry) => {
+    if (plant.isPremium && !isPro) {
+      setPaywallPlant(plant);
+      return;
+    }
+    setSelectedPlant(plant);
+    setGalleryIndex(0);
+  };
 
   // Mobile quick-search FAB: the full search bar collapses into a floating
   // icon (bottom-right) once scrolled out of view, so search stays one tap
@@ -410,7 +427,7 @@ const Explore: React.FC<Props> = ({ organizationId }) => {
                 categoryLabel={categoryLabels[plant.category]}
                 difficultyLabel={difficultyLabel(plant.difficulty)}
                 difficultyColorClass={difficultyColor(plant.difficulty)}
-                onClick={() => { setSelectedPlant(plant); setGalleryIndex(0); }}
+                onClick={() => handlePlantClick(plant)}
               />
             ))}
           </div>
@@ -760,6 +777,40 @@ const Explore: React.FC<Props> = ({ organizationId }) => {
           )}
         </AnimatePresence>
       </div>
+
+      {paywallPlant && (
+        <PremiumUpgradeModal
+          triggerItem={{
+            title: paywallPlant.name,
+            emoji: paywallPlant.emoji,
+            categoryLabel: categoryLabels[paywallPlant.category],
+            meta: `${t('Dificultate')}: ${difficultyLabel(paywallPlant.difficulty)}`,
+          }}
+          onClose={() => setPaywallPlant(null)}
+          onUpgrade={async () => {
+            try {
+              const createCheckoutSession = httpsCallable(functions, 'createCheckoutSession');
+              const base = `${window.location.origin}${window.location.pathname}`;
+              const result: any = await createCheckoutSession({
+                successUrl: `${base}#explore?upgraded=1`,
+                cancelUrl: `${base}#explore`,
+              });
+              const url = result?.data?.url;
+              if (!url) throw new Error('No checkout URL returned.');
+              window.location.href = url;
+            } catch (err: any) {
+              console.error(err);
+              const message: string = err?.message || '';
+              if (message.includes('not configured')) {
+                toast.error(t('Plățile online nu sunt încă active. Contactează-ne pentru un cod de acces.'));
+              } else {
+                toast.error(t('Nu am putut iniția plata. Încearcă din nou.'));
+              }
+              setPaywallPlant(null);
+            }
+          }}
+        />
+      )}
     </div>
   );
 };

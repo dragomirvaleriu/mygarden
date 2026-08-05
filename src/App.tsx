@@ -498,7 +498,7 @@ const App: React.FC = () => {
             case Page.GardenJournal: return <GardenJournal organizationId={profile.organizationId} onNavigate={navigateTo} userId={profile.uid} isPF={true} />;
             case Page.Gallery: return <GardenJournal organizationId={profile.organizationId} onNavigate={navigateTo} userId={profile.uid} isPF={true} />;
             case Page.Academy: return <Academy subscriptionTier={subscriptionTier} onNavigateToUpgrade={() => navigateTo(Page.Administration)} />;
-            case Page.Explore: return <Explore organizationId={profile.organizationId} />;
+            case Page.Explore: return <Explore organizationId={profile.organizationId} subscriptionTier={subscriptionTier} onNavigateToUpgrade={() => navigateTo(Page.Administration)} />;
             case Page.SuperAdmin: return <SuperAdmin userProfile={profile} />;
 
             default: return <PFDashboard onNavigate={navigateTo} organizationId={profile.organizationId} userProfile={profile} />;

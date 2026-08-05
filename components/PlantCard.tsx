@@ -56,6 +56,12 @@ const PlantCard: React.FC<PlantCardProps> = ({
             {plant.emoji}
           </div>
         )}
+        {plant.isPremium && (
+          <div className="absolute top-2.5 left-2.5 flex items-center gap-1 px-2 py-1 rounded-full bg-amber-400/25 backdrop-blur-md border border-amber-300/40 shadow-sm">
+            <span className="text-[10px] leading-none">👑</span>
+            <span className="text-[9px] font-black uppercase tracking-widest text-amber-100 [text-shadow:0_1px_2px_rgba(0,0,0,0.6)]">{t('PRO')}</span>
+          </div>
+        )}
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent pt-10 pb-2.5 px-3">
           <h3 className="font-black text-white text-sm leading-tight truncate [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">{plant.name}</h3>
           <p className="text-[11px] text-white/90 italic truncate [text-shadow:0_1px_2px_rgba(0,0,0,0.8)]">{plant.scientificName}</p>
