@@ -264,80 +264,88 @@ const ArticleCard: React.FC<{
   return (
     <button
       onClick={onClick}
-      className={`group relative w-full text-left rounded-3xl overflow-hidden transition-all duration-300
+      className={`group relative w-full text-left rounded-3xl overflow-hidden transition-all duration-300 min-h-[240px] flex flex-col justify-end
         bg-bg-card border border-border-color hover:shadow-2xl hover:border-accent-color/30 hover:-translate-y-1 active:translate-y-0
         ${isRead ? 'ring-2 ring-accent-color/30' : ''}
       `}
     >
+      {/* Layer 0: background — real photo when available, theme gradient otherwise */}
       {hasCoverImage ? (
-        <>
-          <img
-            src={`/${article.coverImage}`}
-            alt={article.title}
-            loading="lazy"
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-          {/* Scrim concentrated in a bottom band sized to the text block,
-              not spread thin across the whole card — the top ~45% stays
-              near-clear image (more of the photo actually visible), while
-              the text sits on a reliably dark surface instead of hoping a
-              gradual gradient happens to be dark enough at that exact
-              pixel. Text also carries its own text-shadow below as a
-              second, image-independent guarantee (see PlantCard's fix for
-              the same underlying problem: a gradient alone silently fails
-              against a bright patch of an arbitrary real photo). */}
-          <div className="absolute inset-x-0 bottom-0 h-[65%] bg-gradient-to-t from-black/95 via-black/70 to-transparent" />
-        </>
+        <img
+          src={`/${article.coverImage}`}
+          alt={article.title}
+          loading="lazy"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
       ) : (
         <>
           <div className={`absolute inset-0 bg-gradient-to-br ${article.coverGradient} opacity-5 dark:opacity-100 transition-opacity`} />
           <div className="absolute inset-0 bg-white/40 dark:bg-black/40" />
         </>
       )}
-      <div className="relative p-6 min-h-[240px] flex flex-col justify-between">
-        <div className="flex items-start justify-between gap-2">
-          <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border backdrop-blur-sm shadow-sm
-            ${article.isPremium
-              ? 'bg-amber-100/80 border-amber-200 text-amber-700 dark:bg-amber-500/20 dark:border-amber-500/40 dark:text-amber-300'
-              : 'bg-accent-light/80 border-accent-light text-accent-ink dark:bg-accent-color/20 dark:border-accent-color/40 dark:text-accent-ink'
-            }`}>
-            {article.isPremium ? '👑 Premium' : `✓ ${t('Gratuit')}`}
-          </span>
-          <div className="flex items-center gap-2">
-            {isRead && (
-              <div className="w-6 h-6 bg-accent-color rounded-full flex items-center justify-center shadow-md">
-                <CheckCircle2 size={14} className="text-white" />
-              </div>
-            )}
-            {isLocked && (
-              <div className="w-8 h-8 bg-black/5 dark:bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center border border-black/10 dark:border-white/20 shadow-sm">
-                <Lock size={14} className="text-amber-500 dark:text-amber-400" />
-              </div>
-            )}
-          </div>
-        </div>
-        <div>
-          {!hasCoverImage && (
-            <div className="text-4xl mb-3 select-none drop-shadow-md">{article.coverEmoji}</div>
+
+      {/* Layer 1: cinematic protection overlay — only needed over an
+          arbitrary real photo (the fallback gradient above is already
+          theme-tuned for contrast). 0% at the top so the photo reads
+          clearly, ramping to near-opaque black at the bottom where the
+          text sits — text also carries its own text-shadow below as a
+          second, photo-independent guarantee, since a gradient alone can
+          still land light-on-light against an unlucky bright patch. */}
+      {hasCoverImage && (
+        <div className="absolute inset-0 z-[1] bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+      )}
+
+      {/* Layer 2: badges, pinned top regardless of where the text block's
+          height ends up — glassmorphism reads on any photo, unlike a
+          solid tint that has to be picked per-background. */}
+      <div className="absolute top-4 left-4 right-4 z-10 flex items-start justify-between gap-2">
+        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-md
+          ${hasCoverImage
+            ? 'bg-white/20 backdrop-blur-md text-white border border-white/30'
+            : article.isPremium
+              ? 'bg-amber-100/80 border border-amber-200 text-amber-700 backdrop-blur-sm dark:bg-amber-500/20 dark:border-amber-500/40 dark:text-amber-300'
+              : 'bg-accent-light/80 border border-accent-light text-accent-ink backdrop-blur-sm dark:bg-accent-color/20 dark:border-accent-color/40 dark:text-accent-ink'
+          }`}>
+          {article.isPremium ? '👑 Premium' : `✓ ${t('Gratuit')}`}
+        </span>
+        <div className="flex items-center gap-2">
+          {isRead && (
+            <div className={`w-6 h-6 rounded-full flex items-center justify-center shadow-md ${hasCoverImage ? 'bg-white/20 backdrop-blur-md border border-white/30' : 'bg-accent-color'}`}>
+              <CheckCircle2 size={14} className="text-white" />
+            </div>
           )}
-          <div className={`text-[10px] font-black uppercase tracking-widest mb-1 ${hasCoverImage ? 'text-white/80 [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]' : 'text-text-secondary dark:text-white/60'}`}>{article.categoryLabel}</div>
-          <h3 className={`font-black text-base leading-tight mb-3 transition-colors ${hasCoverImage ? 'text-white group-hover:text-amber-200 [text-shadow:0_1px_4px_rgba(0,0,0,0.9)]' : 'text-text-main dark:text-white group-hover:text-accent-color dark:group-hover:text-amber-200 drop-shadow-sm'}`}>{article.title}</h3>
-          <p className={`text-xs leading-relaxed line-clamp-2 ${hasCoverImage ? 'text-white/90 [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]' : 'text-text-secondary dark:text-white/60'}`}>{article.excerpt}</p>
-          <div className="flex items-center gap-3 mt-4">
-            <span className={`flex items-center gap-1 text-[10px] font-bold ${hasCoverImage ? 'text-white/80 [text-shadow:0_1px_2px_rgba(0,0,0,0.9)]' : 'text-text-secondary dark:text-white/50'}`}>
-              <Clock size={10} /> {article.readTime} min
-            </span>
-            <span className={`w-1 h-1 rounded-full ${hasCoverImage ? 'bg-white/50' : 'bg-border-color dark:bg-white/30'}`} />
-            <span className={`text-[10px] font-bold ${hasCoverImage ? 'text-white/80 [text-shadow:0_1px_2px_rgba(0,0,0,0.9)]' : 'text-text-secondary dark:text-white/50'}`}>{article.difficulty}</span>
-            {!isLocked && (
-              <span className={`ml-auto flex items-center gap-1 text-[10px] font-black transition-colors uppercase tracking-widest ${hasCoverImage ? 'text-white/90 group-hover:text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.9)]' : 'text-text-main dark:text-white/70 group-hover:text-accent-color dark:group-hover:text-white'}`}>
-                {t('Citește')} <ChevronRight size={12} />
-              </span>
-            )}
-          </div>
+          {isLocked && (
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center shadow-sm ${hasCoverImage ? 'bg-white/20 backdrop-blur-md border border-white/30' : 'bg-black/5 dark:bg-black/50 backdrop-blur-sm border border-black/10 dark:border-white/20'}`}>
+              <Lock size={14} className={hasCoverImage ? 'text-white' : 'text-amber-500 dark:text-amber-400'} />
+            </div>
+          )}
         </div>
       </div>
-      <div className="absolute inset-0 ring-1 ring-inset ring-black/5 dark:ring-white/5 rounded-3xl group-hover:ring-black/10 dark:group-hover:ring-white/10 transition-all pointer-events-none" />
+
+      {/* Layer 3: text content, bottom-anchored — forced white/light-gray
+          on a photo card so it never depends on theme text colors, which
+          are tuned for a plain background, not an arbitrary image. */}
+      <div className="relative z-10 p-6 pt-10">
+        {!hasCoverImage && (
+          <div className="text-4xl mb-3 select-none drop-shadow-md">{article.coverEmoji}</div>
+        )}
+        <div className={`text-[10px] font-black uppercase tracking-widest mb-1 ${hasCoverImage ? 'text-gray-200 [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]' : 'text-text-secondary dark:text-white/60'}`}>{article.categoryLabel}</div>
+        <h3 className={`font-black text-base leading-tight mb-3 transition-colors ${hasCoverImage ? 'text-white group-hover:text-amber-200 [text-shadow:0_1px_4px_rgba(0,0,0,0.9)]' : 'text-text-main dark:text-white group-hover:text-accent-color dark:group-hover:text-amber-200 drop-shadow-sm'}`}>{article.title}</h3>
+        <p className={`text-xs leading-relaxed line-clamp-2 ${hasCoverImage ? 'text-gray-200 [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]' : 'text-text-secondary dark:text-white/60'}`}>{article.excerpt}</p>
+        <div className="flex items-center gap-3 mt-4">
+          <span className={`flex items-center gap-1 text-[10px] font-bold ${hasCoverImage ? 'text-gray-200 [text-shadow:0_1px_2px_rgba(0,0,0,0.9)]' : 'text-text-secondary dark:text-white/50'}`}>
+            <Clock size={10} /> {article.readTime} min
+          </span>
+          <span className={`w-1 h-1 rounded-full ${hasCoverImage ? 'bg-white/50' : 'bg-border-color dark:bg-white/30'}`} />
+          <span className={`text-[10px] font-bold ${hasCoverImage ? 'text-gray-200 [text-shadow:0_1px_2px_rgba(0,0,0,0.9)]' : 'text-text-secondary dark:text-white/50'}`}>{article.difficulty}</span>
+          {!isLocked && (
+            <span className={`ml-auto flex items-center gap-1 text-[10px] font-black transition-colors uppercase tracking-widest ${hasCoverImage ? 'text-white group-hover:text-amber-200 [text-shadow:0_1px_2px_rgba(0,0,0,0.9)]' : 'text-text-main dark:text-white/70 group-hover:text-accent-color dark:group-hover:text-white'}`}>
+              {t('Citește')} <ChevronRight size={12} />
+            </span>
+          )}
+        </div>
+      </div>
+      <div className="absolute inset-0 z-20 ring-1 ring-inset ring-black/5 dark:ring-white/5 rounded-3xl group-hover:ring-black/10 dark:group-hover:ring-white/10 transition-all pointer-events-none" />
     </button>
   );
 };
