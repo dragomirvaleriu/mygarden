@@ -19,7 +19,7 @@ tags: ["irigare", "apa", "radacini", "gazon", "insamantare", "muschi", "diagnoza
 
 Acest ghid conține fizica și regulile absolute ale irigării horticole, de la principiul de bază până la diagnosticarea exactă a problemelor și fiecare greșeală documentată care distruge un gazon altfel sănătos.
 
-![O curte rezidențială cu gazon des, verde și uniform — rezultatul unei irigări corecte, nu al udatului zilnic](images/academie/regula-irigarii/01-gazon-verde-des.jpg)
+![Un sistem de irigații cu mai multe capete în funcțiune simultan, pe un gazon des și uniform — rezultatul unei irigări corecte, nu al udatului zilnic](images/academie/regula-irigarii/01-gazon-verde-des.jpg)
 
 ## 1. Regula de Aur: Profund și Rar vs. Puțin și Des
 

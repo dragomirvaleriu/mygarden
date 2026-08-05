@@ -106,6 +106,8 @@ Argumentul e triplu, nu unul singur:
 
 ![Frezarea mecanică a solului cu o motosapă — pasul obligatoriu înainte de orice nivelare sau semănat, la 10-15 cm adâncime](images/academie/ghid-insamantare/02-motocultor-frezare.jpg)
 
+![Un teren real, nivelat fin, fără pietre sau denivelări vizibile — exact "patul germinativ" descris mai sus, gata pentru semănat](images/academie/ghid-insamantare/03-teren-nivelat.jpg)
+
 ## Partea III: Corectarea Structurii Solului — Umplutură și Nisip
 
 ### Capcana pământului de umplutură peste vegetație existentă
@@ -274,7 +276,7 @@ Aici mor cele mai multe gazoane noi — nu din lipsă de sămânță bună, ci d
 
 **Cât de adânc:** doar primii 1-2 cm de sol trebuie să rămână umezi în această fază — nu uda "profund și rar" ca la un gazon matur; acel protocol se aplică abia după ce gazonul e stabilit (vezi finalul acestei secțiuni).
 
-![Germinația unei semințe — sub suprafață, procesul e identic la iarbă: contactul constant cu umiditatea, nu udarea abundentă și rară, decide dacă sămânța supraviețuiește primele zile](images/academie/ghid-insamantare/07-germinare-iarba.jpg)
+![Fire de iarbă abia germinate, printre resturile vegetale ale substratului de acoperire — contactul constant cu umiditatea, nu udarea abundentă și rară, decide dacă sămânța supraviețuiește primele zile](images/academie/ghid-insamantare/07-germinare-iarba.jpg)
 
 ### Faza 2: Răsărirea (iarba ajunge la 4-5 cm, rădăcinile încep să se formeze)
 
