@@ -29,7 +29,7 @@ Acest ghid e gândit să fie singurul material de care ai nevoie — acoperă fi
 > [!WARNING]
 > Dacă la finalul citirii rămâi cu o singură idee, să fie asta: **succesul unui gazon nou se decide în proporție covârșitoare înainte să pui vreo sămânță în pământ.** Un teren bine pregătit, nivelat și tasat corect iartă multe greșeli ulterioare de udare sau fertilizare. Un teren prost pregătit nu e salvat de nicio sămânță scumpă.
 
-![Un gazon matur, des și uniform — obiectivul final al întregului proces descris în acest ghid](images/academie/ghid-insamantare/01-gazon-des.jpg)
+![O curte rezidențială obișnuită, cu un gazon matur, des și uniform — exact obiectivul final al întregului proces descris în acest ghid, la scară de casă, nu de parc sau domeniu](images/academie/ghid-insamantare/01-gazon-des.jpg)
 
 ## Partea I: Alegerea Momentului Potrivit
 
@@ -168,7 +168,7 @@ Tasarea funcționează optim când solul e **ușor umed** ("reavăn"), nu uscat 
 
 **De ce contează atât de mult:** o tasare inițială insuficientă produce diferențe de nivel de până la 5 cm în doar 3-4 luni, pe măsură ce solul afânat se așază natural sub propria greutate și sub udare/ploaie — și acele denivelări devin mult mai greu de corectat odată ce gazonul e deja înrădăcinat, pentru că nu mai poți freza fără să distrugi iarba existentă.
 
-![Tăvălugirea și tasarea terenului — pasul care previne denivelările ce apar altfel în primele luni după semănat](images/academie/ghid-insamantare/04-tavalug-tasare.jpg)
+![Un tăvălug de mână, tipic pentru o curte rezidențială (nu utilaj agricol) — pasul de tasare care previne denivelările ce apar altfel în primele luni după semănat](images/academie/ghid-insamantare/04-tavalug-tasare.jpg)
 
 ### Nivelarea fină, post-tasare
 
