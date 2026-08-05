@@ -261,10 +261,82 @@ const ArticleCard: React.FC<{
   const { t } = useTranslation();
   const isLocked = article.isPremium && subscriptionTier === 'free';
   const hasCoverImage = !!article.coverImage;
+
+  // Shared badge — its own component so both layouts (absolute over a
+  // photo, in-flow on a solid card) render byte-identical markup.
+  const badge = (
+    <span className={`shrink-0 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-md
+      ${hasCoverImage
+        ? 'bg-white/20 backdrop-blur-md text-white border border-white/30'
+        : article.isPremium
+          ? 'bg-amber-100/80 border border-amber-200 text-amber-700 backdrop-blur-sm dark:bg-amber-500/20 dark:border-amber-500/40 dark:text-amber-300'
+          : 'bg-accent-light/80 border border-accent-light text-accent-ink backdrop-blur-sm dark:bg-accent-color/20 dark:border-accent-color/40 dark:text-accent-ink'
+      }`}>
+      {article.isPremium ? '👑 Premium' : `✓ ${t('Gratuit')}`}
+    </span>
+  );
+
+  const statusIcons = (
+    <div className="shrink-0 flex items-center gap-2">
+      {isRead && (
+        <div className={`w-6 h-6 rounded-full flex items-center justify-center shadow-md ${hasCoverImage ? 'bg-white/20 backdrop-blur-md border border-white/30' : 'bg-accent-color'}`}>
+          <CheckCircle2 size={14} className="text-white" />
+        </div>
+      )}
+      {isLocked && (
+        <div className={`w-8 h-8 rounded-full flex items-center justify-center shadow-sm ${hasCoverImage ? 'bg-white/20 backdrop-blur-md border border-white/30' : 'bg-black/5 dark:bg-black/50 backdrop-blur-sm border border-black/10 dark:border-white/20'}`}>
+          <Lock size={14} className={hasCoverImage ? 'text-white' : 'text-amber-500 dark:text-amber-400'} />
+        </div>
+      )}
+    </div>
+  );
+
+  const categoryLabel = (
+    <div className={`text-xs font-semibold uppercase tracking-wide truncate ${hasCoverImage ? 'text-gray-200 [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]' : 'text-text-secondary dark:text-white/60'}`}>
+      {article.categoryLabel}
+    </div>
+  );
+
+  // line-clamp-2 on the title is load-bearing, not decorative: without a
+  // hard cap, a long title (e.g. the 15-Grădini-Celebre one) can wrap to a
+  // height the fixed-position badge above it doesn't reserve room for,
+  // which is exactly what caused the overlap/clipped-category bug this
+  // rewrite fixes.
+  const titleEl = (
+    <h3 className={`text-lg font-bold leading-snug line-clamp-2 transition-colors ${hasCoverImage ? 'text-white group-hover:text-amber-200 [text-shadow:0_1px_4px_rgba(0,0,0,0.9)]' : 'text-text-main dark:text-white group-hover:text-accent-color dark:group-hover:text-amber-200 drop-shadow-sm'}`}>
+      {article.title}
+    </h3>
+  );
+
+  const excerptEl = (
+    <p className={`text-sm leading-relaxed line-clamp-2 ${hasCoverImage ? 'text-gray-200 [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]' : 'text-text-secondary dark:text-white/60'}`}>
+      {article.excerpt}
+    </p>
+  );
+
+  // Single row, both ends pinned via justify-between — mt-auto keeps it
+  // glued to the bottom of whichever layout wraps it below.
+  const footer = (
+    <div className="flex items-center justify-between w-full mt-auto pt-4">
+      <div className="flex items-center gap-3 min-w-0">
+        <span className={`shrink-0 flex items-center gap-1 text-sm font-medium tracking-wide ${hasCoverImage ? 'text-gray-200 [text-shadow:0_1px_2px_rgba(0,0,0,0.9)]' : 'text-text-secondary dark:text-white/50'}`}>
+          <Clock size={12} className="shrink-0" /> {article.readTime} min
+        </span>
+        <span className={`shrink-0 w-1 h-1 rounded-full ${hasCoverImage ? 'bg-white/50' : 'bg-border-color dark:bg-white/30'}`} />
+        <span className={`shrink-0 text-sm font-medium tracking-wide ${hasCoverImage ? 'text-gray-200 [text-shadow:0_1px_2px_rgba(0,0,0,0.9)]' : 'text-text-secondary dark:text-white/50'}`}>{article.difficulty}</span>
+      </div>
+      {!isLocked && (
+        <span className={`shrink-0 flex items-center gap-1 text-[10px] font-black transition-colors uppercase tracking-widest ${hasCoverImage ? 'text-white group-hover:text-amber-200 [text-shadow:0_1px_2px_rgba(0,0,0,0.9)]' : 'text-text-main dark:text-white/70 group-hover:text-accent-color dark:group-hover:text-white'}`}>
+          {t('Citește')} <ChevronRight size={12} />
+        </span>
+      )}
+    </div>
+  );
+
   return (
     <button
       onClick={onClick}
-      className={`group relative w-full text-left rounded-3xl overflow-hidden transition-all duration-300 aspect-[4/3] flex flex-col justify-end
+      className={`group relative flex flex-col h-full min-h-[300px] w-full text-left rounded-3xl overflow-hidden transition-all duration-300
         bg-bg-card border border-border-color hover:shadow-2xl hover:border-accent-color/30 hover:-translate-y-1 active:translate-y-0
         ${isRead ? 'ring-2 ring-accent-color/30' : ''}
       `}
@@ -299,60 +371,42 @@ const ArticleCard: React.FC<{
         <div className="absolute inset-0 z-[1] bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
       )}
 
-      {/* Layer 2: badges, pinned top regardless of where the text block's
-          height ends up — glassmorphism reads on any photo, unlike a
-          solid tint that has to be picked per-background. */}
-      <div className="absolute top-5 left-5 right-5 z-10 flex items-start justify-between gap-2">
-        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-md
-          ${hasCoverImage
-            ? 'bg-white/20 backdrop-blur-md text-white border border-white/30'
-            : article.isPremium
-              ? 'bg-amber-100/80 border border-amber-200 text-amber-700 backdrop-blur-sm dark:bg-amber-500/20 dark:border-amber-500/40 dark:text-amber-300'
-              : 'bg-accent-light/80 border border-accent-light text-accent-ink backdrop-blur-sm dark:bg-accent-color/20 dark:border-accent-color/40 dark:text-accent-ink'
-          }`}>
-          {article.isPremium ? '👑 Premium' : `✓ ${t('Gratuit')}`}
-        </span>
-        <div className="flex items-center gap-2">
-          {isRead && (
-            <div className={`w-6 h-6 rounded-full flex items-center justify-center shadow-md ${hasCoverImage ? 'bg-white/20 backdrop-blur-md border border-white/30' : 'bg-accent-color'}`}>
-              <CheckCircle2 size={14} className="text-white" />
-            </div>
-          )}
-          {isLocked && (
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center shadow-sm ${hasCoverImage ? 'bg-white/20 backdrop-blur-md border border-white/30' : 'bg-black/5 dark:bg-black/50 backdrop-blur-sm border border-black/10 dark:border-white/20'}`}>
-              <Lock size={14} className={hasCoverImage ? 'text-white' : 'text-amber-500 dark:text-amber-400'} />
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Layer 3: text content, bottom-anchored — forced white/light-gray
-          on a photo card so it never depends on theme text colors, which
-          are tuned for a plain background, not an arbitrary image.
-          Editorial-masthead sizing: a roomier p-8, a category/meta line
-          that reads as a refined label (font-medium, not shouty
-          font-black) rather than a badge, and a title with enough size to
-          anchor the card now that it has room to breathe. */}
-      <div className="relative z-10 p-6 sm:p-8 pt-10">
-        {!hasCoverImage && (
+      {hasCoverImage ? (
+        <>
+          {/* Photo layout: badge floats top, outside the flex flow entirely
+              — the text block below reserves room for it with a fixed
+              pt-16 AND (belt and suspenders) the title/excerpt are
+              line-clamped so the block's height is bounded and can never
+              grow tall enough to reach the badge in the first place. */}
+          <div className="absolute top-4 left-4 right-4 z-10 flex items-start justify-between gap-2">
+            {badge}
+            {statusIcons}
+          </div>
+          <div className="relative z-10 flex flex-col gap-2 p-6 pt-16 mt-auto">
+            {categoryLabel}
+            {titleEl}
+            {excerptEl}
+            {footer}
+          </div>
+        </>
+      ) : (
+        /* Solid-background layout: everything lives in one natural,
+           top-to-bottom flex flow — badge -> emoji -> category -> title ->
+           excerpt -> footer — so there's no absolute positioning to
+           overlap in the first place. footer's own mt-auto pins it to the
+           bottom regardless of how short the text above it is. */
+        <div className="relative z-10 flex flex-col h-full p-6 sm:p-8">
+          <div className="flex items-start justify-between gap-2 mb-3">
+            {badge}
+            {statusIcons}
+          </div>
           <div className="text-4xl mb-3 select-none drop-shadow-md">{article.coverEmoji}</div>
-        )}
-        <div className={`text-xs font-semibold uppercase tracking-wide mb-1.5 ${hasCoverImage ? 'text-gray-200 [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]' : 'text-text-secondary dark:text-white/60'}`}>{article.categoryLabel}</div>
-        <h3 className={`font-black text-xl leading-tight mb-3 transition-colors ${hasCoverImage ? 'text-white group-hover:text-amber-200 [text-shadow:0_1px_4px_rgba(0,0,0,0.9)]' : 'text-text-main dark:text-white group-hover:text-accent-color dark:group-hover:text-amber-200 drop-shadow-sm'}`}>{article.title}</h3>
-        <p className={`text-sm leading-relaxed line-clamp-2 ${hasCoverImage ? 'text-gray-200 [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]' : 'text-text-secondary dark:text-white/60'}`}>{article.excerpt}</p>
-        <div className="flex items-center gap-3 mt-4">
-          <span className={`flex items-center gap-1.5 text-sm font-medium tracking-wide ${hasCoverImage ? 'text-gray-200 [text-shadow:0_1px_2px_rgba(0,0,0,0.9)]' : 'text-text-secondary dark:text-white/50'}`}>
-            <Clock size={12} /> {article.readTime} min
-          </span>
-          <span className={`w-1 h-1 rounded-full ${hasCoverImage ? 'bg-white/50' : 'bg-border-color dark:bg-white/30'}`} />
-          <span className={`text-sm font-medium tracking-wide ${hasCoverImage ? 'text-gray-200 [text-shadow:0_1px_2px_rgba(0,0,0,0.9)]' : 'text-text-secondary dark:text-white/50'}`}>{article.difficulty}</span>
-          {!isLocked && (
-            <span className={`ml-auto flex items-center gap-1 text-[10px] font-black transition-colors uppercase tracking-widest ${hasCoverImage ? 'text-white group-hover:text-amber-200 [text-shadow:0_1px_2px_rgba(0,0,0,0.9)]' : 'text-text-main dark:text-white/70 group-hover:text-accent-color dark:group-hover:text-white'}`}>
-              {t('Citește')} <ChevronRight size={12} />
-            </span>
-          )}
+          <div className="mb-1">{categoryLabel}</div>
+          <div className="mb-2">{titleEl}</div>
+          {excerptEl}
+          {footer}
         </div>
-      </div>
+      )}
 
       {/* Inner glass border — a hairline ring just inside the card edge,
           brighter/white on a photo card (reads as a glass-pane edge over
