@@ -25,6 +25,8 @@ Cea mai comună greșeală la irigații DIY e să cumperi echipamentul mai înt�
 
 Un sistem planificat corect pe hârtie, înainte de orice cumpărătură, evită toate acestea — și de multe ori costă chiar mai puțin, pentru că nu cumperi echipament pe care apoi îl regreți sau înlocuiești.
 
+**Cum arată practic acest prim pas, la producători serioși precum Hunter:** măsori proprietatea și schițezi conturul casei pe o foaie separată, notând cotele exacte. Apoi redesenezi la scară (1:100 sau 1:200) pe hârtie milimetrică, marcând tot ce contează pentru udare — alei, terase, peluze — și împarți vizual curtea în zone logice (de regulă notate A, B, C...), fiecare zonă corespunzând ulterior unui circuit separat de aspersoare. Acest plan pe hârtie, făcut înainte să cumperi vreo țeavă, e exact ce separă un sistem care funcționează de unul care doar pare că funcționează.
+
 ## Primul pas: câtă apă ai de fapt
 
 Înainte de orice altceva, trebuie să știi trei numere fundamentale, pentru că ele decid absolut tot ce urmează:
@@ -58,6 +60,8 @@ Există trei tipuri principale relevante pentru un sistem rezidențial, fiecare 
 
 Pentru suprafețe mari (peste 8m lungime pe o latură). Aruncă apa printr-un jet concentrat, rotativ, care acoperă o rază mare, dar udă relativ lent — durează mai mult să depună aceeași cantitate de apă pe metru pătrat comparativ cu un spray. Ideale pentru gazonul principal, suprafețele deschise.
 
+![Un aspersor rotativ (rotor) cu jet concentrat, tipul recomandat pentru suprafețe mari de gazon](images/academie/sisteme-irigatii-planificare/01-aspersor-rotor.jpg)
+
 ### Aspersoare tip spray (fix)
 
 Pentru suprafețe mici și medii (3-5m rază). Udă rapid, printr-un model de pulverizare fix (nu rotativ), o zonă mai restrânsă. Bune pentru straturi de flori, zone înguste, colțuri unde un rotor ar fi ineficient sau ar stropi prea mult în afara zonei țintă.
@@ -65,6 +69,8 @@ Pentru suprafețe mici și medii (3-5m rază). Udă rapid, printr-un model de pu
 ### Irigare prin picurare (drip)
 
 Nemenționată explicit ca "aspersor", dar merită inclusă pentru orice sistem modern: tuburi cu emițători mici care lasă apa să curgă lent, direct la baza plantei. Ideală pentru straturi de arbuști, garduri vii, grădini de legume — economisește apă masiv (nu se pierde nimic prin evaporare sau vânt) și ține frunzișul uscat (reducând riscul de boli fungice). Nu are sens pentru gazon (ar fi nevoie de prea multe linii de picurare ca să acopere uniform o suprafață mare), dar e superioară aspersoarelor clasice pentru orice altă zonă plantată.
+
+![Tuburi de irigare prin picurare, cu emițători care livrează apa lent, direct la baza fiecărei plante](images/academie/sisteme-irigatii-planificare/03-irigare-picurare.jpg)
 
 ### Cele două reguli nenegociabile — 70-80% din calitatea execuției depinde de ele
 
@@ -97,6 +103,32 @@ Producătorii serioși rezolvă asta pentru tine cu **duze de precipitare potriv
 
 **Ce se întâmplă dacă ignori regula asta:** e cea mai frecventă cauză de "zone permanent ude lângă zone permanent uscate" pe un gazon altfel bine acoperit — nu lipsa de suprapunere (regula 1), ci un colț pe arc mic care primește, din greșeală, același debit ca un cap pe cerc complet.
 
+### Formula exactă a ratei de precipitare — cum verifici pe hârtie, înainte să sapi
+
+Testul cu caserole (descris pe larg în Ghidul Suprem de Irigare) îți spune empiric cât livrează un sistem deja montat. Dar la etapa de proiectare, pe hârtie, poți calcula rata de precipitare dinainte, cu formula standard din manualele de proiectare profesională:
+
+**PR (mm/h) = 1000 × debit (m³/h) ÷ (S × L)**, unde S și L sunt distanțele de spațiere dintre aspersoare, pe cele două direcții (în metri).
+
+De exemplu, un aspersor cu debit de 0,3 m³/h, spațiat la 5m × 5m de vecinii lui, dă o rată de precipitare de 1000 × 0,3 ÷ 25 = 12 mm/h — un număr pe care îl poți compara direct cu rata de infiltrare a solului tău (mai jos), ca să știi dinainte dacă vei avea scurgere de suprafață (runoff) înainte să instalezi nimic.
+
+### De ce contează rata de infiltrare a solului — și ce se întâmplă dacă o ignori
+
+Un sistem poate fi perfect proiectat din punct de vedere al acoperirii (regulile 1 și 2 de mai sus) și tot să eșueze dacă livrează apă mai repede decât poate solul s-o absoarbă. Surplusul nu pătrunde — se scurge la suprafață (runoff), erodează solul și udă inegal, indiferent cât de bine ai calculat capetele.
+
+| Tip de sol | Rata de infiltrare | Comportament |
+|---|---|---|
+| **Nisipos** | Foarte mare | Absoarbe aproape orice debit; risc de infiltrare prea rapidă în adâncime, dincolo de rădăcini |
+| **Lutos (loam)** | Medie | Cel mai "tolerant" la variații de rată de precipitare |
+| **Argilos** | Mică | Foarte ușor de saturat la suprafață — orice rată de precipitare peste capacitatea lui de absorbție produce runoff rapid |
+
+**Pe pantă, problema se agravează:** cu cât panta e mai abruptă, cu atât rata de infiltrare efectivă scade (apa are tendința să curgă la vale înainte să pătrundă), motiv suplimentar pentru care terenurile înclinate au nevoie de cicluri scurte, repetate (aceeași logică "cycle and soak" folosită și la udarea manuală a solului argilos).
+
+### Fizica din spatele reținerii apei în sol — util pentru programarea corectă
+
+Solul reține apa în trei forme: **apă gravitațională** (se scurge rapid, nu ajunge să fie folosită de plantă), **apă capilară** (reținută în porii solului, exact ce absoarbe rădăcina) și **apă higroscopică** (legată prea strâns de particule ca să mai fie disponibilă). Pragul superior — solul complet saturat, dar fără băltire — se numește **capacitate de câmp**; pragul inferior, sub care planta se ofilește ireversibil, e **punctul de ofilire permanentă**. Programarea corectă a unui controller urmărește să mențină umiditatea solului între aceste două praguri, nu la extreme.
+
+Tipul de sol dictează și forma pe care o ia apa sub un emițător: pe **sol nisipos**, apa pătrunde predominant vertical, cu răspândire laterală minimă ("profil-morcov") — motiv pentru care picurarea funcționează excelent aici, dar aspersoarele clasice risipesc apă lateral fără folos. Pe **sol argilos**, e opusul — apa se răspândește mult lateral, dar pătrunde greu în adâncime, ceea ce explică nevoia de cicluri scurte, repetate.
+
 ## Al treilea pas: împarte grădina pe zone
 
 De cele mai multe ori, sursa de apă nu are debit suficient pentru a alimenta toată grădina simultan — de-asta aproape orice sistem rezidențial e împărțit pe **zone**, fiecare cu propria rețea de țevi și propria vană (robinet de control, de regulă electric/solenoid, comandat de programator).
@@ -112,6 +144,8 @@ Vana controlează debitul de apă exact pentru zona respectivă, independent de 
 
 Cele mai comune materiale folosite: **PVC** (policlorură de vinil, rigid, folosit de regulă pentru linia principală) și **PE** (polietilenă, flexibil, ușor de manevrat pentru distribuția către aspersoare).
 
+![Țeavă PE (polietilenă) — flexibilă, ușor de manevrat, standardul pentru distribuția laterală către aspersoare](images/academie/sisteme-irigatii-planificare/06-teava-pvc.jpg)
+
 **Cum alegi diametrul corect:** regula de bază e ca suma debitelor aspersoarelor alimentate de o secțiune de țeavă să nu depășească ce poate transporta acel diametru fără pierdere semnificativă de presiune. Practic:
 
 - **Ultimul aspersor** de pe o linie se leagă de regulă cu țeavă de 20mm.
@@ -126,6 +160,17 @@ Dacă sursa e un puț, un lac sau o fântână (nu rețeaua orașului cu presiun
 Vanele pot fi manuale (le deschizi/închizi cu mâna, potrivite pentru sisteme foarte simple sau bugete reduse) sau electrice/solenoide (comandate automat de un programator electronic — standardul pentru orice sistem modern).
 
 O vană solenoidă primește un semnal electric de la programator la ora stabilită, se deschide, udă durata programată, apoi se închide singură. Avantajul evident: nu trebuie să fii acasă, nu trebuie să-ți amintești, iar udarea se întâmplă mereu la ora optimă (dimineața devreme), chiar dacă tu ești la muncă sau în vacanță.
+
+![O vană — fiecare zonă a sistemului are propria vană, controlată individual, care se deschide/închide la comanda programatorului](images/academie/sisteme-irigatii-planificare/04-electrovana.jpg)
+
+### Cablarea electrovanelor — principii de bază, chiar dacă angajezi un electrician
+
+Fiecare vană solenoidă se leagă la programator prin **două fire**: unul propriu, individual, și unul de "comun" (ground), care e partajat de toate vanele din sistem și închide circuitul înapoi la controller.
+
+Câteva reguli simple, dar frecvent încălcate la instalările DIY:
+- **Lungimea traseului de cablu determină grosimea de fir necesară** — pe distanțe mari, un fir prea subțire produce o cădere de tensiune care poate împiedica vana să se deschidă corect, mai ales dacă mai multe vane sunt pe același traseu lung.
+- **Niciun controller nu are voie să partajeze firul comun (sau circuitul principal de alimentare) cu alt controller** — e o încălcare a normelor electrice standard și cauzează erori greu de diagnosticat (vane care se deschid la momente greșite sau deloc).
+- **Folosește întotdeauna cablu special pentru irigații** (izolație rezistentă la umezeală permanentă în sol), niciodată cablu electric obișnuit de interior — contactul prelungit cu solul umed degradează izolația standard mult mai rapid.
 
 ## Programarea: cele trei informații de care are nevoie orice controller
 
@@ -153,6 +198,38 @@ Un sistem de irigații excelent, montat perfect, tot va crea probleme dacă apa 
 - **Drenaj de adâncime** — un sistem de conducte perforate, îngropate sub nivelul rădăcinilor, care colectează surplusul de apă din sol și îl direcționează spre o gură de evacuare.
 
 **Dacă ai deja o zonă unde apa băltește constant după ploaie**, acolo ar trebui să începi orice proiect de irigații, nu la aspersoare — un sistem de irigații excelent nu rezolvă o problemă de drenaj prost, doar o agravează, adăugând și mai multă apă exact acolo unde solul deja nu se poate descurca cu ce primește natural.
+
+## Iernarea sistemului — protocolul complet
+
+În orice zonă unde temperaturile scad sub 0°C iarna, golirea sistemului înainte de primul îngheț nu e opțională. Apa rămasă în conducte și în corpurile aspersoarelor/electrovanelor îngheață, se dilată și sparge componentele — o defecțiune care apare de regulă abia primăvara, la prima repornire, când descoperi scurgeri sau aspersoare crăpate. Există trei metode, de la simplu la profesional:
+
+### 1. Drenare manuală (gravitațională)
+
+Se face prin robineți de golire montați la capătul conductelor, în punctele cele mai joase ca nivel al terenului.
+1. Închide alimentarea generală cu apă (din cămin sau camera tehnică).
+2. Deschide robinetul de golire de pe conducta principală, dacă există unul separat.
+3. Deschide manual, pe rând, toate electrovanele sistemului (de regulă prin rotirea solenoidului/bobinei, un sfert sau o jumătate de tură).
+4. Deschide, pe rând, toți robinetii de golire de pe conductele secundare.
+5. După ce toată apa s-a scurs, închide robinetii de golire, ca să previi intrarea apei de ploaie înapoi în circuit.
+
+**Limitare:** metoda gravitațională nu e 100% eficientă — pot rămâne cantități mici de apă în aspersoare sau electrovane. Fă-o cât mai devreme în sezon, cu o rezervă generoasă de timp înainte de primul îngheț anunțat.
+
+### 2. Drenare automată
+
+Folosită acolo unde sistemul are deja instalate supape de golire automate pe fiecare circuit, în punctele cele mai joase. Aceste supape se deschid singure și golesc circuitul când presiunea scade sub un prag minim — practic, după fiecare udare, sistemul se auto-golește parțial. Pentru golirea completă a conductei principale (între sursă și electrovane), tot trebuie deschis manual robinetul de golire din cămin sau din punctul de conectare.
+
+### 3. Suflare cu aer comprimat (compresor)
+
+Metoda cea mai completă — elimină practic toată apa reziduală, inclusiv din zonele unde metoda gravitațională nu ajunge. **Necesită însă echipament de compresor cu presiune și debit adecvate sistemului tău** și, de regulă, experiență — o presiune greșit calibrată poate sparge componente sau, în cazuri rare, răni pe cineva din cauza presiunii mari din sistem. Pentru sisteme rezidențiale complexe sau dacă nu ai mai făcut-o, e una dintre puținele operațiuni din acest ghid unde chemarea unui profesionist chiar merită banii — riscul unei greșeli (componente sparte sau, mai rău, un accident) depășește ușor costul unei intervenții specializate.
+
+## Întreținere sezonieră — ce verifici și când
+
+Un sistem de irigații bine proiectat nu cere întreținere complicată, dar câteva verificări regulate previn majoritatea defecțiunilor costisitoare:
+
+- **Lunar (sezonul activ):** verifică și curăță filtrele, dacă e cazul.
+- **La începutul fiecărui sezon (primăvara, la repornire):** verifică bateriile panourilor de comandă, verifică electrovanele (solenoizii și robinetii de aerisire bine înșurubați), verifică filtrul, verifică timpii și duratele de pornire din programator, reglează raza și unghiul aspersoarelor, deschide robinetul de la sursă/hidrofor abia după ce ai verificat restul.
+- **O dată pe sezon:** reglează raza și unghiul de udare al fiecărui aspersor și verifică-i starea de funcționare — duzele se decalibrează treptat, iar un cap ușor deviat creează exact tipul de zonă cronic sub-udată descris în Ghidul Suprem de Irigare.
+- **Toamna, obligatoriu:** golirea completă a sistemului, printr-una din cele trei metode de mai sus.
 
 ## Greșeli frecvente la planificarea DIY
 
