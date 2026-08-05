@@ -260,6 +260,7 @@ const ArticleCard: React.FC<{
 }> = ({ article, subscriptionTier, isRead, onClick }) => {
   const { t } = useTranslation();
   const isLocked = article.isPremium && subscriptionTier === 'free';
+  const hasCoverImage = !!article.coverImage;
   return (
     <button
       onClick={onClick}
@@ -268,9 +269,32 @@ const ArticleCard: React.FC<{
         ${isRead ? 'ring-2 ring-accent-color/30' : ''}
       `}
     >
-      <div className={`absolute inset-0 bg-gradient-to-br ${article.coverGradient} opacity-5 dark:opacity-100 transition-opacity`} />
-      <div className="absolute inset-0 bg-white/40 dark:bg-black/40" />
-      <div className="relative p-6 min-h-[200px] flex flex-col justify-between">
+      {hasCoverImage ? (
+        <>
+          <img
+            src={`/${article.coverImage}`}
+            alt={article.title}
+            loading="lazy"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          {/* Scrim concentrated in a bottom band sized to the text block,
+              not spread thin across the whole card — the top ~45% stays
+              near-clear image (more of the photo actually visible), while
+              the text sits on a reliably dark surface instead of hoping a
+              gradual gradient happens to be dark enough at that exact
+              pixel. Text also carries its own text-shadow below as a
+              second, image-independent guarantee (see PlantCard's fix for
+              the same underlying problem: a gradient alone silently fails
+              against a bright patch of an arbitrary real photo). */}
+          <div className="absolute inset-x-0 bottom-0 h-[65%] bg-gradient-to-t from-black/95 via-black/70 to-transparent" />
+        </>
+      ) : (
+        <>
+          <div className={`absolute inset-0 bg-gradient-to-br ${article.coverGradient} opacity-5 dark:opacity-100 transition-opacity`} />
+          <div className="absolute inset-0 bg-white/40 dark:bg-black/40" />
+        </>
+      )}
+      <div className="relative p-6 min-h-[240px] flex flex-col justify-between">
         <div className="flex items-start justify-between gap-2">
           <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border backdrop-blur-sm shadow-sm
             ${article.isPremium
@@ -293,18 +317,20 @@ const ArticleCard: React.FC<{
           </div>
         </div>
         <div>
-          <div className="text-4xl mb-3 select-none drop-shadow-md">{article.coverEmoji}</div>
-          <div className="text-[10px] font-black uppercase tracking-widest text-text-secondary dark:text-white/60 mb-1">{article.categoryLabel}</div>
-          <h3 className="font-black text-text-main dark:text-white text-base leading-tight mb-3 group-hover:text-accent-color dark:group-hover:text-amber-200 transition-colors drop-shadow-sm">{article.title}</h3>
-          <p className="text-xs text-text-secondary dark:text-white/60 leading-relaxed line-clamp-2">{article.excerpt}</p>
+          {!hasCoverImage && (
+            <div className="text-4xl mb-3 select-none drop-shadow-md">{article.coverEmoji}</div>
+          )}
+          <div className={`text-[10px] font-black uppercase tracking-widest mb-1 ${hasCoverImage ? 'text-white/80 [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]' : 'text-text-secondary dark:text-white/60'}`}>{article.categoryLabel}</div>
+          <h3 className={`font-black text-base leading-tight mb-3 transition-colors ${hasCoverImage ? 'text-white group-hover:text-amber-200 [text-shadow:0_1px_4px_rgba(0,0,0,0.9)]' : 'text-text-main dark:text-white group-hover:text-accent-color dark:group-hover:text-amber-200 drop-shadow-sm'}`}>{article.title}</h3>
+          <p className={`text-xs leading-relaxed line-clamp-2 ${hasCoverImage ? 'text-white/90 [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]' : 'text-text-secondary dark:text-white/60'}`}>{article.excerpt}</p>
           <div className="flex items-center gap-3 mt-4">
-            <span className="flex items-center gap-1 text-[10px] font-bold text-text-secondary dark:text-white/50">
+            <span className={`flex items-center gap-1 text-[10px] font-bold ${hasCoverImage ? 'text-white/80 [text-shadow:0_1px_2px_rgba(0,0,0,0.9)]' : 'text-text-secondary dark:text-white/50'}`}>
               <Clock size={10} /> {article.readTime} min
             </span>
-            <span className="w-1 h-1 bg-border-color dark:bg-white/30 rounded-full" />
-            <span className="text-[10px] font-bold text-text-secondary dark:text-white/50">{article.difficulty}</span>
+            <span className={`w-1 h-1 rounded-full ${hasCoverImage ? 'bg-white/50' : 'bg-border-color dark:bg-white/30'}`} />
+            <span className={`text-[10px] font-bold ${hasCoverImage ? 'text-white/80 [text-shadow:0_1px_2px_rgba(0,0,0,0.9)]' : 'text-text-secondary dark:text-white/50'}`}>{article.difficulty}</span>
             {!isLocked && (
-              <span className="ml-auto flex items-center gap-1 text-[10px] font-black text-text-main dark:text-white/70 group-hover:text-accent-color dark:group-hover:text-white transition-colors uppercase tracking-widest">
+              <span className={`ml-auto flex items-center gap-1 text-[10px] font-black transition-colors uppercase tracking-widest ${hasCoverImage ? 'text-white/90 group-hover:text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.9)]' : 'text-text-main dark:text-white/70 group-hover:text-accent-color dark:group-hover:text-white'}`}>
                 {t('Citește')} <ChevronRight size={12} />
               </span>
             )}
@@ -344,6 +370,12 @@ const isTableRow = (line: string) => line.trim().startsWith('|');
 const isTableSeparatorRow = (line: string) => /^\|[\s:|-]+\|$/.test(line.trim());
 const parseTableRow = (line: string): string[] =>
   line.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim());
+
+// A standalone `![alt](path)` line — the only markdown image syntax this
+// renderer understands, used to drop an Encyclopedia-styled photo card
+// (rounded, fixed aspect ratio, name caption on a scrim) right under a
+// section heading, instead of a plain inline <img>.
+const IMAGE_LINE_RE = /^!\[([^\]]*)\]\(([^)]+)\)$/;
 
 // Renders the full article body block-by-block instead of line-by-line.
 // Table rows need this: the previous renderer treated any line starting
@@ -393,6 +425,23 @@ const renderArticleBody = (content: string): React.ReactNode[] => {
       continue;
     }
 
+    const imageMatch = line.trim().match(IMAGE_LINE_RE);
+    if (imageMatch) {
+      const [, alt, src] = imageMatch;
+      nodes.push(
+        <div key={i} className="relative w-full aspect-[16/10] rounded-2xl overflow-hidden shadow-sm my-3 bg-bg-main">
+          <img src={`/${src}`} alt={alt} loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
+          {alt && (
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent pt-6 pb-2 px-3">
+              <span className="text-white text-xs font-black [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]">{alt}</span>
+            </div>
+          )}
+        </div>
+      );
+      i++;
+      continue;
+    }
+
     if (line.startsWith('## ')) {
       nodes.push(<h2 key={i} className="text-xl font-black text-text-main mt-8 mb-3 border-b border-border-color pb-2">{line.slice(3)}</h2>);
     } else if (line.startsWith('### ')) {
@@ -433,6 +482,41 @@ const ArticleReader: React.FC<{
         any stray horizontal scroll from long lines/tables in article body. */}
     <div className="relative w-full h-[100dvh] max-h-[100dvh] sm:h-auto sm:max-w-3xl sm:max-h-[92vh] bg-bg-card rounded-none sm:rounded-3xl shadow-2xl flex flex-col animate-in slide-in-from-bottom-8 sm:zoom-in-95 duration-400 overflow-hidden overflow-x-hidden">
       {/* Header */}
+      {article.coverImage ? (
+        <div className="relative flex-shrink-0">
+          <div className="relative w-full aspect-[16/9] sm:aspect-[21/9] overflow-hidden bg-bg-main">
+            <img src={`/${article.coverImage}`} alt={article.title} className="absolute inset-0 w-full h-full object-cover" />
+            {/* Scrim concentrated at the bottom, sized to where the title
+                block actually sits, rather than spread thin across the
+                whole banner — a thin middle band silently fails against a
+                bright patch of an arbitrary photo (e.g. Versailles' pale
+                stone facade). Top ~55% stays near-clear image. Text also
+                carries its own text-shadow below as a second,
+                image-independent guarantee. */}
+            <div className="absolute inset-x-0 bottom-0 h-[70%] bg-gradient-to-t from-black/95 via-black/60 to-transparent" />
+          </div>
+          <div className="absolute inset-0 p-4 sm:p-6 pt-[max(env(safe-area-inset-top),16px)] sm:pt-6 flex flex-col justify-between">
+            <button
+              onClick={onClose}
+              aria-label={t('Înapoi')}
+              className="flex items-center gap-1.5 -ml-2 min-w-[44px] min-h-[44px] px-3 rounded-full bg-black/30 hover:bg-black/45 backdrop-blur-sm text-white text-sm font-bold transition-all cursor-pointer w-fit [text-shadow:0_1px_2px_rgba(0,0,0,0.9)]"
+            >
+              <ArrowLeft size={18} className="shrink-0" /> {t('Înapoi')}
+            </button>
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-widest text-white/85 [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]">{article.categoryLabel}</span>
+              <h1 className="text-xl font-black text-white leading-tight mt-1 [text-shadow:0_1px_4px_rgba(0,0,0,0.9)]">{article.title}</h1>
+              <div className="flex items-center gap-3 mt-3">
+                <span className="text-xs text-white/85 font-bold [text-shadow:0_1px_2px_rgba(0,0,0,0.9)]">✍️ {article.author}</span>
+                <span className="w-1 h-1 bg-white/50 rounded-full" />
+                <span className="text-xs text-white/85 font-bold [text-shadow:0_1px_2px_rgba(0,0,0,0.9)]">{article.readTime} {t('min citire')}</span>
+                <span className="w-1 h-1 bg-white/50 rounded-full" />
+                <span className="text-xs text-white/85 font-bold [text-shadow:0_1px_2px_rgba(0,0,0,0.9)]">{article.difficulty}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
       <div className={`relative p-4 sm:p-6 pt-[max(env(safe-area-inset-top),16px)] sm:pt-6 bg-gradient-to-br ${article.coverGradient} flex-shrink-0 dark:!bg-none`}>
         {/* Light mode specific background */}
         <div className={`absolute inset-0 bg-gradient-to-br ${article.coverGradient} opacity-10 dark:opacity-100 transition-opacity`} />
@@ -462,6 +546,7 @@ const ArticleReader: React.FC<{
           </div>
         </div>
       </div>
+      )}
       {/* Content */}
       <div
         className="overflow-y-auto overflow-x-hidden overscroll-contain flex-1 min-h-0 p-4 sm:p-6 md:p-8 pb-[max(env(safe-area-inset-bottom),16px)]"

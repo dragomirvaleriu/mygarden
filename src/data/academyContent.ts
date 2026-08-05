@@ -40,6 +40,12 @@ export interface ArticleMeta {
   author: string;
   coverGradient: string; // Tailwind gradient classes
   coverEmoji: string;
+  // Optional real cover photo, bundled statically (public/images/academie/
+  // {slug}/cover.jpg) rather than the admin-uploadable Storage system
+  // (academyCoverPath) — same static-first/Storage-fallback pattern as
+  // PlantCatalogEntry.images. Absent for most articles today; falls back
+  // to the coverGradient+coverEmoji treatment when missing.
+  coverImage?: string;
   tags: string[];
   // Content file path (relative to project root)
   contentPath: string;
@@ -942,6 +948,7 @@ export const ARTICLES_RO: ArticleMeta[] = [
     author: 'Echipa My Garden',
     coverGradient: 'from-fuchsia-950 via-purple-950 to-indigo-950',
     coverEmoji: '🏛️',
+    coverImage: 'images/academie/gradini-celebre-inspiratie-design/cover.jpg',
     tags: ['design', 'inspiratie', 'amenajare', 'stiluri', 'istorie'],
     contentPath: 'content/academy/ro/gradini-celebre-inspiratie-design.md'
   },
