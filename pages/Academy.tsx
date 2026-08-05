@@ -465,6 +465,7 @@ const renderArticleBody = (content: string): React.ReactNode[] => {
   const lines = content.split('\n');
   const nodes: React.ReactNode[] = [];
   let i = 0;
+  let imageCount = 0;
   while (i < lines.length) {
     const line = lines[i];
 
@@ -506,15 +507,24 @@ const renderArticleBody = (content: string): React.ReactNode[] => {
     const imageMatch = line.trim().match(IMAGE_LINE_RE);
     if (imageMatch) {
       const [, alt, src] = imageMatch;
+      // Editorial "magazine" layout: a smaller image that floats to one
+      // side (alternating left/right) so body text wraps around it,
+      // instead of a full-width block that interrupts the reading flow.
+      // Floats only apply from `sm:` up — on narrow phone screens there
+      // isn't enough leftover column width for text to wrap legibly
+      // alongside a floated image, so it stays a plain full-width block.
+      const floatLeft = imageCount % 2 === 0;
+      imageCount++;
       nodes.push(
-        <div key={i} className="relative w-full aspect-[16/10] rounded-2xl overflow-hidden shadow-sm my-3 bg-bg-main">
-          <img src={`/${src}`} alt={alt} loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
+        <figure
+          key={i}
+          className={`mb-4 sm:mb-3 sm:max-w-[45%] ${floatLeft ? 'sm:float-left sm:mr-6' : 'sm:float-right sm:ml-6'}`}
+        >
+          <img src={`/${src}`} alt={alt} loading="lazy" className="w-full rounded-xl shadow-sm object-cover" />
           {alt && (
-            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent pt-6 pb-2 px-3">
-              <span className="text-white text-xs font-black [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]">{alt}</span>
-            </div>
+            <figcaption className="text-[11px] text-text-secondary font-medium italic leading-snug mt-1.5">{alt}</figcaption>
           )}
-        </div>
+        </figure>
       );
       i++;
       continue;
@@ -559,9 +569,27 @@ const ArticleReader: React.FC<{
         `sm:` up. `overflow-x-hidden` on top of the inner scroller rules out
         any stray horizontal scroll from long lines/tables in article body. */}
     <div className="relative w-full h-[100dvh] max-h-[100dvh] sm:h-auto sm:max-w-3xl sm:max-h-[92vh] bg-bg-card rounded-none sm:rounded-3xl shadow-2xl flex flex-col animate-in slide-in-from-bottom-8 sm:zoom-in-95 duration-400 overflow-hidden overflow-x-hidden">
-      {/* Header */}
-      {article.coverImage ? (
-        <div className="relative flex-shrink-0">
+      {/* Floating back button only — the cover photo/title scroll away
+          with the rest of the content below instead of sitting in a
+          pinned header, so the article gets the full modal height instead
+          of losing a fixed chunk to a header that's already been seen
+          once on the article card. */}
+      <button
+        onClick={onClose}
+        aria-label={t('Înapoi')}
+        className="absolute z-20 left-3 top-[max(env(safe-area-inset-top),12px)] sm:top-3 flex items-center gap-1.5 min-w-[44px] min-h-[44px] px-3 rounded-full bg-black/40 hover:bg-black/55 backdrop-blur-sm text-white text-sm font-bold transition-all [text-shadow:0_1px_2px_rgba(0,0,0,0.9)]"
+      >
+        <ArrowLeft size={18} className="shrink-0" />
+        <span>{t('Înapoi')}</span>
+      </button>
+
+      {/* `min-h-0` is required: a flex child defaults to min-height:auto,
+          which refuses to shrink below its content and breaks the scroll.
+          `-webkit-overflow-scrolling: touch` gives old iOS Safari
+          momentum/inertia scrolling inside the panel. */}
+      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
+        {/* Header — scrolls away with the content beneath it */}
+        {article.coverImage ? (
           <div className="relative w-full aspect-[16/9] sm:aspect-[21/9] overflow-hidden bg-bg-main">
             <img src={`/${article.coverImage}`} alt={article.title} className="absolute inset-0 w-full h-full object-cover" />
             {/* Scrim concentrated at the bottom, sized to where the title
@@ -572,16 +600,7 @@ const ArticleReader: React.FC<{
                 carries its own text-shadow below as a second,
                 image-independent guarantee. */}
             <div className="absolute inset-x-0 bottom-0 h-[70%] bg-gradient-to-t from-black/95 via-black/60 to-transparent" />
-          </div>
-          <div className="absolute inset-0 p-4 sm:p-6 pt-[max(env(safe-area-inset-top),16px)] sm:pt-6 flex flex-col justify-between">
-            <button
-              onClick={onClose}
-              aria-label={t('Înapoi')}
-              className="flex items-center gap-1.5 -ml-2 min-w-[44px] min-h-[44px] px-3 rounded-full bg-black/30 hover:bg-black/45 backdrop-blur-sm text-white text-sm font-bold transition-all cursor-pointer w-fit [text-shadow:0_1px_2px_rgba(0,0,0,0.9)]"
-            >
-              <ArrowLeft size={18} className="shrink-0" /> {t('Înapoi')}
-            </button>
-            <div>
+            <div className="absolute inset-x-0 bottom-0 p-4 sm:p-6">
               <span className="text-[10px] font-black uppercase tracking-widest text-white/85 [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]">{article.categoryLabel}</span>
               <h1 className="text-xl font-black text-white leading-tight mt-1 [text-shadow:0_1px_4px_rgba(0,0,0,0.9)]">{article.title}</h1>
               <div className="flex items-center gap-3 mt-3">
@@ -593,50 +612,40 @@ const ArticleReader: React.FC<{
               </div>
             </div>
           </div>
-        </div>
-      ) : (
-      <div className={`relative p-4 sm:p-6 pt-[max(env(safe-area-inset-top),16px)] sm:pt-6 bg-gradient-to-br ${article.coverGradient} flex-shrink-0 dark:!bg-none`}>
-        {/* Light mode specific background */}
-        <div className={`absolute inset-0 bg-gradient-to-br ${article.coverGradient} opacity-10 dark:opacity-100 transition-opacity`} />
-        <div className="absolute inset-0 bg-white/60 dark:bg-black/50 backdrop-blur-[2px] dark:backdrop-blur-none" />
-        <div className="relative z-10">
-          <button
-            onClick={onClose}
-            aria-label={t('Înapoi')}
-            className="flex items-center gap-1.5 -ml-2 min-w-[44px] min-h-[44px] px-3 mb-2 rounded-full bg-black/5 hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/20 text-text-secondary dark:text-white/70 text-sm font-bold transition-all cursor-pointer"
-          >
-            <ArrowLeft size={18} className="shrink-0" /> {t('Înapoi')}
-          </button>
-          <ContentImage
-            path={academyCoverPath(article.slug)}
-            alt={article.title}
-            className="w-16 h-16 rounded-2xl object-cover shadow-md mb-3"
-            fallback={<div className="text-4xl mb-3 drop-shadow-md">{article.coverEmoji}</div>}
-          />
-          <span className="text-[10px] font-black uppercase tracking-widest text-text-secondary dark:text-white/60">{article.categoryLabel}</span>
-          <h1 className="text-xl font-black text-text-main dark:text-white leading-tight mt-1 drop-shadow-sm">{article.title}</h1>
-          <div className="flex items-center gap-3 mt-3">
-            <span className="text-xs text-text-secondary dark:text-white/60 font-bold">✍️ {article.author}</span>
-            <span className="w-1 h-1 bg-border-color dark:bg-white/30 rounded-full" />
-            <span className="text-xs text-text-secondary dark:text-white/60 font-bold">{article.readTime} {t('min citire')}</span>
-            <span className="w-1 h-1 bg-border-color dark:bg-white/30 rounded-full" />
-            <span className="text-xs text-text-secondary dark:text-white/60 font-bold">{article.difficulty}</span>
+        ) : (
+        <div className={`relative p-4 sm:p-6 pt-14 sm:pt-16 bg-gradient-to-br ${article.coverGradient} dark:!bg-none`}>
+          {/* Light mode specific background */}
+          <div className={`absolute inset-0 bg-gradient-to-br ${article.coverGradient} opacity-10 dark:opacity-100 transition-opacity`} />
+          <div className="absolute inset-0 bg-white/60 dark:bg-black/50 backdrop-blur-[2px] dark:backdrop-blur-none" />
+          <div className="relative z-10">
+            <ContentImage
+              path={academyCoverPath(article.slug)}
+              alt={article.title}
+              className="w-16 h-16 rounded-2xl object-cover shadow-md mb-3"
+              fallback={<div className="text-4xl mb-3 drop-shadow-md">{article.coverEmoji}</div>}
+            />
+            <span className="text-[10px] font-black uppercase tracking-widest text-text-secondary dark:text-white/60">{article.categoryLabel}</span>
+            <h1 className="text-xl font-black text-text-main dark:text-white leading-tight mt-1 drop-shadow-sm">{article.title}</h1>
+            <div className="flex items-center gap-3 mt-3">
+              <span className="text-xs text-text-secondary dark:text-white/60 font-bold">✍️ {article.author}</span>
+              <span className="w-1 h-1 bg-border-color dark:bg-white/30 rounded-full" />
+              <span className="text-xs text-text-secondary dark:text-white/60 font-bold">{article.readTime} {t('min citire')}</span>
+              <span className="w-1 h-1 bg-border-color dark:bg-white/30 rounded-full" />
+              <span className="text-xs text-text-secondary dark:text-white/60 font-bold">{article.difficulty}</span>
+            </div>
           </div>
         </div>
-      </div>
-      )}
-      {/* Content */}
-      <div
-        className="overflow-y-auto overflow-x-hidden overscroll-contain flex-1 min-h-0 p-4 sm:p-6 md:p-8 pb-[max(env(safe-area-inset-bottom),16px)]"
-        style={{ WebkitOverflowScrolling: 'touch' }}
-      >
-        <div className="prose prose-sm max-w-none text-text-main space-y-4">
-          {renderArticleBody(content)}
-        </div>
-        <div className="flex flex-wrap gap-2 mt-8 pt-6 border-t border-border-color">
-          {article.tags.map(tag => (
-            <span key={tag} className="px-3 py-1 bg-bg-main border border-border-color rounded-full text-[10px] font-black uppercase tracking-widest text-text-secondary">#{tag}</span>
-          ))}
+        )}
+        {/* Content */}
+        <div className="p-4 sm:p-6 md:p-8 pb-[max(env(safe-area-inset-bottom),16px)]">
+          <div className="prose prose-sm max-w-none text-text-main space-y-4 after:content-[''] after:table after:clear-both">
+            {renderArticleBody(content)}
+          </div>
+          <div className="flex flex-wrap gap-2 mt-8 pt-6 border-t border-border-color">
+            {article.tags.map(tag => (
+              <span key={tag} className="px-3 py-1 bg-bg-main border border-border-color rounded-full text-[10px] font-black uppercase tracking-widest text-text-secondary">#{tag}</span>
+            ))}
+          </div>
         </div>
       </div>
     </div>
