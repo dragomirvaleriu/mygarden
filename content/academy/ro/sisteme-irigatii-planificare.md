@@ -60,7 +60,7 @@ Există trei tipuri principale relevante pentru un sistem rezidențial, fiecare 
 
 Pentru suprafețe mari (peste 8m lungime pe o latură). Aruncă apa printr-un jet concentrat, rotativ, care acoperă o rază mare, dar udă relativ lent — durează mai mult să depună aceeași cantitate de apă pe metru pătrat comparativ cu un spray. Ideale pentru gazonul principal, suprafețele deschise.
 
-![Un aspersor rotativ (rotor) cu jet concentrat, tipul recomandat pentru suprafețe mari de gazon](images/academie/sisteme-irigatii-planificare/01-aspersor-rotor.jpg)
+![Un cap de aspersor rotor (pop-up) — corpul cilindric se retrage complet în sol când nu udă și iese la suprafață doar cât timp funcționează zona respectivă](images/academie/sisteme-irigatii-planificare/01-aspersor-rotor.jpg)
 
 ### Aspersoare tip spray (fix)
 
