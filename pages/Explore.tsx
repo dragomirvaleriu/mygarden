@@ -458,60 +458,69 @@ const Explore: React.FC<Props> = ({ organizationId }) => {
               // Full screen on mobile (a real "page", not a shrunken desktop
               // dialog with a gap at the top) — `100dvh`/`rounded-none` edge
               // to edge. From `sm:` up it's back to the centered card dialog.
-              // Three-part flex column: fixed header, scrolling body, fixed
-              // footer. `overflow-hidden` clips the scroll area to the
-              // (rounded, on desktop) corners; `overflow-x-hidden` on top of
-              // that rules out any stray horizontal scroll from long content.
+              // `overflow-hidden` clips the scroll area to the (rounded, on
+              // desktop) corners; `overflow-x-hidden` on top of that rules
+              // out any stray horizontal scroll from long content.
               className="relative w-full h-[100dvh] max-h-[100dvh] sm:h-auto sm:max-h-[92dvh] sm:max-w-lg flex flex-col overflow-hidden overflow-x-hidden bg-bg-card rounded-none sm:rounded-3xl shadow-2xl"
             >
-              <div className="shrink-0 px-4 sm:px-6 pt-[max(env(safe-area-inset-top),16px)] sm:pt-6 pb-4 border-b border-border-color">
-                <button
-                  onClick={closePlantDetail}
-                  aria-label={t('Înapoi')}
-                  className="flex items-center gap-1.5 -ml-2 min-w-[44px] min-h-[44px] px-3 rounded-full text-text-secondary hover:text-text-main hover:bg-bg-main active:bg-bg-main transition mb-2"
-                >
-                  <ArrowLeft className="w-5 h-5 shrink-0" />
-                  <span className="text-sm font-bold">{t('Înapoi')}</span>
-                </button>
+              {/* Floating back button only — the photo and title scroll
+                  away with the rest of the content instead of sitting in a
+                  pinned header, so the info list gets the full modal height
+                  instead of losing a fixed chunk to a photo that's already
+                  been seen once on the grid card. */}
+              <button
+                onClick={closePlantDetail}
+                aria-label={t('Înapoi')}
+                className="absolute z-10 left-3 top-[max(env(safe-area-inset-top),12px)] sm:top-3 flex items-center gap-1.5 min-w-[44px] min-h-[44px] px-3 rounded-full bg-black/40 hover:bg-black/55 backdrop-blur-sm text-white text-sm font-bold transition-all [text-shadow:0_1px_2px_rgba(0,0,0,0.9)]"
+              >
+                <ArrowLeft className="w-5 h-5 shrink-0" />
+                <span>{t('Înapoi')}</span>
+              </button>
 
-                {selectedPlant.images && selectedPlant.images.length > 0 ? (
-                  <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-inner mb-4 bg-bg-main group/gallery">
-                    <img
-                      src={`/${selectedPlant.images[galleryIndex]}`}
-                      alt={`${selectedPlant.name} ${galleryIndex + 1}`}
-                      onClick={() => setLightboxOpen(true)}
-                      className="absolute inset-0 w-full h-full object-cover cursor-zoom-in"
-                    />
-                    {selectedPlant.images.length > 1 && (
-                      <>
-                        <button
-                          onClick={() => setGalleryIndex((i) => (i === 0 ? selectedPlant.images!.length - 1 : i - 1))}
-                          aria-label={t('Poza anterioară') as string}
-                          className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition"
-                        >
-                          <ChevronLeft size={18} />
-                        </button>
-                        <button
-                          onClick={() => setGalleryIndex((i) => (i === selectedPlant.images!.length - 1 ? 0 : i + 1))}
-                          aria-label={t('Poza următoare') as string}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition"
-                        >
-                          <ChevronRight size={18} />
-                        </button>
-                        <div className="absolute bottom-2 inset-x-0 flex items-center justify-center gap-1.5">
-                          {selectedPlant.images.map((_, i) => (
-                            <button
-                              key={i}
-                              onClick={() => setGalleryIndex(i)}
-                              aria-label={`${t('Poza')} ${i + 1}`}
-                              className={`w-1.5 h-1.5 rounded-full transition-all ${i === galleryIndex ? 'bg-white w-4' : 'bg-white/50'}`}
-                            />
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                ) : (
+              {/* `min-h-0` is required: a flex child defaults to min-height:auto,
+                  which refuses to shrink below its content and breaks the scroll.
+                  `-webkit-overflow-scrolling: touch` gives old iOS Safari
+                  momentum/inertia scrolling inside the panel. */}
+              <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
+              {selectedPlant.images && selectedPlant.images.length > 0 ? (
+                <div className="relative w-full aspect-[4/3] overflow-hidden shadow-inner bg-bg-main group/gallery">
+                  <img
+                    src={`/${selectedPlant.images[galleryIndex]}`}
+                    alt={`${selectedPlant.name} ${galleryIndex + 1}`}
+                    onClick={() => setLightboxOpen(true)}
+                    className="absolute inset-0 w-full h-full object-cover cursor-zoom-in"
+                  />
+                  {selectedPlant.images.length > 1 && (
+                    <>
+                      <button
+                        onClick={() => setGalleryIndex((i) => (i === 0 ? selectedPlant.images!.length - 1 : i - 1))}
+                        aria-label={t('Poza anterioară') as string}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition"
+                      >
+                        <ChevronLeft size={18} />
+                      </button>
+                      <button
+                        onClick={() => setGalleryIndex((i) => (i === selectedPlant.images!.length - 1 ? 0 : i + 1))}
+                        aria-label={t('Poza următoare') as string}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition"
+                      >
+                        <ChevronRight size={18} />
+                      </button>
+                      <div className="absolute bottom-2 inset-x-0 flex items-center justify-center gap-1.5">
+                        {selectedPlant.images.map((_, i) => (
+                          <button
+                            key={i}
+                            onClick={() => setGalleryIndex(i)}
+                            aria-label={`${t('Poza')} ${i + 1}`}
+                            className={`w-1.5 h-1.5 rounded-full transition-all ${i === galleryIndex ? 'bg-white w-4' : 'bg-white/50'}`}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <div className="pt-[max(env(safe-area-inset-top),16px)] px-4 sm:px-6">
                   <ContentImage
                     path={plantMainImagePath(selectedPlant.id)}
                     alt={selectedPlant.name}
@@ -522,16 +531,11 @@ const Explore: React.FC<Props> = ({ organizationId }) => {
                       </div>
                     }
                   />
-                )}
-                <h2 className="text-xl font-black text-text-main leading-tight">{selectedPlant.name}</h2>
-                <p className="text-sm text-text-secondary italic">{selectedPlant.scientificName}</p>
-              </div>
-
-              {/* `min-h-0` is required: a flex child defaults to min-height:auto,
-                  which refuses to shrink below its content and breaks the scroll.
-                  `-webkit-overflow-scrolling: touch` gives old iOS Safari
-                  momentum/inertia scrolling inside the panel. */}
-              <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain px-4 sm:px-6 py-5" style={{ WebkitOverflowScrolling: 'touch' }}>
+                </div>
+              )}
+              <div className="px-4 sm:px-6 pt-4 pb-5">
+              <h2 className="text-xl font-black text-text-main leading-tight">{selectedPlant.name}</h2>
+              <p className="text-sm text-text-secondary italic mb-5">{selectedPlant.scientificName}</p>
               <p className="text-sm text-text-main leading-relaxed mb-5">{selectedPlant.description}</p>
 
               <div className="grid grid-cols-1 gap-3 mb-6">
@@ -608,6 +612,7 @@ const Explore: React.FC<Props> = ({ organizationId }) => {
                     <p className="text-sm text-text-main">{selectedPlant.propagation}</p>
                   </div>
                 </div>
+              </div>
               </div>
               </div>
 
