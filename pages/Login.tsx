@@ -139,6 +139,12 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
         return t("Connection problem. Check your internet and try again.");
       case 'auth/user-disabled':
         return t("This account has been disabled.");
+      // Reachable here only after checkProfileAndOnboard's own retries are
+      // exhausted (see there) — never leak Firestore's raw "Missing or
+      // insufficient permissions" string, which reads like an account
+      // problem when it's actually just a slow session handoff.
+      case 'permission-denied':
+        return t("Couldn't verify your session just now. Please try again in a moment.");
       default:
         return err?.message || t("Something went wrong. Please try again.");
     }
@@ -258,6 +264,84 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
     setStatusMsg(t("Account detected. Finish setting up your garden."));
   };
 
+  const MAX_PROFILE_CHECK_ATTEMPTS = 3;
+
+  /**
+   * Resolves an already-authenticated Firebase user to an app profile
+   * (existing profile -> recovered org -> prompt/resume setup). Pulled out
+   * of the auth-state-changed effect so a manual retry (the "Finalize
+   * Setup" button, when it lands on a stuck error) can re-run exactly the
+   * same check instead of falling through to the plain-login form logic,
+   * which expects fields this screen never shows for a signed-in user.
+   *
+   * Retries on 'permission-denied' specifically: right after sign-in,
+   * Firestore's own auth context can lag a beat behind the freshly-issued
+   * token, so a security-rule check evaluated against the user's own uid
+   * can transiently deny before the token finishes propagating.
+   * readProfile() already worked around this for the simple doc read; the
+   * organizations lookup below it had no such protection, so a slow token
+   * handoff there used to surface a raw "Missing or insufficient
+   * permissions" straight to the user with no way to recover short of
+   * logging out and back in.
+   */
+  const checkProfileAndOnboard = async (user: { uid: string; email: string | null; getIdToken: () => Promise<string> }, attempt: number = 1): Promise<void> => {
+    try {
+      const snap = await readProfile(user.uid);
+      if (snap.exists()) {
+        const data = snap.data() as UserProfile;
+        console.log("Profile found in auth state:", data);
+        if (data.organizationId) {
+          finishOnboarding(data);
+        } else {
+          console.log("Profile missing organizationId in auth state, attempting recovery");
+          const recovered = await attemptServerRecovery(user);
+          if (!recovered) await promptOrResumeSetup(user);
+        }
+      } else {
+        console.log("Profile not found in auth state, checking organizations for adminUid:", user.uid);
+        // Recovery logic: check if they own an organization
+        const orgsQuery = query(collection(db, 'organizations'), where('adminUid', '==', user.uid));
+        const orgsSnap = await getDocs(orgsQuery);
+        console.log("Organizations found in auth state:", orgsSnap.size);
+        if (!orgsSnap.empty) {
+          const orgId = orgsSnap.docs[0].id;
+          console.log("Found organization in auth state:", orgId);
+          const profile: UserProfile = {
+            uid: user.uid,
+            email: user.email || '',
+            organizationId: orgId,
+            role: 'admin',
+            theme: 'dark'
+          };
+          // merge: true is critical here — "profile not found" can be a
+          // false negative from a transient read failure (see readProfile),
+          // not proof the document is actually missing. A bare setDoc would
+          // silently wipe displayName/phoneNumber/everything else on every
+          // false positive of this recovery path. App.tsx's own profile
+          // onSnapshot listener will pick up the real merged document and
+          // correct any fields missing from this local minimal object.
+          await setDoc(doc(db, 'users', user.uid), profile, { merge: true });
+          finishOnboarding(profile);
+        } else {
+          console.log("No organization found in auth state, attempting server recovery");
+          const recovered = await attemptServerRecovery(user);
+          if (!recovered) await promptOrResumeSetup(user);
+        }
+      }
+    } catch (e: any) {
+      if (e?.code === 'permission-denied' && attempt < MAX_PROFILE_CHECK_ATTEMPTS) {
+        console.warn(`Profile check denied (attempt ${attempt}), retrying...`, e);
+        await new Promise((r) => setTimeout(r, attempt * 900));
+        return checkProfileAndOnboard(user, attempt + 1);
+      }
+      console.error("Firestore error:", e);
+      setStatusMsg('');
+      setError(describeError(e));
+      // Keep the "Finalize setup" button available so the check can be
+      // retried; don't strand them on a dead screen.
+    }
+  };
+
   useEffect(() => {
     const unsub = auth.onAuthStateChanged(async (user) => {
       if (user) {
@@ -272,57 +356,7 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
         }
 
         setStatusMsg(t("Active session detected. Checking profile..."));
-
-        try {
-          const snap = await readProfile(user.uid);
-          if (snap.exists()) {
-            const data = snap.data() as UserProfile;
-            console.log("Profile found in auth state:", data);
-            if (data.organizationId) {
-              finishOnboarding(data);
-            } else {
-              console.log("Profile missing organizationId in auth state, attempting recovery");
-              const recovered = await attemptServerRecovery(user);
-              if (!recovered) await promptOrResumeSetup(user);
-            }
-          } else {
-            console.log("Profile not found in auth state, checking organizations for adminUid:", user.uid);
-            // Recovery logic: check if they own an organization
-            const orgsQuery = query(collection(db, 'organizations'), where('adminUid', '==', user.uid));
-            const orgsSnap = await getDocs(orgsQuery);
-            console.log("Organizations found in auth state:", orgsSnap.size);
-            if (!orgsSnap.empty) {
-              const orgId = orgsSnap.docs[0].id;
-              console.log("Found organization in auth state:", orgId);
-              const profile: UserProfile = {
-                uid: user.uid,
-                email: user.email || '',
-                organizationId: orgId,
-                role: 'admin',
-                theme: 'dark'
-              };
-              // merge: true is critical here — "profile not found" can be a
-              // false negative from a transient read failure (see readProfile),
-              // not proof the document is actually missing. A bare setDoc would
-              // silently wipe displayName/phoneNumber/everything else on every
-              // false positive of this recovery path. App.tsx's own profile
-              // onSnapshot listener will pick up the real merged document and
-              // correct any fields missing from this local minimal object.
-              await setDoc(doc(db, 'users', user.uid), profile, { merge: true });
-              finishOnboarding(profile);
-            } else {
-              console.log("No organization found in auth state, attempting server recovery");
-              const recovered = await attemptServerRecovery(user);
-              if (!recovered) await promptOrResumeSetup(user);
-            }
-          }
-        } catch (e) {
-          console.error("Firestore error:", e);
-          setStatusMsg('');
-          setError(describeError(e));
-          // Keep the "Finalize setup" button available so the check can be
-          // retried; don't strand them on a dead screen.
-        }
+        await checkProfileAndOnboard(user);
         setCheckingAuth(false);
       } else {
         // Signed out. Firebase Auth restores the session by itself, so there
@@ -440,6 +474,20 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
     if (loading) return;
     setError('');
     setInfo('');
+
+    // Stuck on a failed automatic profile check (see checkProfileAndOnboard)
+    // — this screen shows no email/password/name fields for an
+    // already-authenticated user, so "Finalize Setup" here must retry that
+    // check directly rather than falling through to the plain-login branch
+    // below, which would call completeOnboarding() and demand a name that
+    // was never asked for.
+    if (isAlreadyLoggedIn && !isRegister && auth.currentUser) {
+      setLoading(true);
+      setStatusMsg(t("Active session detected. Checking profile..."));
+      await checkProfileAndOnboard(auth.currentUser);
+      setLoading(false);
+      return;
+    }
 
     if (isRegister) {
       // Step 1: Email & Password validation
