@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { Search, ArrowLeft, Check, Sprout, Sun, Droplets, Gauge, Ruler, SlidersHorizontal, MapPin, Layers, Flower2, Scissors, Bug, Shuffle, X, ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
+import { Search, ArrowLeft, Check, Sprout, Sun, Droplets, Gauge, Ruler, SlidersHorizontal, MapPin, Layers, Flower2, Scissors, Bug, Shuffle, X, ChevronLeft, ChevronRight, CalendarDays, AlertTriangle, Thermometer, Snowflake, RefreshCw, TestTube2 } from 'lucide-react';
 import { useModalBackNavigation } from '../src/hooks/useModalBackNavigation';
 import {
   plantCatalog,
@@ -629,6 +629,93 @@ const Explore: React.FC<Props> = ({ organizationId, subscriptionTier = 'free', o
                     <p className="text-sm text-text-main">{selectedPlant.propagation}</p>
                   </div>
                 </div>
+
+                {/* Second expansion pass — every row here is conditional on
+                    the field actually being filled in, so plants not yet
+                    backfilled render exactly as before (no empty rows, no
+                    "N/A" clutter). Toxicity applies to both types; the rest
+                    are split by which type they're meaningful for. */}
+                {selectedPlant.toxicity && (
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="w-4 h-4 text-text-secondary mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-wider text-text-secondary">{t('Toxicitate')}</p>
+                      <p className="text-sm text-text-main">{selectedPlant.toxicity}</p>
+                    </div>
+                  </div>
+                )}
+                {selectedPlant.matureSize && (
+                  <div className="flex items-start gap-3">
+                    <Ruler className="w-4 h-4 text-text-secondary mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-wider text-text-secondary">{t('Dimensiuni la maturitate')}</p>
+                      <p className="text-sm text-text-main">{selectedPlant.matureSize}</p>
+                    </div>
+                  </div>
+                )}
+                {selectedPlant.tempHumidity && (
+                  <div className="flex items-start gap-3">
+                    <Thermometer className="w-4 h-4 text-text-secondary mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-wider text-text-secondary">{t('Temperatură & Umiditate')}</p>
+                      <p className="text-sm text-text-main">{selectedPlant.tempHumidity}</p>
+                    </div>
+                  </div>
+                )}
+                {selectedPlant.repotting && (
+                  <div className="flex items-start gap-3">
+                    <RefreshCw className="w-4 h-4 text-text-secondary mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-wider text-text-secondary">{t('Replantare')}</p>
+                      <p className="text-sm text-text-main">{selectedPlant.repotting}</p>
+                    </div>
+                  </div>
+                )}
+                {selectedPlant.sunExposure && (
+                  <div className="flex items-start gap-3">
+                    <Sun className="w-4 h-4 text-text-secondary mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-wider text-text-secondary">{t('Expunere la soare')}</p>
+                      <p className="text-sm text-text-main">{selectedPlant.sunExposure}</p>
+                    </div>
+                  </div>
+                )}
+                {selectedPlant.frostHardiness && (
+                  <div className="flex items-start gap-3">
+                    <Snowflake className="w-4 h-4 text-text-secondary mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-wider text-text-secondary">{t('Rezistență la ger')}</p>
+                      <p className="text-sm text-text-main">{selectedPlant.frostHardiness}</p>
+                    </div>
+                  </div>
+                )}
+                {selectedPlant.sizeSpacing && (
+                  <div className="flex items-start gap-3">
+                    <Ruler className="w-4 h-4 text-text-secondary mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-wider text-text-secondary">{t('Dimensiuni & Distanțare')}</p>
+                      <p className="text-sm text-text-main">{selectedPlant.sizeSpacing}</p>
+                    </div>
+                  </div>
+                )}
+                {selectedPlant.pruningTime && (
+                  <div className="flex items-start gap-3">
+                    <Scissors className="w-4 h-4 text-text-secondary mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-wider text-text-secondary">{t('Perioadă de tăiere')}</p>
+                      <p className="text-sm text-text-main">{selectedPlant.pruningTime}</p>
+                    </div>
+                  </div>
+                )}
+                {selectedPlant.soilPh && (
+                  <div className="flex items-start gap-3">
+                    <TestTube2 className="w-4 h-4 text-text-secondary mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-wider text-text-secondary">{t('Cerințe sol/pH')}</p>
+                      <p className="text-sm text-text-main">{selectedPlant.soilPh}</p>
+                    </div>
+                  </div>
+                )}
               </div>
               </div>
               </div>

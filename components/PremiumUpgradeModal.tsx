@@ -87,7 +87,7 @@ const PremiumUpgradeModal: React.FC<PremiumUpgradeModalProps> = ({ triggerItem, 
 
   const benefits = [
     { text: t('Peste 50 de ghiduri și protocoale de sezon'), subtext: t('Actualizate lunar cu conținut nou de la agronomi') },
-    { text: t('Enciclopedia completă: toate cele 287 de plante'), subtext: t('Fișe complete, inclusiv speciile dificile și rare') },
+    { text: t('Enciclopedia completă: toate cele 305 de plante'), subtext: t('Fișe complete, inclusiv speciile dificile și rare') },
     { text: t('Modul SOS: Diagnoză imediată pentru boli și dăunători'), subtext: t('Brown Patch, Pythium, dăunători subterani și mai mult') },
     { text: t('Fără reclame, 100% știință aplicată'), subtext: t('Zero marketing. Doar informații verificate agronomic') },
   ];
@@ -199,7 +199,7 @@ const PremiumUpgradeModal: React.FC<PremiumUpgradeModalProps> = ({ triggerItem, 
               <div className="text-amber-400 font-black uppercase tracking-wider text-[9px]">PRO 👑</div>
               {[
                 [t('Ghiduri de bază'), '4', '50+'],
-                [t('Plante în Enciclopedie'), '40', '287'],
+                [t('Plante în Enciclopedie'), '40', '305'],
                 [t('Modul SOS / Diagnoze'), '—', '✓'],
                 [t('Calendar Sezonier complet'), '—', '✓'],
                 [t('Fără reclame'), '—', '✓'],
