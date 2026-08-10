@@ -134,6 +134,25 @@ const App: React.FC = () => {
         if (firebaseUser) {
           setUser(firebaseUser);
 
+          // A cached ID token stays "valid" client-side for up to an hour
+          // even after the account itself is deleted/disabled server-side —
+          // onAuthStateChanged alone won't catch that until the SDK happens
+          // to attempt a token refresh on its own schedule. Forcing one here
+          // on every load surfaces a deleted/disabled account immediately
+          // instead of leaving a stale, no-longer-valid session logged in.
+          try {
+            await firebaseUser.getIdToken(true);
+          } catch (tokenErr: any) {
+            if (['auth/user-token-expired', 'auth/user-disabled', 'auth/user-not-found'].includes(tokenErr?.code)) {
+              console.log('Account no longer valid, logging out', tokenErr.code);
+              logout();
+              return;
+            }
+            // Anything else (offline, transient network error) — not proof
+            // the account is gone, so don't force a logout over it.
+            console.warn('Token refresh check failed (non-fatal)', tokenErr);
+          }
+
           // Session validation: check if session needs to be invalidated
           const sessionCreatedAt = localStorage.getItem('ls_session_created_at');
           const now = new Date();
