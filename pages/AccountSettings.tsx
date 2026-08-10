@@ -362,10 +362,10 @@ const AccountSettings: React.FC<Props> = ({
                     <label className="block text-[11px] font-black text-text-secondary uppercase tracking-wide">
                       Email
                     </label>
-                    <div className="flex items-center justify-between gap-3 bg-bg-main border border-border-color rounded-xl px-4 py-3">
-                      <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center justify-between gap-3 bg-bg-main border border-border-color rounded-xl px-4 py-3">
+                      <div className="flex items-center gap-2.5 flex-1 min-w-[160px]">
                         <Mail size={16} className="text-accent-color shrink-0" />
-                        <span className="font-medium text-sm text-main truncate">{userProfile.email}</span>
+                        <span className="font-medium text-sm text-main break-all">{userProfile.email}</span>
                       </div>
                       <Pill tone="success" icon={CheckCircle}>{t('Verificat')}</Pill>
                     </div>
@@ -375,18 +375,18 @@ const AccountSettings: React.FC<Props> = ({
                     <label className="block text-[11px] font-black text-text-secondary uppercase tracking-wide">
                       {t('Cum te cheamă?')}
                     </label>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <input
                         type="text"
                         placeholder={t('Exemplu: Ion Popescu')}
                         value={displayName}
                         onChange={(e) => setDisplayName(e.target.value)}
-                        className={`flex-1 min-w-0 ${inputCls}`}
+                        className={`flex-1 min-w-[160px] ${inputCls}`}
                       />
                       <button
                         type="submit"
                         disabled={isSavingName || !displayName.trim()}
-                        className={primaryBtnCls}
+                        className={`shrink-0 ${primaryBtnCls}`}
                       >
                         {isSavingName ? <Loader2 size={16} className="animate-spin" /> : t('Salvează')}
                       </button>
@@ -397,18 +397,18 @@ const AccountSettings: React.FC<Props> = ({
                     <label className="block text-[11px] font-black text-text-secondary uppercase tracking-wide">
                       {t('Telefon')}
                     </label>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <input
                         type="tel"
                         placeholder="+40 7XX XXX XXX"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        className={`flex-1 min-w-0 ${inputCls}`}
+                        className={`flex-1 min-w-[160px] ${inputCls}`}
                       />
                       <button
                         type="submit"
                         disabled={isSavingPhone}
-                        className={primaryBtnCls}
+                        className={`shrink-0 ${primaryBtnCls}`}
                       >
                         {isSavingPhone ? <Loader2 size={16} className="animate-spin" /> : t('Salvează')}
                       </button>

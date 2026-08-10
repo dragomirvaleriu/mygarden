@@ -38,6 +38,7 @@ const PFDashboard = React.lazy(() => import('../pages/PFDashboard'));
 const Academy = React.lazy(() => import('../pages/Academy').then(m => ({ default: m.Academy })));
 
 import Login from '../pages/Login';
+import ResetPassword from '../pages/ResetPassword';
 import { APP_NAME } from './config/appVariant';
 
 import DesktopSidebar from '../components/DesktopSidebar';
@@ -59,6 +60,19 @@ const App: React.FC = () => {
   const [isReady, setIsReady] = useState(false);
 
   const [currentPage, setCurrentPage] = useState<Page>(Page.Dashboard);
+  // Password-reset links land here regardless of auth state (see
+  // ResetPassword.tsx / server.ts's generatePasswordResetLink actionCodeSettings),
+  // so this is checked ahead of every other gate below, including the
+  // isReady splash screen.
+  const [resetPasswordMode, setResetPasswordMode] = useState(() => window.location.hash.startsWith('#reset-password'));
+  // Covers opening the link in a tab that already has the app mounted
+  // (the lazy useState initializer above only runs once, on first mount) —
+  // e.g. pasting the link into an existing tab rather than a fresh one.
+  useEffect(() => {
+    const check = () => setResetPasswordMode(window.location.hash.startsWith('#reset-password'));
+    window.addEventListener('hashchange', check);
+    return () => window.removeEventListener('hashchange', check);
+  }, []);
   const { subscriptionTier } = usePlan(user?.uid);
 
   const [systemConfig, setSystemConfig] = useState<any>({ maintenanceMode: false, announcement: '' });
@@ -400,6 +414,10 @@ const App: React.FC = () => {
   const navigateTo = (page: Page) => {
     window.location.hash = page;
   };
+
+  if (resetPasswordMode) {
+    return <ResetPassword onDone={() => setResetPasswordMode(false)} />;
+  }
 
   if (!isReady) return (
     <div className="min-h-screen bg-bg-main flex items-center justify-center transition-colors duration-700 font-sans">

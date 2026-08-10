@@ -872,17 +872,22 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
 
     setLoading(true);
     try {
-      await sendPasswordResetEmail(auth, trimmedEmail);
+      // Routed through our own server (Brevo, verified sender) rather than
+      // Firebase Auth's built-in sendPasswordResetEmail — that sends from a
+      // generic *.firebaseapp.com address shared by every Firebase project,
+      // which reliably lands in spam since it carries no sender reputation
+      // of its own.
+      await fetch('/api/auth/send-password-reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: trimmedEmail })
+      });
       // Deliberately the same message whether or not the account exists, so
       // this can't be used to probe which emails are registered.
       setInfo(t("If an account exists for this address, a reset link is on its way. Check your spam folder too."));
     } catch (err: any) {
       console.error("Password reset failed:", err);
-      if (err?.code === 'auth/user-not-found') {
-        setInfo(t("If an account exists for this address, a reset link is on its way. Check your spam folder too."));
-      } else {
-        setError(describeError(err));
-      }
+      setError(describeError(err));
     } finally {
       setLoading(false);
     }
