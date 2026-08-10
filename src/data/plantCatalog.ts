@@ -96,6 +96,15 @@ export interface PlantCatalogEntry {
   // English translations (added incrementally via i18n backfill)
   nameEN?: string;
   descriptionEN?: string;
+
+  // Cultivars/soiuri of this species carried by Romanian nurseries (sourced
+  // from docaperene.ro product listings) — kept as lightweight sub-items
+  // rather than separate catalog entries so search/filtering stays at
+  // species level, per the 2026 docaperene import. `description` covers
+  // just what distinguishes this cultivar from the species default (color,
+  // height, bloom timing), not a full care profile — that's inherited from
+  // the parent entry.
+  cultivars?: { name: string; description: string }[];
 }
 
 export const plantCatalog: PlantCatalogEntry[] = [
