@@ -226,7 +226,12 @@ const App: React.FC = () => {
   // Sync theme + accent + language from profile/settings to the DOM.
   useEffect(() => {
     const isMobile = window.matchMedia('(pointer: coarse)').matches;
-    const theme = isMobile ? (userSettings?.themeMobile || 'dark') : (userSettings?.themeDesktop || 'light');
+    // Pre-login (no profile yet), the Login page's own theme toggle writes
+    // here directly — without this, this effect's device-based default
+    // (dark on touch, light on mouse) would win the mount-order race against
+    // Login's own effect and silently flip the toggle back on every render.
+    const preLoginOverride = !profile ? (localStorage.getItem('mg_theme_override') as 'light' | 'dark' | null) : null;
+    const theme = preLoginOverride || (isMobile ? (userSettings?.themeMobile || 'dark') : (userSettings?.themeDesktop || 'light'));
     const accentColor = isMobile ? (userSettings?.accentColorMobile || profile?.accentColor) : (userSettings?.accentColorDesktop || profile?.accentColor);
 
     document.documentElement.setAttribute('data-theme', theme);

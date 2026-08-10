@@ -88,6 +88,11 @@ export interface UserProfile {
   referredBy?: string; // referral code captured at signup, if any
   referralBonusApplied?: boolean; // guards against double-granting on repeat purchases
   referralCount?: number; // server-incremented count of successful referrals
+  // Set true once the account passes the 6-digit email verification code
+  // (or immediately for Google sign-in, since Google already verifies the
+  // address). Absent on accounts created before this field existed — those
+  // are treated as verified rather than retroactively locked out.
+  emailVerified?: boolean;
 }
 
 export interface AppNotification {

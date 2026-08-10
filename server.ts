@@ -100,6 +100,59 @@ const smtpConfig = {
 
 const transporter = nodemailer.createTransport(smtpConfig);
 
+// Same Brevo REST API + verified sender already used client-side for SMS
+// (see services/sms.ts) — tried first since the raw SMTP relay credentials
+// above accept mail (250 OK) but it never actually arrives, which is the
+// classic symptom of an unverified/unauthenticated SMTP relay account. The
+// REST API key is a separate credential from SMTP_USER/SMTP_PASS.
+async function sendTransactionalEmail(to: string, subject: string, html: string): Promise<{ via: 'brevo-api' | 'smtp' }> {
+  const apiKey = process.env.BREVO_API_KEY || process.env.VITE_BREVO_API_KEY;
+  if (apiKey) {
+    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: { 'accept': 'application/json', 'api-key': apiKey, 'content-type': 'application/json' },
+      body: JSON.stringify({
+        sender: { name: 'My Garden', email: 'no-reply@landscapeos.com' },
+        to: [{ email: to }],
+        subject,
+        htmlContent: html
+      })
+    });
+    if (!res.ok) {
+      const errBody = await res.text().catch(() => '');
+      throw new Error(`Brevo API error: ${res.status} - ${errBody}`);
+    }
+    return { via: 'brevo-api' };
+  }
+
+  await transporter.sendMail({
+    from: process.env.SMTP_FROM || '"My Garden" <no-reply@landscapeos.com>',
+    to,
+    subject,
+    html
+  });
+  return { via: 'smtp' };
+}
+
+// 6-digit email verification codes (signup only — see /api/auth/send-verification-code).
+// Stored in Firestore rather than issued as a signed token so a resend can
+// invalidate the previous code and attempts can be capped server-side.
+const VERIFICATION_CODE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+const VERIFICATION_RESEND_COOLDOWN_MS = 60 * 1000; // 60 seconds
+const VERIFICATION_MAX_ATTEMPTS = 5;
+
+function generateVerificationCode(): string {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
+// Dev-only fallback store, used only when Firestore Admin has no credentials
+// (see the "local dev fallback" branch above) — otherwise local development
+// could never exercise the signup email-verification flow at all. Production
+// always has dbAdmin available, same as /api/recover-account already assumes,
+// so this Map is never touched there.
+interface PendingVerification { code: string; email: string; createdAt: number; expiresAt: number; attempts: number; }
+const devVerificationStore = new Map<string, PendingVerification>();
+
 // Automatic Billing has been moved to the client side.
 
 // Automatic Visit Rescheduling has been moved to the client side.
@@ -177,6 +230,141 @@ async function startServer() {
     } catch (err: any) {
       console.error("Recovery error:", err);
       res.status(500).json({ error: err.message });
+    }
+  });
+
+  // Sends a fresh 6-digit code to the account's own email (from the verified
+  // ID token, never the request body) and stores it in Firestore for
+  // /api/auth/verify-code to check. Signup only blocks on this — existing
+  // accounts created before this feature shipped are unaffected since they
+  // already have organizationId set and never hit this path.
+  app.post("/api/auth/send-verification-code", async (req, res) => {
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+    if (!token) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
+    let decodedToken;
+    try {
+      decodedToken = await getAuth(adminApp).verifyIdToken(token);
+    } catch (err) {
+      return res.status(401).json({ error: "Invalid or expired token" });
+    }
+
+    const uid = decodedToken.uid;
+    const email = decodedToken.email;
+    if (!email) {
+      return res.status(400).json({ error: "Token has no associated email" });
+    }
+
+    try {
+      const existingCreatedAtMs = dbAdmin
+        ? (await dbAdmin.collection('emailVerifications').doc(uid).get()).data()?.createdAt?.toMillis?.() ?? 0
+        : devVerificationStore.get(uid)?.createdAt ?? 0;
+      const elapsed = Date.now() - existingCreatedAtMs;
+      if (existingCreatedAtMs && elapsed < VERIFICATION_RESEND_COOLDOWN_MS) {
+        return res.status(429).json({
+          error: "Please wait before requesting another code",
+          waitSeconds: Math.ceil((VERIFICATION_RESEND_COOLDOWN_MS - elapsed) / 1000)
+        });
+      }
+
+      const code = generateVerificationCode();
+      const record: PendingVerification = {
+        code,
+        email: email.toLowerCase(),
+        createdAt: Date.now(),
+        expiresAt: Date.now() + VERIFICATION_CODE_TTL_MS,
+        attempts: 0
+      };
+      if (dbAdmin) {
+        await dbAdmin.collection('emailVerifications').doc(uid).set({
+          ...record,
+          createdAt: new Date(record.createdAt),
+          expiresAt: new Date(record.expiresAt)
+        });
+      } else {
+        devVerificationStore.set(uid, record);
+        console.warn(`[DEV] Firestore Admin unavailable — verification code for ${email} held in-memory only.`);
+      }
+
+      const { via } = await sendTransactionalEmail(
+        email,
+        "Codul tău de verificare My Garden",
+        `
+          <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+            <h2 style="color:#4A7C59;">My Garden</h2>
+            <p>Codul tău de verificare este:</p>
+            <p style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #1a1a1a;">${code}</p>
+            <p style="color:#666; font-size: 13px;">Codul expiră în 10 minute. Dacă nu ai cerut acest cod, poți ignora acest email.</p>
+          </div>
+        `
+      );
+      console.log(`[DEV] Verification email sent via ${via} to ${email}`);
+
+      res.json({ sent: true });
+    } catch (err: any) {
+      console.error("Send verification code error:", err);
+      res.status(500).json({ error: "Could not send verification code" });
+    }
+  });
+
+  // Checks a submitted code against the pending verification doc created by
+  // /api/auth/send-verification-code above. Caps attempts and enforces
+  // expiry server-side so this can't be brute-forced from the client.
+  app.post("/api/auth/verify-code", async (req, res) => {
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+    if (!token) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
+    let decodedToken;
+    try {
+      decodedToken = await getAuth(adminApp).verifyIdToken(token);
+    } catch (err) {
+      return res.status(401).json({ error: "Invalid or expired token" });
+    }
+
+    const uid = decodedToken.uid;
+    const { code } = req.body || {};
+    if (!code || typeof code !== 'string') {
+      return res.status(400).json({ error: "Verification code required" });
+    }
+
+    try {
+      const verifRef = dbAdmin ? dbAdmin.collection('emailVerifications').doc(uid) : null;
+      const data = verifRef ? (await verifRef.get()).data() : devVerificationStore.get(uid);
+      const dataExpiresAtMs = data
+        ? ((data as any).expiresAt?.toMillis ? (data as any).expiresAt.toMillis() : (data as any).expiresAt)
+        : 0;
+
+      if (!data) {
+        return res.status(400).json({ error: "No verification pending. Request a new code." });
+      }
+
+      if (Date.now() > dataExpiresAtMs) {
+        if (verifRef) await verifRef.delete(); else devVerificationStore.delete(uid);
+        return res.status(400).json({ error: "Code expired. Request a new one." });
+      }
+
+      if ((data.attempts || 0) >= VERIFICATION_MAX_ATTEMPTS) {
+        if (verifRef) await verifRef.delete(); else devVerificationStore.delete(uid);
+        return res.status(429).json({ error: "Too many attempts. Request a new code." });
+      }
+
+      if (data.code !== code.trim()) {
+        if (verifRef) await verifRef.update({ attempts: (data.attempts || 0) + 1 });
+        else devVerificationStore.set(uid, { ...(data as PendingVerification), attempts: (data.attempts || 0) + 1 });
+        return res.status(400).json({ error: "Incorrect code." });
+      }
+
+      if (verifRef) await verifRef.delete(); else devVerificationStore.delete(uid);
+      res.json({ verified: true });
+    } catch (err: any) {
+      console.error("Verify code error:", err);
+      res.status(500).json({ error: "Could not verify code" });
     }
   });
 
