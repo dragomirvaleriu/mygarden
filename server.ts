@@ -100,11 +100,15 @@ const smtpConfig = {
 
 const transporter = nodemailer.createTransport(smtpConfig);
 
-// Same Brevo REST API + verified sender already used client-side for SMS
-// (see services/sms.ts) — tried first since the raw SMTP relay credentials
-// above accept mail (250 OK) but it never actually arrives, which is the
-// classic symptom of an unverified/unauthenticated SMTP relay account. The
-// REST API key is a separate credential from SMTP_USER/SMTP_PASS.
+// Verified in the Brevo dashboard (Senders, Domains & Dedicated IPs →
+// Senders): "My company <dragomirvaleriu@gmail.com>" is the ONLY verified
+// sender on this account — zero domains are configured there at all. Every
+// earlier attempt used no-reply@landscapeos.com, an address never added as
+// a sender, which is exactly why Brevo accepted the mail (250 OK) but never
+// actually delivered it. REST API tried first (same account, separate
+// credential from SMTP_USER/SMTP_PASS); raw SMTP relay as fallback.
+const VERIFIED_SENDER = { name: 'My Garden', email: 'dragomirvaleriu@gmail.com' };
+
 async function sendTransactionalEmail(to: string, subject: string, html: string): Promise<{ via: 'brevo-api' | 'smtp' }> {
   const apiKey = process.env.BREVO_API_KEY || process.env.VITE_BREVO_API_KEY;
   if (apiKey) {
@@ -112,7 +116,7 @@ async function sendTransactionalEmail(to: string, subject: string, html: string)
       method: 'POST',
       headers: { 'accept': 'application/json', 'api-key': apiKey, 'content-type': 'application/json' },
       body: JSON.stringify({
-        sender: { name: 'My Garden', email: 'no-reply@landscapeos.com' },
+        sender: VERIFIED_SENDER,
         to: [{ email: to }],
         subject,
         htmlContent: html
@@ -126,7 +130,7 @@ async function sendTransactionalEmail(to: string, subject: string, html: string)
   }
 
   await transporter.sendMail({
-    from: process.env.SMTP_FROM || '"My Garden" <no-reply@landscapeos.com>',
+    from: process.env.SMTP_FROM || `"${VERIFIED_SENDER.name}" <${VERIFIED_SENDER.email}>`,
     to,
     subject,
     html

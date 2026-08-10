@@ -8,7 +8,6 @@ import { IrrigationWidget } from '../components/iot/IrrigationWidget';
 import { TreatmentCalculator } from '../components/TreatmentCalculator';
 import { GardenVitalityRing } from '../components/gamification/GardenVitalityRing';
 import { DoctorulGradiniiDashboard } from '../components/DoctorulGradiniiDashboard';
-import OnboardingWizard from '../components/OnboardingWizard';
 import AdBanner from '../components/AdBanner';
 import NotificationBell from '../components/NotificationBell';
 import { Card, SectionHeader } from '../components/ui/primitives';
@@ -70,7 +69,6 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
   const [isAutopilotWorking, setIsAutopilotWorking] = useState(false);
   const [weatherInfo, setWeatherInfo] = useState<any>(null);
   const [showFullWeather, setShowFullWeather] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false);
 
   // Live-load displayName from Firestore so greeting is always fresh
   useEffect(() => {
@@ -95,15 +93,6 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
     const timer = setInterval(() => setNow(new Date()), 60000); // update every minute
     return () => clearInterval(timer);
   }, []);
-
-  // One-time welcome wizard for accounts that haven't finished onboarding yet.
-  // Gated on `organization` being loaded (not just falsy) so it doesn't flash
-  // for existing users while their org doc is still fetching.
-  useEffect(() => {
-    if (organization && !organization.onboardingCompleted) {
-      setShowOnboarding(true);
-    }
-  }, [organization?.id, organization?.onboardingCompleted]);
 
   const currentMonth = now.getMonth();
   const hourOfDay = now.getHours();
@@ -772,10 +761,6 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
       </div>
 
       {isExpertMode && <TreatmentCalculator />}
-
-      {showOnboarding && organizationId && (
-        <OnboardingWizard organizationId={organizationId} onComplete={() => setShowOnboarding(false)} />
-      )}
     </div>
   );
 };
