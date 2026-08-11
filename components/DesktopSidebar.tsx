@@ -163,15 +163,7 @@ const DesktopSidebar: React.FC<Props> = ({
               onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
             >
               <span className="text-sm leading-none">
-                {i18n.language === 'ro' && '🇷🇴'}
-                {i18n.language === 'en' && '🇺🇸'}
-                {i18n.language === 'pl' && '🇵🇱'}
-                {i18n.language === 'cs' && '🇨🇿'}
-                {i18n.language === 'hu' && '🇭🇺'}
-                {i18n.language === 'de' && '🇩🇪'}
-                {i18n.language === 'nl' && '🇳🇱'}
-                {i18n.language === 'fr' && '🇫🇷'}
-                {i18n.language === 'es' && '🇪🇸'}
+                {i18n.language === 'ro' ? '🇷🇴' : '🇺🇸'}
               </span>
               <span className="uppercase tracking-widest text-[11px] font-black">{i18n.language}</span>
             </button>
@@ -181,14 +173,7 @@ const DesktopSidebar: React.FC<Props> = ({
                 <div className="max-h-[300px] overflow-y-auto custom-scrollbar p-1.5 space-y-0.5">
                   {[
                     { code: 'en', label: 'English', flag: '🇺🇸' },
-                    { code: 'ro', label: 'Română', flag: '🇷🇴' },
-                    { code: 'de', label: 'German', flag: '🇩🇪' },
-                    { code: 'cs', label: 'Czech', flag: '🇨🇿' },
-                    { code: 'pl', label: 'Polski', flag: '🇵🇱' },
-                    { code: 'hu', label: 'Magyar', flag: '🇭🇺' },
-                    { code: 'nl', label: 'Nederlands', flag: '🇳🇱' },
-                    { code: 'fr', label: 'Français', flag: '🇫🇷' },
-                    { code: 'es', label: 'Español', flag: '🇪🇸' }
+                    { code: 'ro', label: 'Română', flag: '🇷🇴' }
                   ].map((lang) => (
                     <button
                       key={lang.code}

@@ -200,13 +200,16 @@ const App: React.FC = () => {
             if (snap.exists()) {
               setUserSettings(snap.data() as UserSettings);
             } else {
-              // Create default settings if they don't exist
+              // Create default settings if they don't exist. Only a fallback
+              // for accounts that somehow reach here without one — normal
+              // signups get their real pre-login choice written directly by
+              // Login.tsx's completeOnboarding, not these hardcoded values.
               const defaults: UserSettings = {
                 userId: firebaseUser.uid,
                 themeDesktop: 'light',
-                themeMobile: 'dark',
+                themeMobile: 'light',
                 accentColorDesktop: '#4A7C59',
-                accentColorMobile: '#EC4899'
+                accentColorMobile: '#4A7C59'
               };
               setUserSettings(defaults);
             }
@@ -264,7 +267,7 @@ const App: React.FC = () => {
     // (dark on touch, light on mouse) would win the mount-order race against
     // Login's own effect and silently flip the toggle back on every render.
     const preLoginOverride = !profile ? (localStorage.getItem('mg_theme_override') as 'light' | 'dark' | null) : null;
-    const theme = preLoginOverride || (isMobile ? (userSettings?.themeMobile || 'dark') : (userSettings?.themeDesktop || 'light'));
+    const theme = preLoginOverride || (isMobile ? (userSettings?.themeMobile || 'light') : (userSettings?.themeDesktop || 'light'));
     const accentColor = isMobile ? (userSettings?.accentColorMobile || profile?.accentColor) : (userSettings?.accentColorDesktop || profile?.accentColor);
 
     document.documentElement.setAttribute('data-theme', theme);
@@ -381,7 +384,7 @@ const App: React.FC = () => {
   const toggleTheme = async () => {
     if (!user) return;
     const isMobile = window.matchMedia('(pointer: coarse)').matches;
-    const currentTheme = isMobile ? (userSettings?.themeMobile || 'dark') : (userSettings?.themeDesktop || 'light');
+    const currentTheme = isMobile ? (userSettings?.themeMobile || 'light') : (userSettings?.themeDesktop || 'light');
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
 
     try {
@@ -499,7 +502,7 @@ const App: React.FC = () => {
   }
 
   const isMobile = window.matchMedia('(pointer: coarse)').matches;
-  const currentTheme = (isMobile ? (userSettings?.themeMobile || 'dark') : (userSettings?.themeDesktop || 'light')) as 'light' | 'dark';
+  const currentTheme = (isMobile ? (userSettings?.themeMobile || 'light') : (userSettings?.themeDesktop || 'light')) as 'light' | 'dark';
 
   const renderPage = () => {
     if (!profile) return <Login onOnboarded={(p) => setProfile(p)} />;

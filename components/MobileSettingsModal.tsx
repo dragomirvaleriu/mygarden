@@ -33,9 +33,7 @@ const MobileSettingsModal: React.FC<Props> = ({
 
   const languages = [
     { code: 'ro', name: 'Română', flag: '🇷🇴' },
-    { code: 'en', name: 'English', flag: '🇬🇧' },
-    { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
-    { code: 'fr', name: 'Français', flag: '🇫🇷' },
+    { code: 'en', name: 'English', flag: '🇺🇸' },
   ];
 
   return (

@@ -175,6 +175,17 @@ async function startServer() {
     res.json({ status: "ok", time: new Date().toISOString() });
   });
 
+  // Vercel's edge network adds this header to every incoming request — no
+  // API key or external geo-IP service needed. Used to pick a sensible
+  // default UI language (RO in Romania, EN elsewhere) for first-time
+  // visitors only; see src/i18n.ts. Absent in local dev (no Vercel edge in
+  // front of it), which the client already treats as "couldn't determine,
+  // keep whatever the browser-language detector guessed".
+  app.get("/api/geo", (req, res) => {
+    const country = (req.headers['x-vercel-ip-country'] as string) || null;
+    res.json({ country });
+  });
+
   // API Route for recovering account by email
   app.post("/api/recover-account", async (req, res) => {
     const authHeader = req.headers.authorization;

@@ -20,6 +20,14 @@ const parseOobCode = (): string | null => {
 
 const ResetPassword: React.FC<Props> = ({ onDone }) => {
   const { t } = useTranslation();
+
+  useEffect(() => {
+    // [data-theme='dark']'s own CSS default for --accent-color is pink, not
+    // brand green — see the identical fix in Login.tsx for why this needs
+    // forcing here too.
+    document.documentElement.style.setProperty('--accent-color', '#4A7C59');
+  }, []);
+
   const [status, setStatus] = useState<'checking' | 'ready' | 'invalid' | 'done'>('checking');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

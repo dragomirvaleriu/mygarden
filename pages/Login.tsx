@@ -24,7 +24,7 @@ import {
   isPersistenceError,
   recoverFromPersistenceError
 } from '../services/firebase';
-import { Eye, EyeOff, Loader2, Lock, Mail, User, CheckCircle2, AlertCircle, ShieldCheck, ArrowLeft, KeyRound, Sun, Moon } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Lock, Mail, User, CheckCircle2, AlertCircle, ShieldCheck, ArrowLeft, KeyRound, Sun, Moon, Phone, Globe } from 'lucide-react';
 import { UserProfile } from '../src/types';
 
 // Standard multi-color Google "G" mark — inline so the button doesn't need an
@@ -72,13 +72,22 @@ interface Props {
   onOnboarded: (profile: UserProfile) => void;
 }
 
+// Kept to just these two for now — the other 7 locale files still exist
+// (src/locales/*) and i18n.ts still loads them, but only EN/RO are actually
+// maintained/complete, so only they're offered in the switcher.
+const LANGUAGES = [
+  { code: 'en', label: 'English', flag: '🇺🇸' },
+  { code: 'ro', label: 'Română', flag: '🇷🇴' }
+];
+
 const Login: React.FC<Props> = ({ onOnboarded }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [isRegister, setIsRegister] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
+  const [phone, setPhone] = useState(''); // optional — never required to sign up
   const [rememberMe, setRememberMe] = useState(true);
 
   const [error, setError] = useState('');
@@ -104,19 +113,29 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
   // straight to the DOM + localStorage, and read back by App.tsx's own
   // theme effect (see the `mg_theme_override` check there) so a mount-order
   // race between the two effects can't silently flip it back. Defaults to
-  // dark rather than following device pointer-type, which used to make the
-  // login screen flip themes depending on mobile vs. desktop with no way to
-  // control it.
+  // light on a first-ever visit (nothing in localStorage yet) rather than
+  // following device pointer-type, which used to make the login screen flip
+  // themes depending on mobile vs. desktop with no way to control it. Once
+  // toggled, the choice persists here across visits AND gets carried into
+  // the account's own saved theme at signup (see completeOnboarding).
   const [theme, setThemeState] = useState<'light' | 'dark'>(() => {
     try {
-      return (localStorage.getItem('mg_theme_override') as 'light' | 'dark' | null) || 'dark';
+      return (localStorage.getItem('mg_theme_override') as 'light' | 'dark' | null) || 'light';
     } catch {
-      return 'dark';
+      return 'light';
     }
   });
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
+    // [data-theme='dark']'s own CSS default for --accent-color is pink
+    // (a deliberate in-app default once a user is logged in and picks their
+    // own accent), not the brand green — pre-login, nothing else sets this
+    // variable, so dark mode would otherwise show pink buttons here. Forced
+    // to brand green regardless of light/dark; App.tsx's own theme effect
+    // overrides it again with the user's real preference once they're
+    // actually logged in.
+    document.documentElement.style.setProperty('--accent-color', '#4A7C59');
   }, [theme]);
 
   const toggleTheme = () => {
@@ -124,6 +143,27 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
     setThemeState(next);
     try { localStorage.setItem('mg_theme_override', next); } catch { /* best effort */ }
   };
+
+  // i18next-browser-languagedetector (see src/i18n.ts) already picks a
+  // default from the browser's language pre-login — this just lets the user
+  // override that guess, same dropdown pattern as DesktopSidebar's.
+  const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
+  const langMenuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (langMenuRef.current && !langMenuRef.current.contains(e.target as Node)) {
+        setIsLangMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+  // i18n.language can come back as a region-tagged variant (e.g. "en-US")
+  // when detected from the browser rather than a manual pick — matching
+  // just the base subtag keeps the flag in sync with the language actually
+  // being rendered instead of falling through to the RO default.
+  const currentLangCode = i18n.language?.split('-')[0];
+  const currentLang = LANGUAGES.find(l => l.code === currentLangCode) || LANGUAGES[1];
 
   const emailRef = useRef<HTMLInputElement>(null);
   const passRef = useRef<HTMLInputElement>(null);
@@ -526,17 +566,22 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
         });
       }
 
+      // Carries whatever this device showed on the login screen — the real
+      // toggled choice (see the `theme` state above), not a hardcoded
+      // default — into the new account, same for the active UI language.
       const profile: UserProfile = {
         uid,
         email: userEmail.toLowerCase(),
         organizationId: orgId,
         role: (inviteData?.role as any) || 'admin',
-        theme: 'dark',
+        theme,
+        language: i18n.language?.split('-')[0],
         displayName: trimmedName,
         // completeOnboarding is only ever reached after a code was verified
         // (or via Google, which pre-verifies) — see handleVerifyCode /
         // handleGoogleSignIn / promptOrResumeSetup's resume branch.
         emailVerified: true,
+        ...(phone.trim() ? { phoneNumber: phone.trim() } : {}),
         ...(referredByRef.current ? { referredBy: referredByRef.current } : {})
       };
 
@@ -544,6 +589,17 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
       // profile read failed transiently (see readProfile), so it must not
       // blindly overwrite fields (phoneNumber, etc.) that already exist.
       await setDoc(doc(db, 'users', uid), profile, { merge: true });
+
+      // App.tsx reads theme from user_settings (themeMobile/themeDesktop),
+      // not from profile.theme directly — without this, a new account would
+      // silently fall back to App.tsx's own defaults on first real login,
+      // discarding the choice just made on this screen. merge: true so an
+      // existing settings doc (recovery paths) keeps its other fields.
+      await setDoc(doc(db, 'user_settings', uid), {
+        userId: uid,
+        themeMobile: theme,
+        themeDesktop: theme
+      }, { merge: true });
 
       // Mark invitation as accepted
       if (inviteData) {
@@ -693,10 +749,16 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
         }
       }
       // New Google account (or an existing one with no completed profile) —
-      // Google already verifies the address, so this skips the code screen.
+      // Google already verifies the address, so this skips the code screen
+      // and goes straight to a quick "confirm your name, add a phone if you
+      // want" step instead (same screen the reload-recovery path uses),
+      // rather than silently completing onboarding with just Google's name.
       try { sessionStorage.setItem(VERIFIED_MARKER_KEY, '1'); } catch { /* best effort */ }
       const fallbackName = gUser.displayName || (gUser.email ? gUser.email.split('@')[0] : '') || t('Grădinar');
-      await completeOnboarding(gUser.uid, gUser.email || '', fallbackName);
+      setName(fallbackName);
+      setPendingEmail(gUser.email || '');
+      setStatusMsg('');
+      setAuthStep('name');
     } catch (err: any) {
       console.error('Google sign-in failed', err);
       setStatusMsg('');
@@ -926,16 +988,56 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
           {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
         </button>
 
-        <div className="flex flex-col items-center mb-6 sm:mb-8 text-center">
-          <img src="/logo.png" alt="My Garden Logo" className="w-20 h-20 sm:w-24 sm:h-24 object-contain mb-2 drop-shadow-md" />
+        <div className="absolute top-4 left-4 sm:top-5 sm:left-5" ref={langMenuRef}>
+          <button
+            type="button"
+            onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
+            aria-label={t('Change language')}
+            title={t('Change language')}
+            className="h-8 px-2.5 flex items-center gap-1.5 rounded-full border border-border-color text-text-secondary hover:text-main hover:border-accent-color transition-all"
+          >
+            <span className="text-sm leading-none">{currentLang.flag}</span>
+            <span className="text-[10px] font-black uppercase tracking-wider">{currentLang.code}</span>
+          </button>
+
+          {isLangMenuOpen && (
+            <div className="absolute top-full left-0 mt-2 w-44 bg-bg-card border border-border-color rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-top-2 duration-200 z-[100]">
+              <div className="max-h-[280px] overflow-y-auto custom-scrollbar p-1.5 space-y-0.5">
+                {LANGUAGES.map((lang) => (
+                  <button
+                    key={lang.code}
+                    type="button"
+                    onClick={() => {
+                      // i18next-browser-languagedetector caches this to
+                      // localStorage on its own (default `caches` option),
+                      // so it's picked up automatically on the next visit —
+                      // no separate persistence needed here.
+                      i18n.changeLanguage(lang.code);
+                      setIsLangMenuOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold transition-all ${i18n.language === lang.code ? 'bg-accent-color text-white shadow-lg shadow-accent-color/20' : 'text-main hover:bg-bg-main/80 hover:text-accent-color'}`}
+                  >
+                    <span className="text-base shrink-0">{lang.flag}</span>
+                    <span className="flex-1 text-left text-[11px] uppercase tracking-wider">{lang.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className={`flex flex-col items-center text-center ${isRegister ? 'mb-3' : 'mb-6 sm:mb-8'}`}>
+          <img src="/logo.png" alt="My Garden Logo" className={`object-contain mb-2 drop-shadow-md ${isRegister ? 'w-14 h-14' : 'w-20 h-20 sm:w-24 sm:h-24'}`} />
           <div className="flex flex-col items-center">
-            <h1 className="text-3xl sm:text-4xl tracking-tighter mb-0 leading-none" style={{ fontFamily: "'Fraunces', serif", fontWeight: 700 }}>
+            <h1 className={`tracking-tighter mb-0 leading-none ${isRegister ? 'text-2xl' : 'text-3xl sm:text-4xl'}`} style={{ fontFamily: "'Fraunces', serif", fontWeight: 700 }}>
               <span style={{ color: 'var(--accent-color)' }}>my</span>
               <span style={{ color: '#4F7942' }}> garden</span>
             </h1>
-            <span className="text-[10px] font-black tracking-[0.2em] uppercase opacity-80 mt-2 mb-1 text-center leading-tight" style={{ color: 'var(--brand-olive)' }}>
-              Your garden,<br/>smartly cared for
-            </span>
+            {!isRegister && (
+              <span className="text-[10px] font-black tracking-[0.2em] uppercase opacity-80 mt-2 mb-1 text-center leading-tight" style={{ color: 'var(--brand-olive)' }}>
+                Your garden,<br/>smartly cared for
+              </span>
+            )}
           </div>
         </div>
 
@@ -943,7 +1045,7 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
             since switching modes mid-verification (or mid-"Finalize Setup")
             makes no sense. */}
         {authStep === 'form' && !isAlreadyLoggedIn && (
-          <div className="flex bg-bg-main border border-border-color rounded-full p-1 mb-6">
+          <div className={`flex bg-bg-main border border-border-color rounded-full p-1 ${isRegister ? 'mb-3' : 'mb-6'}`}>
             <button
               type="button"
               onClick={() => { if (isRegister) { setIsRegister(false); setError(''); setInfo(''); } }}
@@ -1062,6 +1164,20 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
                 placeholder={t('Ex: Ion, Maria...')}
               />
             </div>
+            <div className="space-y-2">
+              <label className="text-[11px] font-bold text-text-secondary uppercase tracking-wider ml-1 flex items-center gap-2">
+                <Phone size={10} />
+                {t('Phone (optional)')}
+              </label>
+              <input
+                type="tel"
+                autoComplete="tel"
+                className="w-full bg-bg-main rounded-md px-4 py-3 outline-none text-main font-bold border border-border-color focus:border-accent-color transition-all"
+                value={phone}
+                onChange={e => setPhone(e.target.value)}
+                placeholder={t('Ex: 07XX XXX XXX')}
+              />
+            </div>
             <button
               type="submit"
               disabled={loading}
@@ -1072,7 +1188,7 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
           </form>
         ) : (
           /* ─── Normal Sign in / Sign up form ─── */
-          <form onSubmit={handleFormSubmit} className="space-y-5">
+          <form onSubmit={handleFormSubmit} className={isRegister ? "space-y-3.5" : "space-y-5"}>
             {error && (
               <div className="p-4 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs rounded-md flex items-center gap-3 font-bold">
                 <AlertCircle size={16} className="shrink-0" />
@@ -1096,26 +1212,9 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
 
             {(!isAlreadyLoggedIn || loading) ? (
               <>
-                {/* Signup: name + email + password all on one screen. */}
-                {isRegister && (
-                  <div className="space-y-2">
-                    <label className="text-[11px] font-bold text-text-secondary uppercase tracking-wider ml-1 flex items-center gap-2">
-                      <User size={10} />
-                      {t('Your Name')}
-                    </label>
-                    <input
-                      type="text"
-                      autoComplete="name"
-                      required
-                      className="w-full bg-bg-main rounded-md px-4 py-3 outline-none text-main font-bold border border-border-color focus:border-accent-color transition-all"
-                      value={name}
-                      onChange={e => setName(e.target.value)}
-                      placeholder={t('Ex: Ion, Maria...')}
-                    />
-                  </div>
-                )}
-
-                <div className="space-y-2">
+                {/* Order: email, password, then name + phone side-by-side —
+                    keeps signup to one screen on mobile with no scrolling. */}
+                <div className="space-y-1.5">
                   <label className="text-[11px] font-bold text-text-secondary uppercase tracking-wider ml-1 flex items-center gap-2">
                     <Mail size={10} />
                     {t('User Email')}
@@ -1130,13 +1229,13 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
                     autoCorrect="off"
                     spellCheck={false}
                     required
-                    className="w-full bg-bg-main rounded-md px-4 py-3 outline-none text-main font-bold border border-border-color focus:border-accent-color transition-all"
+                    className="w-full bg-bg-main rounded-md px-4 py-2.5 outline-none text-main font-bold border border-border-color focus:border-accent-color transition-all"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                   />
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <label className="text-[11px] font-bold text-text-secondary uppercase tracking-wider ml-1 flex items-center gap-2">
                     <Lock size={10} />
                     {t('Password')}
@@ -1152,7 +1251,7 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
                       spellCheck={false}
                       required
                       minLength={isRegister ? MIN_PASSWORD_LENGTH : undefined}
-                      className="w-full bg-bg-main rounded-md px-4 py-3 outline-none text-main font-bold border border-border-color focus:border-accent-color transition-all pr-12"
+                      className="w-full bg-bg-main rounded-md px-4 py-2.5 outline-none text-main font-bold border border-border-color focus:border-accent-color transition-all pr-12"
                       value={password}
                       onChange={e => setPassword(e.target.value)}
                     />
@@ -1166,11 +1265,46 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
                     </button>
                   </div>
                   {isRegister && (
-                    <p className="text-[10px] font-bold text-text-secondary ml-1 pt-1">
+                    <p className="text-[10px] font-bold text-text-secondary ml-1 pt-0.5">
                       {t("At least 6 characters.")}
                     </p>
                   )}
                 </div>
+
+                {isRegister && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-bold text-text-secondary uppercase tracking-wider ml-1 flex items-center gap-2">
+                        <User size={10} />
+                        {t('Your Name')}
+                      </label>
+                      <input
+                        type="text"
+                        autoComplete="name"
+                        required
+                        className="w-full bg-bg-main rounded-md px-3 py-2.5 outline-none text-main font-bold border border-border-color focus:border-accent-color transition-all"
+                        value={name}
+                        onChange={e => setName(e.target.value)}
+                        placeholder={t('Ex: Ion, Maria...')}
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-bold text-text-secondary uppercase tracking-wider ml-1 flex items-center gap-2">
+                        <Phone size={10} />
+                        {t('Phone (optional)')}
+                      </label>
+                      <input
+                        type="tel"
+                        autoComplete="tel"
+                        className="w-full bg-bg-main rounded-md px-3 py-2.5 outline-none text-main font-bold border border-border-color focus:border-accent-color transition-all"
+                        value={phone}
+                        onChange={e => setPhone(e.target.value)}
+                        placeholder="07XX XXX XXX"
+                      />
+                    </div>
+                  </div>
+                )}
 
                 {!isRegister && (
                   <div className="flex items-center justify-between gap-3 px-1">
@@ -1198,11 +1332,11 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
               </>
             ) : null}
 
-            <div className="pt-1 space-y-4">
+            <div className={isRegister ? "pt-1 space-y-2.5" : "pt-1 space-y-4"}>
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full stihl-button py-4 rounded-md font-bold uppercase tracking-wider text-xs shadow-md active:scale-95 transition-all disabled:opacity-50 text-white flex items-center justify-center gap-2"
+                className={`w-full stihl-button rounded-md font-bold uppercase tracking-wider text-xs shadow-md active:scale-95 transition-all disabled:opacity-50 text-white flex items-center justify-center gap-2 ${isRegister ? 'py-3' : 'py-4'}`}
               >
                 {loading && <Loader2 size={16} className="animate-spin" />}
                 {loading ? t('Processing...') : isAlreadyLoggedIn ? t('Finalize Setup') : isRegister ? t('Create account') : t('Sign in')}
@@ -1226,7 +1360,7 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
                     type="button"
                     onClick={handleGoogleSignIn}
                     disabled={loading || googleLoading}
-                    className="w-full flex items-center justify-center gap-3 py-3.5 rounded-md border border-border-color bg-bg-main hover:bg-bg-card font-bold text-xs uppercase tracking-wider text-main transition-all active:scale-95 disabled:opacity-50"
+                    className={`w-full flex items-center justify-center gap-3 rounded-md border border-border-color bg-bg-main hover:bg-bg-card font-bold text-xs uppercase tracking-wider text-main transition-all active:scale-95 disabled:opacity-50 ${isRegister ? 'py-2.5' : 'py-3.5'}`}
                   >
                     {googleLoading ? <Loader2 size={18} className="animate-spin" /> : <GoogleIcon size={18} />}
                     {t('Continue with Google')}
@@ -1235,17 +1369,10 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
               )}
             </div>
 
-            {!isAlreadyLoggedIn ? (
-              <div className="text-center pt-1">
-                <button
-                  type="button"
-                  onClick={() => { setIsRegister(!isRegister); setError(''); setInfo(''); setStatusMsg(''); }}
-                  className="text-[11px] font-bold text-text-secondary uppercase tracking-wider hover:text-main transition-colors py-2"
-                >
-                  {isRegister ? t('Already have an account? Login') : t('New here? Create account')}
-                </button>
-              </div>
-            ) : (
+            {/* Redundant now that the Sign in/Sign up pill toggle at the top
+                covers switching modes — this used to be the only way to
+                switch before that toggle existed. */}
+            {isAlreadyLoggedIn && (
               <div className="text-center pt-1">
                 <button type="button" onClick={handleForceLogout} className="text-[11px] font-bold text-red-500 uppercase tracking-wider hover:underline">
                   {t('Not you? Logout')}

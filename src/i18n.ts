@@ -31,8 +31,26 @@ i18n
     resources,
     fallbackLng: 'ro',
     interpolation: {
-      escapeValue: false 
+      escapeValue: false
     }
   });
+
+// LanguageDetector's own default caches (localStorage/cookie) mean a
+// returning visitor's — or anyone who's explicitly used the in-app
+// switcher's — choice is respected automatically and this block never runs
+// for them. First-time visitors with nothing cached get IP-geo instead of
+// the detector's browser-language guess: RO in Romania, EN everywhere
+// else. /api/geo reads Vercel's edge-injected country header, so this is a
+// same-origin fetch with no external service/API key; it silently no-ops
+// (leaving the detector's guess in place) in local dev, where there's no
+// Vercel edge in front of the request to set that header.
+if (typeof window !== 'undefined' && !localStorage.getItem('i18nextLng')) {
+  fetch('/api/geo')
+    .then(res => res.json())
+    .then(({ country }: { country: string | null }) => {
+      i18n.changeLanguage(country === 'RO' ? 'ro' : 'en');
+    })
+    .catch(() => { /* geo lookup unavailable — keep the detector's guess */ });
+}
 
 export default i18n;
