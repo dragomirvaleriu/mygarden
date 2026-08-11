@@ -1,4 +1,45 @@
-import { adminAuth, sendTransactionalEmail } from "../_lib/authAdmin";
+import { initializeApp, getApps, cert } from "firebase-admin/app";
+import { getAuth } from "firebase-admin/auth";
+import nodemailer from "nodemailer";
+import firebaseConfig from "../../firebase-applet-config.json";
+
+// Self-contained — see send-verification-code.ts for why (cross-file
+// api/_lib import 500'd in production with ERR_MODULE_NOT_FOUND).
+function getAdminApp() {
+  if (getApps().length) return getApps()[0];
+  const key = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+  if (key) {
+    return initializeApp({ credential: cert(JSON.parse(key)), projectId: firebaseConfig.projectId });
+  }
+  console.warn("[api] FIREBASE_SERVICE_ACCOUNT_KEY not set — Admin SDK calls will fail.");
+  return initializeApp({ projectId: firebaseConfig.projectId });
+}
+const adminAuth = getAuth(getAdminApp());
+
+const VERIFIED_SENDER = { name: 'My Garden', email: 'dragomirvaleriu@gmail.com' };
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || "smtp-relay.brevo.com",
+  port: Number(process.env.SMTP_PORT) || 587,
+  secure: false,
+  auth: {
+    user: process.env.SMTP_USER || "a39e5c001@smtp-brevo.com",
+    pass: process.env.SMTP_PASS || "vh9H0czrXESJdUja",
+  },
+});
+
+async function sendTransactionalEmail(to: string, subject: string, html: string) {
+  const apiKey = process.env.BREVO_API_KEY || process.env.VITE_BREVO_API_KEY;
+  if (apiKey) {
+    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: { 'accept': 'application/json', 'api-key': apiKey, 'content-type': 'application/json' },
+      body: JSON.stringify({ sender: VERIFIED_SENDER, to: [{ email: to }], subject, htmlContent: html })
+    });
+    if (!res.ok) throw new Error(`Brevo API error: ${res.status} - ${await res.text().catch(() => '')}`);
+    return;
+  }
+  await transporter.sendMail({ from: process.env.SMTP_FROM || `"${VERIFIED_SENDER.name}" <${VERIFIED_SENDER.email}>`, to, subject, html });
+}
 
 // Password reset via our own verified Brevo sender instead of Firebase
 // Auth's built-in email, which sends from a generic *.firebaseapp.com
@@ -15,16 +56,9 @@ export default async function handler(req: any, res: any) {
     return res.status(400).json({ error: "Email required" });
   }
 
-  // Same message whether or not the account exists, so this can't be used
-  // to probe which emails are registered.
   const genericResponse = { sent: true };
 
   try {
-    // handleCodeInApp routes the link to our own #reset-password screen
-    // (pages/ResetPassword.tsx) instead of Firebase's default hosted page —
-    // Firebase appends mode/oobCode/apiKey after the hash fragment we give
-    // it here, so they land in location.hash, same pattern the app already
-    // uses for invite/purchase links.
     const actionCodeSettings = {
       url: `${process.env.APP_URL || 'https://gradinamea.vercel.app'}/#reset-password`,
       handleCodeInApp: true
@@ -43,7 +77,6 @@ export default async function handler(req: any, res: any) {
       `
     );
   } catch (err: any) {
-    // auth/user-not-found is expected and intentionally silent (privacy).
     if (err?.code !== 'auth/user-not-found') {
       console.error("Send password reset error:", err);
     }

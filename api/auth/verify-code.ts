@@ -1,4 +1,46 @@
-import { requireAuth, getDbAdmin, VERIFICATION_MAX_ATTEMPTS } from "../_lib/authAdmin";
+import { initializeApp, getApps, cert } from "firebase-admin/app";
+import { getAuth } from "firebase-admin/auth";
+import { getFirestore } from "firebase-admin/firestore";
+import firebaseConfig from "../../firebase-applet-config.json";
+
+// Self-contained — see send-verification-code.ts for why (cross-file
+// api/_lib import 500'd in production with ERR_MODULE_NOT_FOUND).
+function getAdminApp() {
+  if (getApps().length) return getApps()[0];
+  const key = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+  if (key) {
+    return initializeApp({ credential: cert(JSON.parse(key)), projectId: firebaseConfig.projectId });
+  }
+  console.warn("[api] FIREBASE_SERVICE_ACCOUNT_KEY not set — Admin SDK calls will fail.");
+  return initializeApp({ projectId: firebaseConfig.projectId });
+}
+const adminApp = getAdminApp();
+const adminAuth = getAuth(adminApp);
+
+function getDbAdmin() {
+  try {
+    return firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== '(default)'
+      ? getFirestore(adminApp, firebaseConfig.firestoreDatabaseId)
+      : getFirestore(adminApp);
+  } catch (e) {
+    console.error("[api] Could not get Firestore Admin instance:", e);
+    return null;
+  }
+}
+
+async function requireAuth(req: any): Promise<{ uid: string; email: string | null } | null> {
+  const authHeader = req.headers?.authorization;
+  const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+  if (!token) return null;
+  try {
+    const decoded = await adminAuth.verifyIdToken(token);
+    return { uid: decoded.uid, email: decoded.email || null };
+  } catch {
+    return null;
+  }
+}
+
+const VERIFICATION_MAX_ATTEMPTS = 5;
 
 // Checks a submitted code against the pending verification doc created by
 // send-verification-code.ts. Caps attempts and enforces expiry server-side
