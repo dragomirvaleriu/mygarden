@@ -26,3 +26,6 @@ dist-ssr
 .claude/settings.local.json
 .vercel
 .env*
+
+# Regenerated fresh every build by scripts/generate-academy-manifest.ts
+content/academy/manifest.json

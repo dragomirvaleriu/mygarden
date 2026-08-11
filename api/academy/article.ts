@@ -3,16 +3,28 @@ import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 import { promises as fs } from "fs";
 import path from "path";
-import { ARTICLES_RO, ARTICLES_EN } from "../../src/data/academyContent";
 
 // Self-contained Admin SDK init — see api/auth/revoke-sessions.ts for why
 // (cross-file api/_lib imports and JSON config imports both 500'd in
 // production; duplicating this ~15-line init is more reliable than fighting
-// the bundler a third time). academyContent.ts itself has zero imports of
-// its own, so pulling article metadata from src/data/ is safe to import
-// directly — unlike the _lib case, there's nothing here for Vercel's
-// per-function bundler to lose track of.
+// the bundler a third time).
 const FIREBASE_PROJECT_ID = "mygarden-hq";
+
+// Article metadata lookup: read from a plain JSON file on disk instead of
+// importing src/data/academyContent.ts directly — that import 500'd in
+// production with ERR_MODULE_NOT_FOUND (Vercel's per-function bundler
+// doesn't trace it, same class of failure as the api/_lib case above). The
+// JSON is regenerated fresh on every build by scripts/generate-academy-
+// manifest.ts (see package.json's prebuild step) and ships with this
+// function via vercel.json's functions.includeFiles.
+interface ArticleManifestEntry { id: string; contentPath: string; isPremium: boolean; }
+let manifestCache: ArticleManifestEntry[] | null = null;
+async function getManifest(): Promise<ArticleManifestEntry[]> {
+  if (manifestCache) return manifestCache;
+  const raw = await fs.readFile(path.join(process.cwd(), 'content/academy/manifest.json'), 'utf-8');
+  manifestCache = JSON.parse(raw);
+  return manifestCache!;
+}
 
 function getAdminApp() {
   if (getApps().length) return getApps()[0];
@@ -45,8 +57,8 @@ export default async function handler(req: any, res: any) {
     return res.status(400).json({ error: "Missing article ID" });
   }
 
-  const allArticles = [...ARTICLES_RO, ...ARTICLES_EN];
-  const article = allArticles.find(a => a.id === id);
+  const manifest = await getManifest();
+  const article = manifest.find(a => a.id === id);
   if (!article) {
     return res.status(404).json({ error: "Article not found" });
   }
