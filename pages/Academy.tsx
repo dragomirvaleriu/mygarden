@@ -566,6 +566,14 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
         if (res.status === 403) { toast.error(t('Acces refuzat: Necesită abonament PRO')); setPaywallArticle(article); return; }
         throw new Error(`Failed to load article: ${res.statusText}`);
       }
+      // A misconfigured/missing API route can 200 with the SPA's index.html
+      // (Vercel's catch-all rewrite) instead of a real 404 — guard on
+      // Content-Type so that renders as the "unavailable" fallback instead
+      // of dumping raw page markup into the article body.
+      const contentType = res.headers.get('content-type') || '';
+      if (!contentType.includes('text/plain')) {
+        throw new Error('Unexpected response content-type: ' + contentType);
+      }
       const text = await res.text();
       setArticleContent(text);
       setOpenArticle(article);
