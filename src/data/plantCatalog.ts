@@ -9768,6 +9768,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
   sizeSpacing: 'Tufă de 30-60 cm înălțime, plantată la 35-40 cm distanță în rând (conform documentelor Gardenix).',
   pruningTime: 'Tăiere la nivelul solului toamna târziu, după ce au trecut toate florile, sau primăvara devreme dacă tulpinile au fost lăsate pentru protecție iarna.',
   soilPh: 'Neutru spre slab acid, 6,2-6,5 (conform documentelor Gardenix).',
+images: ['images/enciclopedie/crizantema_chrysanthemum-morifolium_1.jpg'],
 },
 
 // Source: Drive gardenix "Gerbera.pdf"
@@ -9804,6 +9805,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
   sizeSpacing: 'Plantă tufoasă cu rizom, rădăcini adânci (pot ajunge la 80 cm); florile individuale până la 20 cm diametru; plantare la 25–30 cm distanță (conform documentelor Gardenix).',
   pruningTime: 'Nu se taie/ciupește propriu-zis — se recomandă doar îndepărtarea florilor ofilite; înflorește predominant aprilie–iunie, mai abundent în al doilea an de vegetație (conform documentelor Gardenix).',
   soilPh: 'Amestec de pământ de țelină, mraniță, turbă și nisip; udare moderată (planta nu suportă exces de umezeală în substrat); pH ușor acid 5–6,5, raport NPK recomandat 2-0,8-1,5 (conform documentelor Gardenix).',
+images: ['images/enciclopedie/gerbera_gerbera-jamesonii_1.jpg'],
 },
 
 // Source: Drive gardenix "Camelia.pdf"
@@ -9838,6 +9840,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
   matureSize: 'Poate ajunge la aproximativ 2 m în condiții bune, dar crește lent și rămâne mult timp la 60-100 cm în ghiveci (conform documentelor Gardenix).',
   tempHumidity: 'Preferă camere răcoroase, ferite de surse de căldură, cu umiditate atmosferică ridicată; în repaus (toamnă-iarnă), 7-10°C sunt ideale pentru înflorire abundentă (conform documentelor Gardenix).',
   repotting: 'La 3-5 ani, primăvara, într-un ghiveci puțin mai mare; anual se schimbă doar stratul de sol de la suprafață, pe 3-4 cm (conform documentelor Gardenix).',
+images: ['images/enciclopedie/camelia_camellia-japonica_1.jpg'],
 },
 
 // Source: Drive gardenix "Kalanchoe.pdf" (+ Kalanchoe 2/3, var 3 — same profile)
@@ -9872,6 +9875,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
   matureSize: 'Rămâne compactă, de obicei sub 30-40 cm înălțime, dacă e ciupită regulat (conform documentelor Gardenix).',
   tempHumidity: 'Temperatura camerei, 15-20°C în creștere, minim 10°C iarna; se adaptează bine la aerul uscat din apartamente (conform documentelor Gardenix).',
   repotting: 'Anual, primăvara, într-un ghiveci puțin mai mare, cu substrat proaspăt pentru suculente.',
+images: ['images/enciclopedie/kalanchoe_kalanchoe-blossfeldiana_1.jpg'],
 },
 
 // Source: Drive gardenix "Craciunelul.pdf"
@@ -9906,6 +9910,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
   matureSize: 'Tufă cazătoare de 20-30 cm, potrivită pentru ghivece suspendate.',
   tempHumidity: '12-22°C în perioada de înflorire; minim 5°C noaptea în repaus; tolerează bine aerul uscat de apartament (conform documentelor Gardenix).',
   repotting: 'La 2-3 ani, doar după înflorire, în ghiveci puțin mai mare — preferă să fie ușor înghesuit la rădăcină.',
+images: ['images/enciclopedie/craciunelul_schlumbergera-truncata_1.jpg'],
 },
 
 // Source: Drive gardenix "Cala.pdf" (+ "CALA 2.pdf", "Cala 3.pdf" — same profile)
@@ -9940,6 +9945,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
   matureSize: 'Frunze de până la 45 cm lungime și 25 cm lățime, pe pețioli cărnoși lungi (conform documentelor Gardenix).',
   tempHumidity: '10°C iarna (minim 5°C), urcând treptat la 16°C spre înflorire; umiditate atmosferică ridicată, cu pulverizări pe vreme uscată (conform documentelor Gardenix).',
   repotting: 'Anual, primăvara, în ghivece cu 3-5 cm mai mari, pe măsură ce rizomii se dezvoltă (conform documentelor Gardenix).',
+images: ['images/enciclopedie/cala-zantedeschia_zantedeschia-aethiopica_1.jpg'],
 },
 
 // Source: Drive gardenix "Gardenia.pdf"
@@ -9975,6 +9981,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
   matureSize: 'Arbust compact de 60-100 cm în ghiveci, cu creștere lentă.',
   tempHumidity: 'Cald și constant, 18-22°C, cu umiditate atmosferică ridicată — aerul uscat de calorifer e principalul motiv pentru care bobocii cad fără să se deschidă.',
   repotting: 'La 2 ani, primăvara, în substrat acid proaspăt.',
+images: ['images/enciclopedie/gardenia-jasminoides_gardenia-jasminoides_1.jpg'],
 },
 
 // Source: Drive gardenix "Liliacul.pdf"
@@ -10013,6 +10020,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
   sizeSpacing: 'Arbust/arboraș de 2-4 m înălțime, plantat la 1,5-2 m distanță pentru gard viu sau grupuri.',
   pruningTime: 'Imediat după înflorire (mai-iunie) — o tăiere mai târzie elimină mugurii florali formați pentru anul următor.',
   soilPh: 'Neutru spre ușor alcalin, 6,5-7,5.',
+images: ['images/enciclopedie/liliac-comun_syringa-vulgaris_1.jpg'],
 },
 
 // Source: Drive gardenix "Leandrul.pdf"
@@ -10047,6 +10055,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
   matureSize: 'În natură ajunge la 4-6 m, dar ca plantă de interior/în ghiveci rămâne de obicei la 1-2 m (conform documentelor Gardenix).',
   tempHumidity: 'Preferă aproximativ 18°C și lumină puternică; vara poate sta afară la soare, dar se aduce la adăpost înainte de îngheț.',
   repotting: 'La 2 ani, primăvara, în ghiveci puțin mai mare, cu substrat proaspăt.',
+images: ['images/enciclopedie/leandru_nerium-oleander_1.jpg'],
 },
 
 // Source: Drive gardenix "Codiaeum - Croton.pdf"
@@ -10081,6 +10090,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
   matureSize: 'Arbust de până la 1 m în ghiveci, cu creștere moderată (conform documentelor Gardenix).',
   tempHumidity: 'Minim 15°C iarna, ideal 18°C tot anul, cu umiditate atmosferică ridicată și fără curenți de aer (conform documentelor Gardenix).',
   repotting: 'Anual, în februarie, când rădăcinile umplu ghiveciul (conform documentelor Gardenix).',
+images: ['images/enciclopedie/codiaeum-croton_codiaeum-variegatum_1.jpg'],
 },
 
 // Source: Drive gardenix "Primula.pdf"
@@ -10115,6 +10125,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
   matureSize: 'Rozetă compactă de 15-20 cm înălțime.',
   tempHumidity: 'Sub 15°C ideal, în cameră luminoasă și răcoroasă — căldura scurtează dramatic durata florilor (conform documentelor Gardenix).',
   repotting: 'Toamna, când planta e replantată în amestecul proaspăt de pământ de frunze (conform documentelor Gardenix).',
+images: ['images/enciclopedie/primula_primula-vulgaris-hibrizi-de-sera_1.jpg'],
 },
 
 // Source: Drive gardenix "Calceolaria.pdf"
@@ -10149,6 +10160,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
   matureSize: 'Plantă mică, compactă, de 20-30 cm.',
   tempHumidity: '10-12°C ideal; peste 15°C bobocii nu se mai deschid (conform documentelor Gardenix).',
   repotting: 'Nu se repotează — plantă de sezon, aruncată după înflorire (conform documentelor Gardenix).',
+images: ['images/enciclopedie/calceolaria_calceolaria-herbeohybrida_1.jpg'],
 },
 
 // Source: Drive gardenix "C o l o c a s i a.pdf"
@@ -10183,6 +10195,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
   matureSize: 'De la 50 cm până la 2 m, în funcție de varietate (conform documentelor Gardenix).',
   tempHumidity: 'Climă caldă și umedă; iarna nu suportă sub 8°C, trebuie mutată la adăpost (conform documentelor Gardenix).',
   repotting: 'Primăvara, în vas mai mare — crește foarte rapid și umple ghiveciul repede (conform documentelor Gardenix).',
+images: ['images/enciclopedie/colocasia_colocasia-esculenta_1.jpg'],
 },
 
 // Source: Drive gardenix "AGAVA.pdf"
@@ -10217,6 +10230,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
   matureSize: 'Rozetă care poate ajunge la 1-1,5 m diametru la maturitate, în ghiveci mare (conform documentelor Gardenix).',
   tempHumidity: 'Nu suportă sub 10°C iarna; se adaptează bine la aerul uscat de apartament (conform documentelor Gardenix).',
   repotting: 'La 2-3 ani, în ghiveci mai mare, cu substrat proaspăt bine drenat (conform documentelor Gardenix).',
+images: ['images/enciclopedie/agava_agave-americana_1.jpg'],
 },
 
 // Source: Drive gardenix "Ananas.pdf"
@@ -10251,6 +10265,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
   matureSize: 'Rozetă de 40-60 cm diametru.',
   tempHumidity: 'Căldură constantă, minim 18°C, cu umiditate atmosferică moderată spre ridicată (conform documentelor Gardenix).',
   repotting: 'La 2 ani, în ghiveci puțin mai mare, cu substrat proaspăt.',
+images: ['images/enciclopedie/ananas-ornamental_ananas-comosus-var-variegatus_1.jpg'],
 },
 
 // Source: Drive gardenix "BILLBERGIA.pdf"
@@ -10289,6 +10304,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
   matureSize: 'Rozetă compactă de 30-40 cm.',
   tempHumidity: 'Temperatura camerei, tolerantă la aer relativ uscat — mai ușor de mulțumit decât alte bromeliacee.',
   repotting: 'Rareori necesar — se înlocuiește planta-mamă cu puieții separați, mai degrabă decât repotare clasică.',
+images: ['images/enciclopedie/billbergia_billbergia-nutans_1.jpg'],
 },
 
 // Source: Drive gardenix "Azaleea.pdf" (main) + "Azalee.pdf" (forum Q&A, corroborating care notes)
@@ -10327,6 +10343,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
   matureSize: 'Tufă compactă de 30-50 cm în ghiveci, deși poate ajunge la 3 m în locurile de origine (conform documentelor Gardenix).',
   tempHumidity: '22-25°C ziua, 16-18°C noaptea; umiditate atmosferică ridicată, cu pulverizări dacă aerul e uscat (conform documentelor Gardenix).',
   repotting: 'După trecerea florilor, în ghivece cu 2-5 cm mai mari — se evită vasele prea mari sau prea înalte (conform documentelor Gardenix).',
+images: ['images/enciclopedie/azaleea_rhododendron-simsii_1.jpg'],
 },
 
 // Source: Drive gardenix "Hibiscus - trandafirul chinezesc.pdf" (explicitly titled
@@ -10370,6 +10387,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
   matureSize: 'Arbust care poate ajunge la 2 m, dar se menține de obicei la 60-120 cm în ghiveci prin tăieri regulate (conform documentelor Gardenix).',
   tempHumidity: 'Optim în jur de 20°C; tolerează bine până la 30°C+ dacă e umbrit parțial; iarna nu trebuie să scadă sub 10-15°C (conform documentelor Gardenix).',
   repotting: 'La nevoie, când rădăcinile umplu ghiveciul — de obicei la 1-2 ani, primăvara.',
+images: ['images/enciclopedie/hibiscus-rosa-sinensis_hibiscus-rosa-sinensis_1.jpg'],
 },
 ];
 
