@@ -353,6 +353,9 @@ export const plantCatalog: PlantCatalogEntry[] = [
     { name: 'Miniature Yellow', description: 'Trandafir pitic cu flori galbene, potrivit pentru ghiveci sau bordură (conform docaperene.ro).' },
     { name: '\'Sea Foam\'', description: 'Trandafir pitic cu flori albe, port compact (conform docaperene.ro).' },
     { name: 'Orange IMP', description: 'Trandafir pitic cu flori portocalii intense (conform docaperene.ro).' },
+    { name: '\'The Fairy\' Red', description: 'Variantă roșie a soiului The Fairy, aceeași creștere târâtoare (conform docaperene.ro).' },
+    { name: '\'The Fairy Tricolor\'', description: 'Flori cu nuanțe combinate, aceeași creștere târâtoare ca The Fairy (conform docaperene.ro).' },
+    { name: '\'Fairy Dance\'', description: 'Trandafir târâtor, flori roz în ciorchini denși (conform docaperene.ro).' },
   ],
   },
   {
@@ -623,6 +626,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     { name: '\'Leuchtfeuer\'', description: 'Una dintre cele mai stabile nuanțe de roșu-intens din categoria macrophylla (conform docaperene.ro).' },
     { name: '\'Little Blue/Pink\'', description: 'Soi compact — culoarea florilor variază între albastru și roz în funcție de pH-ul solului (conform docaperene.ro).' },
     { name: '\'White Butterfly\'', description: 'Flori albe, port compact (conform docaperene.ro).' },
+    { name: '\'Red Baron\'', description: 'Flori roșu-intens, una dintre cele mai căutate nuanțe de roșu la macrophylla (conform docaperene.ro).' },
   ],
   },
   {
@@ -1486,6 +1490,9 @@ export const plantCatalog: PlantCatalogEntry[] = [
   pruningTime: "Spring/early summer; hard prune old wood readily regenerates (conform cunoștințelor horticole generale)",
   soilPh: "Prefers slightly acidic to neutral (pH 6–7); tolerates 5.0–7.5 (conform cunoștințelor horticole generale)",
     images: ['images/enciclopedie/iedera_hedera-helix_1.jpg'],
+  cultivars: [
+    { name: '\'Glacier\'', description: 'Frunziș variegat verde-argintiu cu margine albă, mai decorativ decât forma verde simplă (conform docaperene.ro).' },
+  ],
   },
   {
     id: 'pachisandra',
@@ -1550,6 +1557,9 @@ export const plantCatalog: PlantCatalogEntry[] = [
   pruningTime: "Spring before dormancy ends; can mow at highest setting (conform cunoștințelor horticole generale)",
   soilPh: "Tolerates broad range; well-draining; no specific pH preference (conform cunoștințelor horticole generale)",
     images: ['images/enciclopedie/saschiu_vinca-minor_1.jpg'],
+  cultivars: [
+    { name: '\'Alba\'', description: 'Flori albe în loc de albastru-violet, restul caracteristicilor identice cu specia (conform docaperene.ro).' },
+  ],
   },
   {
     id: 'iarba-grasa',
@@ -2012,6 +2022,11 @@ export const plantCatalog: PlantCatalogEntry[] = [
     pruningTime: 'Fără tăieri — doar îndepărtarea tijelor florale ofilite și curățarea frunzișului uscat toamna, la sfârșitul sezonului.',
     soilPh: 'Sol bogat în humus, ușor acid spre neutru (pH 6-7), care reține umezeala fără să bălească.',
     images: ['images/enciclopedie/hosta_hosta-spp_1.jpg'],
+  cultivars: [
+    { name: '\'Albomarginata\'', description: 'Frunze verzi cu margine albă, contrast puternic (conform docaperene.ro).' },
+    { name: '\'Undulata Variegata\'', description: 'Frunze ondulate, verde-intens cu margine crem — preferă sol umed (conform docaperene.ro).' },
+    { name: 'Hosta plantaginea', description: 'Specie cu flori mari, albe, parfumate — neobișnuit pentru gen, mai intens seara (conform docaperene.ro).' },
+  ],
   },
   {
     id: 'panseluta',
@@ -2319,6 +2334,9 @@ export const plantCatalog: PlantCatalogEntry[] = [
     pruningTime: 'Tundere de 1-2 ori pe an, vara (iunie-august); NU se taie în lemn bătrân, desfrunzit — tuia nu regenerează lăstari noi din lemn vechi, doar din porțiuni încă verzi.',
     soilPh: 'Sol neutru spre slab alcalin, pH 6,0-7,5; tolerează bine și solurile calcaroase sau mai grele.',
     images: ['images/enciclopedie/thuja-occidentalis_thuja-occidentalis_1.jpg'],
+  cultivars: [
+    { name: '\'Aurea Nana\'', description: 'Formă pitică, globulară, cu frunziș auriu (conform docaperene.ro).' },
+  ],
   },
   {
     id: 'picea-pungens',
@@ -2383,6 +2401,9 @@ export const plantCatalog: PlantCatalogEntry[] = [
     pruningTime: 'Suportă foarte bine tăierile severe, inclusiv în lemn bătrân — una din puținele conifere care regenerează lăstari noi din lemn vechi, desfrunzit; tundere de 1-2 ori pe an, vara.',
     soilPh: 'Sol fertil, bine drenat, neutru spre alcalin, pH 6-7,5; tolerează și solurile ceva mai grele.',
     images: ['images/enciclopedie/taxus-baccata_taxus-baccata_1.jpg'],
+  cultivars: [
+    { name: '\'Summergold\'', description: 'Frunziș variegat auriu-verde, foarte decorativ (conform docaperene.ro).' },
+  ],
   },
   {
     id: 'juniperus-communis',
@@ -2415,6 +2436,9 @@ export const plantCatalog: PlantCatalogEntry[] = [
     pruningTime: 'Rareori necesară — eventual o tundere ușoară de formă; ca la majoritatea coniferelor cu frunziș solzos, nu regenerează din lemn bătrân, desfrunzit.',
     soilPh: 'Se adaptează la aproape orice pH, inclusiv soluri sărace, acide sau bătătorite.',
     images: ['images/enciclopedie/juniperus-communis_juniperus-communis_1.jpg'],
+  cultivars: [
+    { name: '\'Gold Cone\'', description: 'Port columnar îngust, frunziș auriu — accent vertical în grădină (conform docaperene.ro).' },
+  ],
   },
   {
     id: 'pinus-mugo',
@@ -2447,6 +2471,9 @@ export const plantCatalog: PlantCatalogEntry[] = [
     pruningTime: 'Nu necesită tundere; eventual scurtarea lăstarilor noi (',
     soilPh: 'Soluri sărace, acide, chiar pietroase; tolerează și substrat calcaros.',
     images: ['images/enciclopedie/pinus-mugo_pinus-mugo_1.jpg'],
+  cultivars: [
+    { name: '\'Pumilio\'', description: 'Formă pitică, foarte compactă, potrivită pentru grădini de stâncă (conform docaperene.ro).' },
+  ],
   },
   {
     id: 'abies-nordmanniana',
@@ -2839,6 +2866,9 @@ export const plantCatalog: PlantCatalogEntry[] = [
     pruningTime: 'După înflorire (vara) pentru soiurile care înfloresc pe lemn vechi, sau primăvara devreme pentru soiurile care înfloresc pe lăstari noi (majoritatea soiurilor moderne japonica) — verifică soiul specific.',
     soilPh: 'Nepretențioasă — sol obișnuit, bine drenat, neutru (pH 6-7,5).',
     images: ['images/enciclopedie/spiraea-japonica_spiraea-japonica_1.jpg'],
+  cultivars: [
+    { name: '\'Dart\'s Red\'', description: 'Flori roșu-intens, port compact (conform docaperene.ro).' },
+  ],
   },
   {
     id: 'wisteria-sinensis',
@@ -4282,6 +4312,9 @@ export const plantCatalog: PlantCatalogEntry[] = [
   pruningTime: "Remove spent flower spikes after bloom; deadheading extends foliage display; divide in spring every 3–4 years. (conform cunoștințelor horticole generale)",
   soilPh: "Slightly acidic pH preferred; moist, well-drained soil amended with organic matter; dislikes heavy clay. (conform sursei WebSearch)",
     images: ['images/enciclopedie/heuchera-spp_heuchera-spp_1.jpg'],
+  cultivars: [
+    { name: 'Heuchera sanguinea \'Ruby Bells\'', description: 'Flori roșu-rubiniu pe tije înalte, frunziș verde marmorat (conform docaperene.ro).' },
+  ],
   },
   {
     id: 'coleus-blumei',
@@ -4449,6 +4482,10 @@ export const plantCatalog: PlantCatalogEntry[] = [
     pruningTime: 'Tundere de 2-3 ori pe an (mai-august) — creșterea foarte rapidă cere control constant; NU se taie în lemn bătrân, fără frunze verzi — spre deosebire de tisă, leilandii nu regenerează de acolo.',
     soilPh: 'Sol nisipos, bogat, ușor acid; rădăcină superficială.',
     images: ['images/enciclopedie/cupressocyparis-leylandii_cupressocyparis-x-leylandii_1.jpg'],
+  cultivars: [
+    { name: '\'Green Rocket\'', description: 'Creștere rapidă, columnară, frunziș verde-intens — ideal pentru gard viu dens (conform docaperene.ro).' },
+    { name: '\'Gold Rider\'', description: 'Frunziș auriu-verzui, aceeași creștere rapidă ca specia de bază (conform docaperene.ro).' },
+  ],
   },
   {
     id: 'larix-decidua',
@@ -4619,6 +4656,9 @@ export const plantCatalog: PlantCatalogEntry[] = [
     pruningTime: 'Tundere ușoară vara pentru cultivarurile compacte folosite ca gard viu; evită tăierea în lemn bătrân, desfrunzit.',
     soilPh: 'Sol profund, fertil, jilav-umed, ușor acid, pH 5,5-6,5.',
     images: ['images/enciclopedie/chamaecyparis-lawsoniana_chamaecyparis-lawsoniana_1.jpg'],
+  cultivars: [
+    { name: '\'Ellwoodii\'', description: 'Cel mai popular cultivar pitic, port columnar dens, frunziș albăstrui-verde (conform docaperene.ro).' },
+  ],
   },
   {
     id: 'chamaecyparis-pisifera',
@@ -4755,6 +4795,10 @@ export const plantCatalog: PlantCatalogEntry[] = [
     pruningTime: 'Rareori necesară — doar tăieri ușoare de corecție, evitând lemnul bătrân, desfrunzit.',
     soilPh: 'Se adaptează la o gamă largă de pH, inclusiv soluri sărace.',
     images: ['images/enciclopedie/juniperus-sabina_juniperus-sabina_1.jpg'],
+  cultivars: [
+    { name: '\'Rockery Gem\'', description: 'Formă târâtoare compactă, potrivită pentru grădini de stâncă (conform docaperene.ro).' },
+    { name: '\'Fermine\'', description: 'Frunziș verde-închis, port dens, târâtor (conform docaperene.ro).' },
+  ],
   },
   {
     id: 'picea-abies',
@@ -5948,6 +5992,10 @@ export const plantCatalog: PlantCatalogEntry[] = [
     pruningTime: 'Tundere la mijlocul primăverii pentru gard viu (arbust cu frunze permanente), cu o eventuală retușare la sfârșitul verii.',
     soilPh: 'Nepretențios — sol bine drenat, neutru spre ușor acid (pH 6-7), tolerează și sol argilos.',
     images: ['images/enciclopedie/prunus-laurocerasus_prunus-laurocerasus_1.jpg'],
+  cultivars: [
+    { name: '\'Novita\'', description: 'Frunze mari, lucioase, creștere viguroasă — popular pentru garduri vii (conform docaperene.ro).' },
+    { name: '\'Genolia\'', description: 'Port compact, frunziș dens persistent (conform docaperene.ro).' },
+  ],
   },
   {
     id: 'photinia-fraseri',
@@ -6362,6 +6410,9 @@ export const plantCatalog: PlantCatalogEntry[] = [
     pruningTime: 'Rareori necesită tăiere; scurtare ușoară de formare oricând în afara iernii, ideal primăvara (conform documentelor Gardenix – tunderea gardului viu)',
     soilPh: 'Adaptabil, preferă sol bine drenat, pH 6-7,5 (conform cunoștințelor horticole generale)',
     images: ['images/enciclopedie/cotoneaster-dammeri_cotoneaster-dammeri_1.jpg'],
+  cultivars: [
+    { name: '\'Major\'', description: 'Port mai viguros, frunze mai mari decât forma de bază (conform docaperene.ro).' },
+  ],
   },
   {
     id: 'elaeagnus-angustifolia',
@@ -6464,6 +6515,10 @@ export const plantCatalog: PlantCatalogEntry[] = [
     pruningTime: 'Primăvara (mijlocul primăverii), tolerează tuns drastic — arbust cu frunze persistente (conform documentelor Gardenix – tunderea gardului viu)',
     soilPh: 'Adaptabil, pH 6-7,5 (conform cunoștințelor horticole generale)',
     images: ['images/enciclopedie/euonymus-fortunei_euonymus-fortunei_1.jpg'],
+  cultivars: [
+    { name: '\'Emerald\'n Gold\'', description: 'Frunziș variegat verde cu margine aurie (conform docaperene.ro).' },
+    { name: '\'Emerald Gaiety\'', description: 'Frunziș variegat verde cu margine albă (conform docaperene.ro).' },
+  ],
   },
   {
     id: 'mahonia-aquifolium',
@@ -6532,6 +6587,9 @@ export const plantCatalog: PlantCatalogEntry[] = [
     pruningTime: 'Tundere frecventă, de 2-3 ori pe sezon (primăvară-vară-toamnă), pentru menținerea formei de gard viu (conform documentelor Gardenix – tunderea gardului viu)',
     soilPh: 'Adaptabilă, pH 6-7,5 (conform cunoștințelor horticole generale)',
     images: ['images/enciclopedie/lonicera-nitida_lonicera-nitida_1.jpg'],
+  cultivars: [
+    { name: '\'Elegant\'', description: 'Frunziș fin, verde-închis, potrivit pentru garduri vii tunse (conform docaperene.ro).' },
+  ],
   },
   {
     id: 'lonicera-caprifolium',
@@ -8540,6 +8598,9 @@ export const plantCatalog: PlantCatalogEntry[] = [
   pruningTime: "Light pruning after flowering; harvesting counts as pruning",
   soilPh: "Well-drained soil, pH 6–7; tolerates sandy or loamy soils; drought tolerant once established",
     images: ['images/enciclopedie/rosmarinus-officinalis_rosmarinus-officinalis_1.jpg'],
+  cultivars: [
+    { name: '\'Winter Blue\'', description: 'Soi rezistent la frig, flori albastru-intens (conform docaperene.ro).' },
+  ],
   },
   {
     id: 'capsicum-annuum-iute',
@@ -8642,6 +8703,9 @@ export const plantCatalog: PlantCatalogEntry[] = [
   pruningTime: "Every 4–6 weeks during growing season: cut back to 2–3 inches above soil. Do NOT prune after Sept 1 (frost damage risk).",
   soilPh: "Tolerant of light (sandy), medium (loamy), & heavy (clay) soils; neutral to basic; prefers moist soil",
     images: ['images/enciclopedie/mentha-spicata_mentha-spicata_1.jpg'],
+  cultivars: [
+    { name: '\'Mojito\'', description: 'Soi cu aromă intensă de mentă, ideal pentru cocktail-uri și ceaiuri (conform docaperene.ro).' },
+  ],
   },
   {
     id: 'petunia',
@@ -9463,6 +9527,9 @@ export const plantCatalog: PlantCatalogEntry[] = [
     pruningTime: 'Tăiere drastică primăvara devreme (înflorește pe lemn nou, din anul curent) (conform documentelor Gardenix – tunderea tufelor, principiul general pentru arbuștii înfloritori de vară)',
     soilPh: 'Adaptabilă, sol bine drenat; pH 6-7,5 (conform cunoștințelor horticole generale)',
     images: ['images/enciclopedie/buddleja-davidii_buddleja-davidii_1.jpg'],
+  cultivars: [
+    { name: '\'Royal Red\'', description: 'Panicule florale roșu-purpuriu intens (conform docaperene.ro).' },
+  ],
   },
   {
     id: 'deutzia-gracilis',
