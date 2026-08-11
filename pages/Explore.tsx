@@ -717,6 +717,26 @@ const Explore: React.FC<Props> = ({ organizationId, subscriptionTier = 'free', o
                   </div>
                 )}
               </div>
+
+              {/* Cultivars/soiuri — a list rather than a single-line field
+                  like the rows above, since each one carries its own name +
+                  what distinguishes it from the species default. */}
+              {selectedPlant.cultivars && selectedPlant.cultivars.length > 0 && (
+                <div className="mb-6">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Layers className="w-4 h-4 text-text-secondary shrink-0" />
+                    <p className="text-[10px] font-black uppercase tracking-wider text-text-secondary">{t('Soiuri disponibile')}</p>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2">
+                    {selectedPlant.cultivars.map((cultivar, i) => (
+                      <div key={i} className="bg-bg-main rounded-2xl p-3 border border-border-color">
+                        <p className="text-sm font-bold text-text-main">{cultivar.name}</p>
+                        <p className="text-xs text-text-secondary mt-0.5 leading-relaxed">{cultivar.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               </div>
               </div>
 
