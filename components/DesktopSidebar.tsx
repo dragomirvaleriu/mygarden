@@ -75,36 +75,37 @@ const DesktopSidebar: React.FC<Props> = ({
             : 'bg-red-500 shadow-[0_0_6px_#ef4444] animate-pulse'
         } transition-all duration-500`}
       />
-      <div className="mb-6 flex flex-col items-center px-2 mt-2 gap-1.5 w-full">
-        {/* Row 1: logo + title side by side */}
-        <div className="flex items-center justify-center gap-2 w-full">
-          <div className="shrink-0" style={{ width: '3.4rem', height: '3.4rem' }}>
+      <div className="mb-6 flex flex-col items-center px-2 mt-2 w-full">
+        {/* Logo beside a title+subtitle column, so the subtitle centers under
+            the text only — not under the logo (previously a second row spanned
+            the full width, centering under both). */}
+        <div className="flex items-center justify-center gap-[0.425rem] w-full">
+          <div className="shrink-0" style={{ width: '4.08rem', height: '4.08rem' }}>
             <img
               src="/logo.png"
               alt={`${APP_NAME} Logo`}
               className="w-full h-full object-contain transition-transform duration-500 hover:scale-105"
             />
           </div>
-          <h1
-            className="leading-none whitespace-nowrap flex items-center"
-            style={{
-              fontFamily: "'Fraunces', serif",
-              fontSize: '2rem',
-              fontWeight: 700,
-              letterSpacing: '-0.5px',
-              lineHeight: 1,
-              height: '3.4rem'
-            }}
-          >
-            <span style={{ color: 'var(--accent-color)' }}>my</span>
-            <span style={{ color: '#4F7942' }}> garden</span>
-          </h1>
+          <div className="flex flex-col items-center">
+            <h1
+              className="leading-none whitespace-nowrap flex items-center"
+              style={{
+                fontFamily: "'Fraunces', serif",
+                fontSize: '1.8rem',
+                fontWeight: 700,
+                letterSpacing: '-0.5px',
+                lineHeight: 1,
+              }}
+            >
+              <span style={{ color: 'var(--accent-color)' }}>my</span>
+              <span style={{ color: '#4F7942' }}> garden</span>
+            </h1>
+            <p className="text-[11.5px] font-medium text-center whitespace-nowrap mt-1" style={{ color: '#6B7876', letterSpacing: '0.01em' }}>
+              {t('premiumSubtitle')}
+            </p>
+          </div>
         </div>
-
-        {/* Row 2: slogan below both */}
-        <p className="text-[11.5px] font-medium text-center w-full" style={{ color: '#6B7876', letterSpacing: '0.01em' }}>
-          {t('premiumSubtitle')}
-        </p>
       </div>
 
 
