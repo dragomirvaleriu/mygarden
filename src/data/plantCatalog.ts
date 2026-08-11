@@ -102,9 +102,13 @@ export interface PlantCatalogEntry {
   // rather than separate catalog entries so search/filtering stays at
   // species level, per the 2026 docaperene import. `description` covers
   // just what distinguishes this cultivar from the species default (color,
-  // height, bloom timing), not a full care profile — that's inherited from
-  // the parent entry.
-  cultivars?: { name: string; description: string }[];
+  // bloom timing, etc.), not a full care profile — that's inherited from
+  // the parent entry. `image`/`size` are optional per-cultivar overrides for
+  // the two things that genuinely vary enough to be worth showing
+  // separately (a 'Dwarf Blue' lavender looks and measures nothing like the
+  // species default) — everything else (watering, light, soil, toxicity...)
+  // stays inherited rather than duplicated per cultivar.
+  cultivars?: { name: string; description: string; image?: string; size?: string }[];
 }
 
 export const plantCatalog: PlantCatalogEntry[] = [

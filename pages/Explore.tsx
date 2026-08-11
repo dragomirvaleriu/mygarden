@@ -399,7 +399,7 @@ const Explore: React.FC<Props> = ({ organizationId, subscriptionTier = 'free', o
             </p>
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-text-secondary">{t('Pe pagină')}:</span>
-              {[20, 50, 100].map((size) => (
+              {[10, 20, 50, 100].map((size) => (
                 <button
                   key={size}
                   onClick={() => setPageSize(size)}
@@ -729,9 +729,23 @@ const Explore: React.FC<Props> = ({ organizationId, subscriptionTier = 'free', o
                   </div>
                   <div className="grid grid-cols-1 gap-2">
                     {selectedPlant.cultivars.map((cultivar, i) => (
-                      <div key={i} className="bg-bg-main rounded-2xl p-3 border border-border-color">
-                        <p className="text-sm font-bold text-text-main">{cultivar.name}</p>
-                        <p className="text-xs text-text-secondary mt-0.5 leading-relaxed">{cultivar.description}</p>
+                      <div key={i} className="flex items-center gap-3 bg-bg-main rounded-2xl p-3 border border-border-color">
+                        {cultivar.image && (
+                          <img
+                            src={`/${cultivar.image}`}
+                            alt={cultivar.name}
+                            className="w-14 h-14 rounded-xl object-cover shrink-0 shadow-inner"
+                          />
+                        )}
+                        <div className="min-w-0">
+                          <div className="flex items-baseline gap-2 flex-wrap">
+                            <p className="text-sm font-bold text-text-main">{cultivar.name}</p>
+                            {cultivar.size && (
+                              <span className="text-[10px] font-bold text-accent-color uppercase tracking-wide">{cultivar.size}</span>
+                            )}
+                          </div>
+                          <p className="text-xs text-text-secondary mt-0.5 leading-relaxed">{cultivar.description}</p>
+                        </div>
                       </div>
                     ))}
                   </div>
