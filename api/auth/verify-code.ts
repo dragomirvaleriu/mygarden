@@ -1,27 +1,27 @@
 import { initializeApp, getApps, cert } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
-import firebaseConfig from "../../firebase-applet-config.json";
 
 // Self-contained — see send-verification-code.ts for why (cross-file
-// api/_lib import 500'd in production with ERR_MODULE_NOT_FOUND).
+// api/_lib import 500'd with ERR_MODULE_NOT_FOUND; the JSON config import
+// 500'd next with ERR_IMPORT_ATTRIBUTE_MISSING).
+const FIREBASE_PROJECT_ID = "mygarden-hq";
+
 function getAdminApp() {
   if (getApps().length) return getApps()[0];
   const key = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
   if (key) {
-    return initializeApp({ credential: cert(JSON.parse(key)), projectId: firebaseConfig.projectId });
+    return initializeApp({ credential: cert(JSON.parse(key)), projectId: FIREBASE_PROJECT_ID });
   }
   console.warn("[api] FIREBASE_SERVICE_ACCOUNT_KEY not set — Admin SDK calls will fail.");
-  return initializeApp({ projectId: firebaseConfig.projectId });
+  return initializeApp({ projectId: FIREBASE_PROJECT_ID });
 }
 const adminApp = getAdminApp();
 const adminAuth = getAuth(adminApp);
 
 function getDbAdmin() {
   try {
-    return firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== '(default)'
-      ? getFirestore(adminApp, firebaseConfig.firestoreDatabaseId)
-      : getFirestore(adminApp);
+    return getFirestore(adminApp);
   } catch (e) {
     console.error("[api] Could not get Firestore Admin instance:", e);
     return null;
