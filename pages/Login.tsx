@@ -1026,18 +1026,20 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
           )}
         </div>
 
-        <div className={`flex flex-col items-center text-center ${isRegister ? 'mb-3' : 'mb-6 sm:mb-8'}`}>
-          <img src="/logo.png" alt="My Garden Logo" className={`object-contain mb-2 drop-shadow-md ${isRegister ? 'w-14 h-14' : 'w-20 h-20 sm:w-24 sm:h-24'}`} />
+        <div className="flex flex-col items-center text-center mb-4 sm:mb-6">
+          <img src="/logo.png" alt="My Garden Logo" className="object-contain mb-2 drop-shadow-md w-20 h-20 sm:w-24 sm:h-24" />
           <div className="flex flex-col items-center">
             <h1 className={`tracking-tighter mb-0 leading-none ${isRegister ? 'text-2xl' : 'text-3xl sm:text-4xl'}`} style={{ fontFamily: "'Fraunces', serif", fontWeight: 700 }}>
               <span style={{ color: 'var(--accent-color)' }}>my</span>
               <span style={{ color: '#4F7942' }}> garden</span>
             </h1>
-            {!isRegister && (
-              <span className="text-[10px] font-black tracking-[0.2em] uppercase opacity-80 mt-2 mb-1 text-center leading-tight" style={{ color: 'var(--brand-olive)' }}>
-                Your garden,<br/>smartly cared for
-              </span>
-            )}
+            <span className={`font-black tracking-[0.2em] uppercase opacity-80 text-center leading-tight ${isRegister ? 'text-[8px] mt-1' : 'text-[10px] sm:text-[10px] mt-2'}`} style={{ color: 'var(--brand-olive)' }}>
+              {currentLangCode === 'ro' ? (
+                <>Grădina ta, <span className="hidden sm:inline">inteligent îngrijită</span><span className="sm:hidden">ingrijita</span></>
+              ) : (
+                <>Your garden, <span className="hidden sm:inline">smartly cared for</span><span className="sm:hidden">cared for</span></>
+              )}
+            </span>
           </div>
         </div>
 
@@ -1045,7 +1047,7 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
             since switching modes mid-verification (or mid-"Finalize Setup")
             makes no sense. */}
         {authStep === 'form' && !isAlreadyLoggedIn && (
-          <div className={`flex bg-bg-main border border-border-color rounded-full p-1 ${isRegister ? 'mb-3' : 'mb-6'}`}>
+          <div className="flex bg-bg-main border border-border-color rounded-full p-1 mb-4 sm:mb-6">
             <button
               type="button"
               onClick={() => { if (isRegister) { setIsRegister(false); setPassword(''); setError(''); setInfo(''); } }}
