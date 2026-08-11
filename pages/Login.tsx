@@ -1292,7 +1292,7 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
                     <div className="space-y-1.5">
                       <label className="sm:text-[11px] text-[10px] font-bold text-text-secondary uppercase tracking-wider ml-1 flex items-center gap-2">
                         <Phone size={10} />
-                        {t('Phone (optional)')}
+                        {t('Phone')}
                       </label>
                       <input
                         type="tel"
@@ -1300,7 +1300,7 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
                         className="w-full bg-bg-main rounded-md px-3 sm:py-2.5 py-2 outline-none text-main font-bold border border-border-color focus:border-accent-color transition-all"
                         value={phone}
                         onChange={e => setPhone(e.target.value)}
-                        placeholder="07XX XXX XXX"
+                        placeholder="+407XX XXX XXX"
                       />
                     </div>
                   </div>
