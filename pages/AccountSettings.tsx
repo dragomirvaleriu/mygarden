@@ -180,10 +180,28 @@ const AccountSettings: React.FC<Props> = ({
       await reauthenticateWithCredential(user, credential);
       await updatePassword(user, newPassword);
 
-      // Record password change timestamp to invalidate other sessions
+      // Record password change timestamp (metadata/audit trail).
       await updateDoc(doc(db, 'users', userProfile.uid), {
         passwordChangedAt: new Date().toISOString()
       });
+
+      // Actually invalidates other devices' sessions server-side — the
+      // Firestore write above alone doesn't do this, nothing reads it for
+      // that purpose. Any other device gets caught on its next forced token
+      // refresh (see App.tsx's onAuthStateChanged, which forces one on every
+      // load) and is logged out automatically from there. Best-effort: this
+      // device logs out immediately after either way (see below), so a
+      // failure here just means other devices stay logged in a bit longer
+      // rather than blocking the password change itself.
+      try {
+        const idToken = await user.getIdToken();
+        await fetch('/api/auth/revoke-sessions', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${idToken}` }
+        });
+      } catch (revokeErr) {
+        console.warn('Could not revoke other sessions', revokeErr);
+      }
 
       toast.success(t('Parola a fost schimbată cu succes. Vei fi delogat din alte sesiuni.'));
       setCurrentPassword('');

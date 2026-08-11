@@ -1048,7 +1048,7 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
           <div className={`flex bg-bg-main border border-border-color rounded-full p-1 ${isRegister ? 'mb-3' : 'mb-6'}`}>
             <button
               type="button"
-              onClick={() => { if (isRegister) { setIsRegister(false); setError(''); setInfo(''); } }}
+              onClick={() => { if (isRegister) { setIsRegister(false); setPassword(''); setError(''); setInfo(''); } }}
               className={`flex-1 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${!isRegister ? 'stihl-button shadow-sm' : 'text-text-secondary'}`}
             >
               {t('Sign in')}
@@ -1161,13 +1161,13 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
                 className="w-full bg-bg-main rounded-md px-4 py-3 outline-none text-main font-black border border-accent-color focus:ring-1 focus:ring-accent-color transition-all shadow-sm"
                 value={name}
                 onChange={e => setName(e.target.value)}
-                placeholder={t('Ex: Ion, Maria...')}
+                placeholder={currentLangCode === 'ro' ? 'Ion Popescu' : 'John Doe'}
               />
             </div>
             <div className="space-y-2">
               <label className="text-[11px] font-bold text-text-secondary uppercase tracking-wider ml-1 flex items-center gap-2">
                 <Phone size={10} />
-                {t('Phone (optional)')}
+                {t('Phone')}
               </label>
               <input
                 type="tel"
@@ -1175,7 +1175,7 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
                 className="w-full bg-bg-main rounded-md px-4 py-3 outline-none text-main font-bold border border-border-color focus:border-accent-color transition-all"
                 value={phone}
                 onChange={e => setPhone(e.target.value)}
-                placeholder={t('Ex: 07XX XXX XXX')}
+                placeholder="+407XX XXX XXX"
               />
             </div>
             <button
@@ -1215,7 +1215,7 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
                 {/* Order: email, password, then name + phone side-by-side —
                     keeps signup to one screen on mobile with no scrolling. */}
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold text-text-secondary uppercase tracking-wider ml-1 flex items-center gap-2">
+                  <label className="sm:text-[11px] text-[10px] font-bold text-text-secondary uppercase tracking-wider ml-1 flex items-center gap-2">
                     <Mail size={10} />
                     {t('User Email')}
                   </label>
@@ -1229,14 +1229,14 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
                     autoCorrect="off"
                     spellCheck={false}
                     required
-                    className="w-full bg-bg-main rounded-md px-4 py-2.5 outline-none text-main font-bold border border-border-color focus:border-accent-color transition-all"
+                    className="w-full bg-bg-main rounded-md px-4 sm:py-2.5 py-2 outline-none text-main font-bold border border-border-color focus:border-accent-color transition-all"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold text-text-secondary uppercase tracking-wider ml-1 flex items-center gap-2">
+                  <label className="sm:text-[11px] text-[10px] font-bold text-text-secondary uppercase tracking-wider ml-1 flex items-center gap-2">
                     <Lock size={10} />
                     {t('Password')}
                   </label>
@@ -1251,7 +1251,7 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
                       spellCheck={false}
                       required
                       minLength={isRegister ? MIN_PASSWORD_LENGTH : undefined}
-                      className="w-full bg-bg-main rounded-md px-4 py-2.5 outline-none text-main font-bold border border-border-color focus:border-accent-color transition-all pr-12"
+                      className="w-full bg-bg-main rounded-md px-4 sm:py-2.5 py-2 outline-none text-main font-bold border border-border-color focus:border-accent-color transition-all pr-12"
                       value={password}
                       onChange={e => setPassword(e.target.value)}
                     />
@@ -1274,7 +1274,7 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
                 {isRegister && (
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-bold text-text-secondary uppercase tracking-wider ml-1 flex items-center gap-2">
+                      <label className="sm:text-[11px] text-[10px] font-bold text-text-secondary uppercase tracking-wider ml-1 flex items-center gap-2">
                         <User size={10} />
                         {t('Your Name')}
                       </label>
@@ -1282,22 +1282,22 @@ const Login: React.FC<Props> = ({ onOnboarded }) => {
                         type="text"
                         autoComplete="name"
                         required
-                        className="w-full bg-bg-main rounded-md px-3 py-2.5 outline-none text-main font-bold border border-border-color focus:border-accent-color transition-all"
+                        className="w-full bg-bg-main rounded-md px-3 sm:py-2.5 py-2 outline-none text-main font-bold border border-border-color focus:border-accent-color transition-all"
                         value={name}
                         onChange={e => setName(e.target.value)}
-                        placeholder={t('Ex: Ion, Maria...')}
+                        placeholder={currentLangCode === 'ro' ? 'Ion Popescu' : 'John Doe'}
                       />
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-bold text-text-secondary uppercase tracking-wider ml-1 flex items-center gap-2">
+                      <label className="sm:text-[11px] text-[10px] font-bold text-text-secondary uppercase tracking-wider ml-1 flex items-center gap-2">
                         <Phone size={10} />
                         {t('Phone (optional)')}
                       </label>
                       <input
                         type="tel"
                         autoComplete="tel"
-                        className="w-full bg-bg-main rounded-md px-3 py-2.5 outline-none text-main font-bold border border-border-color focus:border-accent-color transition-all"
+                        className="w-full bg-bg-main rounded-md px-3 sm:py-2.5 py-2 outline-none text-main font-bold border border-border-color focus:border-accent-color transition-all"
                         value={phone}
                         onChange={e => setPhone(e.target.value)}
                         placeholder="07XX XXX XXX"

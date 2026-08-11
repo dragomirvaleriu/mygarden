@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Claude_Browser__read_page",
+      "Bash(npx tsc --noEmit *)",
+      "mcp__Claude_Browser__navigate",
+      "mcp__Claude_Browser__read_console_messages",
+      "mcp__Claude_Browser__preview_logs",
+      "mcp__claude-in-chrome__navigate",
+      "mcp__Claude_Browser__find",
+      "Bash(pdfinfo *)",
+      "Bash(kill -0 *)",
+      "mcp__Claude_Browser__get_page_text",
+      "mcp__claude-in-chrome__read_page",
+      "mcp__Claude_Browser__preview_list",
+      "mcp__claude-in-chrome__tabs_context_mcp",
+      "mcp__Claude_Browser__read_network_requests",
+      "mcp__Claude_Browser__tabs_context",
+      "Bash(firebase functions:list *)",
+      "Bash(firebase firestore:databases:list *)",
+      "Bash(vercel ls *)"
+    ]
+  }
+}

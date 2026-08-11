@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { auth, verifyPasswordResetCode, confirmPasswordReset } from '../services/firebase';
+import { auth, verifyPasswordResetCode, confirmPasswordReset, signInWithEmailAndPassword } from '../services/firebase';
 import { Eye, EyeOff, Loader2, Lock, CheckCircle2, AlertCircle } from 'lucide-react';
 
 const MIN_PASSWORD_LENGTH = 6;
@@ -66,6 +66,34 @@ const ResetPassword: React.FC<Props> = ({ onDone }) => {
     setLoading(true);
     try {
       await confirmPasswordReset(auth, oobCode, password);
+
+      // Sign in immediately with the new password — gives this device a
+      // fresh, valid session (nicer than making them re-type credentials on
+      // the login screen right after), and gives us an authenticated
+      // context to call revoke-sessions with next, which is what actually
+      // logs out any OTHER device still holding the old session (any device
+      // that stays open gets caught on its own next forced token refresh —
+      // see App.tsx's onAuthStateChanged).
+      try {
+        const cred = await signInWithEmailAndPassword(auth, email, password);
+        const idToken = await cred.user.getIdToken();
+        await fetch('/api/auth/revoke-sessions', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${idToken}` }
+        });
+        // Revocation invalidates tokens issued before the call above,
+        // including — by a few hundred ms — the one this device just got.
+        // Force one more refresh so this device ends up with a token
+        // stamped *after* its own revocation call instead of getting
+        // caught by it too.
+        await cred.user.getIdToken(true);
+      } catch (signInErr) {
+        // Non-fatal — the password itself was already changed successfully
+        // above; worst case they land on the sign-in screen and type it
+        // once, and other devices simply stay logged in a bit longer.
+        console.warn('Post-reset sign-in/revocation failed', signInErr);
+      }
+
       setStatus('done');
     } catch (err: any) {
       console.error("Confirm password reset failed:", err);

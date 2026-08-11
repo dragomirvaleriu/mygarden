@@ -435,6 +435,35 @@ async function startServer() {
     res.json(genericResponse);
   });
 
+  // Called right after a password change succeeds — see
+  // api/auth/revoke-sessions.ts (the production version of this route) for
+  // the full reasoning. Invalidates every refresh token issued before now
+  // for the caller's own uid, so any OTHER device holding an old session
+  // fails its next token refresh and gets signed out (via App.tsx's forced
+  // getIdToken(true)-on-load check).
+  app.post("/api/auth/revoke-sessions", async (req, res) => {
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+    if (!token) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
+    let decodedToken;
+    try {
+      decodedToken = await getAuth(adminApp).verifyIdToken(token);
+    } catch (err) {
+      return res.status(401).json({ error: "Invalid or expired token" });
+    }
+
+    try {
+      await getAuth(adminApp).revokeRefreshTokens(decodedToken.uid);
+      res.json({ ok: true });
+    } catch (err: any) {
+      console.error("Revoke sessions error:", err);
+      res.status(500).json({ error: "Could not revoke other sessions" });
+    }
+  });
+
   // API Route for Vision AI (Plant Scan) — real Claude Vision diagnosis
   app.post("/api/vision", async (req, res) => {
     try {
