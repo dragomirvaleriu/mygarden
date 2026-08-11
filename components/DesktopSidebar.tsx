@@ -66,7 +66,10 @@ const DesktopSidebar: React.FC<Props> = ({
   }
 
   return (
-    <div className="relative h-full bg-accent-subtle border-r border-border-color p-4 flex flex-col">
+    <div
+      className="relative h-full border-r border-border-color p-4 flex flex-col"
+      style={{ background: 'linear-gradient(to bottom, var(--accent-subtle), var(--bg-main))' }}
+    >
       {/* Online/Offline status dot — pinned to top-left edge of sidebar */}
       <span
         className={`absolute top-3 left-1 w-2.5 h-2.5 rounded-full z-50 ${
