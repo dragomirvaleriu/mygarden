@@ -207,6 +207,17 @@ const Explore: React.FC<Props> = ({ organizationId, subscriptionTier = 'free', o
       });
       setAddedIds((prev) => new Set(prev).add(plant.id));
       toast.success(`${plant.name} ${t('a fost adăugat în grădina ta!')}`);
+
+      // Generate auto-care tasks for this plant
+      try {
+        await fetch('/api/garden/generate-care-tasks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: uid }),
+        });
+      } catch (err) {
+        console.error('Error generating care tasks:', err);
+      }
     } catch (err) {
       console.error('Error adding plant to garden:', err);
       toast.error(t('Nu am putut adăuga planta. Încearcă din nou.'));

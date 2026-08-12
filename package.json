@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch --clear-screen=false server.ts",
-    "prebuild": "node scripts/generate-version.js && tsx scripts/generate-academy-manifest.ts",
+    "prebuild": "node scripts/generate-version.js && tsx scripts/generate-academy-manifest.ts && tsx scripts/generate-garden-manifest.ts",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "tsc --noEmit",

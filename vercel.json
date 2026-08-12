@@ -7,6 +7,9 @@
   "functions": {
     "api/academy/article.ts": {
       "includeFiles": "content/academy/**"
+    },
+    "api/garden/generate-care-tasks.ts": {
+      "includeFiles": "content/garden/**"
     }
   }
 }
