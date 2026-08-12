@@ -161,7 +161,19 @@ const Explore: React.FC<Props> = ({ organizationId, subscriptionTier = 'free', o
       if (waterFilter !== 'toate' && plant.waterNeed !== waterFilter) return false;
       if (lightFilter !== 'toate' && plant.lightNeed !== lightFilter) return false;
       if (seasonFilter !== 'toate' && !plant.seasons.includes(seasonFilter)) return false;
-      if (term && !plant.name.toLowerCase().includes(term) && !plant.scientificName.toLowerCase().includes(term)) return false;
+
+      // Search across name, scientific name, description, tags, and category
+      if (term) {
+        const nameMatch = plant.name.toLowerCase().includes(term);
+        const scientificMatch = plant.scientificName?.toLowerCase().includes(term);
+        const descriptionMatch = plant.description?.toLowerCase().includes(term);
+        const categoryMatch = plant.category?.toLowerCase().includes(term);
+        const tagsMatch = plant.tags?.some(tag => tag.toLowerCase().includes(term));
+
+        if (!nameMatch && !scientificMatch && !descriptionMatch && !categoryMatch && !tagsMatch) {
+          return false;
+        }
+      }
       return true;
     });
   }, [localizedCatalog, search, typeFilter, difficultyFilter, categoryFilter, heightFilter, waterFilter, lightFilter, seasonFilter]);
@@ -191,12 +203,12 @@ const Explore: React.FC<Props> = ({ organizationId, subscriptionTier = 'free', o
     setSeasonFilter('toate');
   };
 
-  const handleAddToGarden = async (plant: PlantCatalogEntry) => {
+  const handleAddToGarden = async (plant: PlantCatalogEntry, propertyId?: string) => {
     const uid = auth.currentUser?.uid;
     if (!uid) return;
     setAddingId(plant.id);
     try {
-      await addDoc(collection(db, 'user_plants'), {
+      const plantData: any = {
         userId: uid,
         organizationId,
         catalogId: plant.id,
@@ -204,7 +216,12 @@ const Explore: React.FC<Props> = ({ organizationId, subscriptionTier = 'free', o
         emoji: plant.emoji,
         type: plant.type,
         addedAt: serverTimestamp(),
-      });
+      };
+      // Multi-property support: attach to specific property if provided
+      if (propertyId) {
+        plantData.propertyId = propertyId;
+      }
+      await addDoc(collection(db, 'user_plants'), plantData);
       setAddedIds((prev) => new Set(prev).add(plant.id));
       toast.success(`${plant.name} ${t('a fost adăugat în grădina ta!')}`);
 
