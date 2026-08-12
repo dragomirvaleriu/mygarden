@@ -25,8 +25,7 @@ const MobileDock: React.FC<Props> = ({ activePage, onNavigate, profile }) => {
     { id: Page.GardenJournal, icon: Camera },
     { id: Page.CareCalendar, icon: Calendar },
     { id: Page.Academy, icon: BookOpen },
-    { id: Page.Explore, icon: Compass },
-    { id: Page.GardenCollection, icon: Leaf },
+    { id: Page.Explore, icon: Leaf },
     { id: Page.Administration, icon: User },
   ];
 
@@ -35,8 +34,7 @@ const MobileDock: React.FC<Props> = ({ activePage, onNavigate, profile }) => {
     if (id === Page.CareCalendar) return t('Calendar');
     if (id === Page.Academy) return t('Academie');
     if (id === Page.GardenJournal) return t('Jurnal');
-    if (id === Page.Explore) return t('Explorează');
-    if (id === Page.GardenCollection) return t('Grădina mea');
+    if (id === Page.Explore) return t('Grădina');
     if (id === Page.Administration) return t('Contul meu');
     return '';
   };

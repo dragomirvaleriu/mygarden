@@ -47,8 +47,7 @@ import MobileSettingsModal from '../components/MobileSettingsModal';
 const PFTools = React.lazy(() => import('../pages/PFTools'));
 const GardenSetup = React.lazy(() => import('../pages/GardenSetup').then(m => ({ default: m.GardenSetup })));
 const AccountSettings = React.lazy(() => import('../pages/AccountSettings'));
-const Explore = React.lazy(() => import('../pages/Explore'));
-const GardenCollection = React.lazy(() => import('../pages/GardenCollectionPage'));
+const ExploreGarden = React.lazy(() => import('../pages/ExploreGarden'));
 const SuperAdmin = React.lazy(() => import('../pages/SuperAdmin'));
 
 const App: React.FC = () => {
@@ -544,8 +543,7 @@ const App: React.FC = () => {
             case Page.GardenJournal: return <GardenJournal organizationId={profile.organizationId} onNavigate={navigateTo} userId={profile.uid} isPF={true} />;
             case Page.Gallery: return <GardenJournal organizationId={profile.organizationId} onNavigate={navigateTo} userId={profile.uid} isPF={true} />;
             case Page.Academy: return <Academy subscriptionTier={subscriptionTier} onNavigateToUpgrade={() => navigateTo(Page.Administration)} />;
-            case Page.Explore: return <Explore organizationId={profile.organizationId} subscriptionTier={subscriptionTier} onNavigateToUpgrade={() => navigateTo(Page.Administration)} />;
-            case Page.GardenCollection: return <GardenCollection />;
+            case Page.Explore: return <ExploreGarden organizationId={profile.organizationId} subscriptionTier={subscriptionTier} onNavigateToUpgrade={() => navigateTo(Page.Administration)} />;
             case Page.SuperAdmin: return <SuperAdmin userProfile={profile} />;
 
             default: return <PFDashboard onNavigate={navigateTo} organizationId={profile.organizationId} userProfile={profile} />;
