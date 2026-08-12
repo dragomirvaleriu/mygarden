@@ -21,6 +21,7 @@ import AIAssistantModal from '../components/academy/AIAssistantModal';
 import PremiumUpgradeModal from '../components/PremiumUpgradeModal';
 import { useData } from '../src/context/DataContext';
 import { useModalBackNavigation } from '../src/hooks/useModalBackNavigation';
+import HeroHeader from '../components/ui/HeroHeader';
 
 // ─── Types ────────────────────────────────────────────
 interface Props {
@@ -620,16 +621,8 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
     <div className="p-4 md:p-6 max-w-7xl mx-auto pb-20 animate-in fade-in duration-500">
 
       {/* ── Hero Header ── */}
-      <div className="relative overflow-hidden rounded-3xl mb-8 p-8 md:p-10 border border-accent-color/20 dark:border-none shadow-xl shadow-accent-color/5 dark:shadow-none">
-        {/* Light Mode Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-accent-subtle via-white to-accent-subtle dark:hidden" />
-        {/* Dark Mode Background */}
-        <div className="absolute inset-0 hidden dark:block bg-gradient-to-br from-slate-950 via-accent-dark to-slate-950" />
-        
-        <div className="absolute inset-0 opacity-40 dark:opacity-30" style={{ backgroundImage: 'radial-gradient(ellipse at 20% 50%, rgba(16,185,129,0.3) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(6,182,212,0.2) 0%, transparent 50%)' }} />
-        <div className="absolute inset-0 opacity-[0.03] dark:opacity-5" style={{ backgroundImage: 'linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-
-        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-8">
+      <HeroHeader className="mb-8 p-8 md:p-10">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
           <div>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 rounded-2xl bg-accent-color flex items-center justify-center shadow-lg shadow-accent-color/30">
@@ -680,7 +673,7 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
             )}
           </div>
         </div>
-      </div>
+      </HeroHeader>
 
 
       {/* ── Search with Autocomplete (desktop: inline near top; mobile: floating button below) ── */}
