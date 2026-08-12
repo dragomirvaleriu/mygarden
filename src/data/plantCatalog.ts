@@ -103,12 +103,29 @@ export interface PlantCatalogEntry {
   // species level, per the 2026 docaperene import. `description` covers
   // just what distinguishes this cultivar from the species default (color,
   // bloom timing, etc.), not a full care profile — that's inherited from
-  // the parent entry. `image`/`size` are optional per-cultivar overrides for
-  // the two things that genuinely vary enough to be worth showing
-  // separately (a 'Dwarf Blue' lavender looks and measures nothing like the
-  // species default) — everything else (watering, light, soil, toxicity...)
-  // stays inherited rather than duplicated per cultivar.
-  cultivars?: { name: string; description: string; image?: string; size?: string }[];
+  // the parent entry.
+  //
+  // Everything after `image` is an optional *override*: a cultivar states a
+  // field only when it genuinely differs from the species (a 'Dwarf Blue'
+  // lavender measures nothing like the species; a variegated cultivar often
+  // wants less sun than the green form). Absent = inherited, and the detail
+  // view renders overrides as an explicit "species value → cultivar value"
+  // comparison so the difference is visible rather than implied. Typed
+  // against the same unions as the species fields so the existing localized
+  // label maps (PLANT_HEIGHT_LABELS etc.) work unchanged.
+  cultivars?: {
+    name: string;
+    description: string;
+    image?: string;
+    size?: string;              // mature size, free text (e.g. "30-40 cm")
+    heightCategory?: PlantHeight;
+    lightNeed?: PlantLightNeed;
+    waterNeed?: PlantWaterNeed;
+    seasons?: PlantSeason[];
+    difficulty?: 'ușor' | 'mediu' | 'dificil';
+    bloomTime?: string;
+    frostHardiness?: string;
+  }[];
 }
 
 export const plantCatalog: PlantCatalogEntry[] = [
@@ -309,10 +326,10 @@ export const plantCatalog: PlantCatalogEntry[] = [
     soilPh: 'Sol calcaros, alcalin spre neutru (pH 6,5-8), foarte bine drenat, sărac în nutrienți.',
     images: ['images/enciclopedie/lavanda_lavandula-angustifolia_1.jpg'],
   cultivars: [
-    { name: '\'Hidcote Blue\'', description: 'Cel mai apreciat soi, cu flori albastru-intens și parfum puternic (conform docaperene.ro).' },
+    { name: '\'Hidcote Blue\'', description: 'Cel mai apreciat soi, cu flori albastru-intens și parfum puternic (conform docaperene.ro).', size: '40-50 cm' },
     { name: '\'Edelweiss\'', description: 'Soi rar cu flori alb-imaculate, parfumate (conform docaperene.ro).' },
     { name: '\'Rosea\'', description: 'Soi rar cu flori roz delicat, notă romantică neobișnuită pentru lavandă (conform docaperene.ro).' },
-    { name: '\'Dwarf Blue\'', description: 'Formă compactă, cu frunziș argintiu-verzui îngust, potrivită pentru borduri mici (conform docaperene.ro).' },
+    { name: '\'Dwarf Blue\'', description: 'Formă compactă, cu frunziș argintiu-verzui îngust, potrivită pentru borduri mici (conform docaperene.ro).', size: '30-45 cm', heightCategory: 'mic' },
   ],
   },
   {
@@ -624,7 +641,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
   cultivars: [
     { name: '\'Dark Angel\'', description: 'Frunziș purpuriu-închis în contrast cu flori roz-intens spre roșu-burgund (conform docaperene.ro).' },
     { name: '\'Leuchtfeuer\'', description: 'Una dintre cele mai stabile nuanțe de roșu-intens din categoria macrophylla (conform docaperene.ro).' },
-    { name: '\'Little Blue/Pink\'', description: 'Soi compact — culoarea florilor variază între albastru și roz în funcție de pH-ul solului (conform docaperene.ro).' },
+    { name: '\'Little Blue/Pink\'', description: 'Soi compact — culoarea florilor variază între albastru și roz în funcție de pH-ul solului (conform docaperene.ro).', size: '60-80 cm', heightCategory: 'mic' },
     { name: '\'White Butterfly\'', description: 'Flori albe, port compact (conform docaperene.ro).' },
     { name: '\'Red Baron\'', description: 'Flori roșu-intens, una dintre cele mai căutate nuanțe de roșu la macrophylla (conform docaperene.ro).' },
   ],
@@ -2299,7 +2316,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
   cultivars: [
     { name: "'Brilliant'", description: 'Flori roșu-catifelat, uriașe, cu centru negru dramatic (conform docaperene.ro).' },
     { name: "'Allegro'", description: 'Flori roșii mari, cu petale delicate (conform docaperene.ro).' },
-    { name: "'Nana Allegro'", description: 'Formă pitică, cu flori roșii spectaculoase (conform docaperene.ro).' },
+    { name: "'Nana Allegro'", description: 'Formă pitică, cu flori roșii spectaculoase (conform docaperene.ro).', size: '40-50 cm', heightCategory: 'mic' },
   ],
   },
   // ─── Conifere ───────────────────────────────────────
@@ -2335,7 +2352,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     soilPh: 'Sol neutru spre slab alcalin, pH 6,0-7,5; tolerează bine și solurile calcaroase sau mai grele.',
     images: ['images/enciclopedie/thuja-occidentalis_thuja-occidentalis_1.jpg'],
   cultivars: [
-    { name: '\'Aurea Nana\'', description: 'Formă pitică, globulară, cu frunziș auriu (conform docaperene.ro).' },
+    { name: '\'Aurea Nana\'', description: 'Formă pitică, globulară, cu frunziș auriu (conform docaperene.ro).', size: '1-1,5 m, port globular', heightCategory: 'mediu' },
   ],
   },
   {
@@ -2437,7 +2454,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     soilPh: 'Se adaptează la aproape orice pH, inclusiv soluri sărace, acide sau bătătorite.',
     images: ['images/enciclopedie/juniperus-communis_juniperus-communis_1.jpg'],
   cultivars: [
-    { name: '\'Gold Cone\'', description: 'Port columnar îngust, frunziș auriu — accent vertical în grădină (conform docaperene.ro).' },
+    { name: '\'Gold Cone\'', description: 'Port columnar îngust, frunziș auriu — accent vertical în grădină (conform docaperene.ro).', size: '2-3 m, columnar îngust', heightCategory: 'mediu' },
   ],
   },
   {
@@ -2472,7 +2489,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     soilPh: 'Soluri sărace, acide, chiar pietroase; tolerează și substrat calcaros.',
     images: ['images/enciclopedie/pinus-mugo_pinus-mugo_1.jpg'],
   cultivars: [
-    { name: '\'Pumilio\'', description: 'Formă pitică, foarte compactă, potrivită pentru grădini de stâncă (conform docaperene.ro).' },
+    { name: '\'Pumilio\'', description: 'Formă pitică, foarte compactă, potrivită pentru grădini de stâncă (conform docaperene.ro).', size: '1-1,5 m înălțime, 2-3 m lățime', heightCategory: 'mediu' },
   ],
   },
   {
@@ -4217,7 +4234,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
   soilPh: "Tolerates wide soil range; prefers well-drained, moderately fertile soils; neutral pH. (conform cunoștințelor horticole generale)",
     images: ['images/enciclopedie/miscanthus-sinensis_miscanthus-sinensis_1.jpg'],
   cultivars: [
-    { name: '\'Zebrinus\'', description: 'Frunze cu dungi transversale galbene, distinctive — \'iarba zebră\' (conform docaperene.ro).' },
+    { name: '\'Zebrinus\'', description: 'Frunze cu dungi transversale galbene, distinctive — \'iarba zebră\' (conform docaperene.ro).', size: '1,8-2,2 m' },
   ],
   },
   {
@@ -4252,7 +4269,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
   soilPh: "Neutral to slightly alkaline (6.5–7.5); sandy or loamy soils preferred; avoids heavy clay and wet conditions. (conform sursei WebSearch)",
     images: ['images/enciclopedie/festuca-glauca_festuca-glauca_1.jpg'],
   cultivars: [
-    { name: '\'Elijah Blue\'', description: 'Nuanța cea mai intensă de albastru-argintiu din specie (conform docaperene.ro).' },
+    { name: '\'Elijah Blue\'', description: 'Nuanța cea mai intensă de albastru-argintiu din specie (conform docaperene.ro).', size: '25-30 cm' },
   ],
   },
   {
@@ -4666,7 +4683,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     soilPh: 'Sol profund, fertil, jilav-umed, ușor acid, pH 5,5-6,5.',
     images: ['images/enciclopedie/chamaecyparis-lawsoniana_chamaecyparis-lawsoniana_1.jpg'],
   cultivars: [
-    { name: '\'Ellwoodii\'', description: 'Cel mai popular cultivar pitic, port columnar dens, frunziș albăstrui-verde (conform docaperene.ro).' },
+    { name: '\'Ellwoodii\'', description: 'Cel mai popular cultivar pitic, port columnar dens, frunziș albăstrui-verde (conform docaperene.ro).', size: '2-3 m, port columnar îngust', heightCategory: 'mediu' },
   ],
   },
   {
@@ -4805,7 +4822,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
     soilPh: 'Se adaptează la o gamă largă de pH, inclusiv soluri sărace.',
     images: ['images/enciclopedie/juniperus-sabina_juniperus-sabina_1.jpg'],
   cultivars: [
-    { name: '\'Rockery Gem\'', description: 'Formă târâtoare compactă, potrivită pentru grădini de stâncă (conform docaperene.ro).' },
+    { name: '\'Rockery Gem\'', description: 'Formă târâtoare compactă, potrivită pentru grădini de stâncă (conform docaperene.ro).', size: '30-40 cm înălțime, 1,5-2 m lățime', heightCategory: 'mic' },
     { name: '\'Fermine\'', description: 'Frunziș verde-închis, port dens, târâtor (conform docaperene.ro).' },
   ],
   },
@@ -6525,8 +6542,8 @@ export const plantCatalog: PlantCatalogEntry[] = [
     soilPh: 'Adaptabil, pH 6-7,5 (conform cunoștințelor horticole generale)',
     images: ['images/enciclopedie/euonymus-fortunei_euonymus-fortunei_1.jpg'],
   cultivars: [
-    { name: '\'Emerald\'n Gold\'', description: 'Frunziș variegat verde cu margine aurie (conform docaperene.ro).' },
-    { name: '\'Emerald Gaiety\'', description: 'Frunziș variegat verde cu margine albă (conform docaperene.ro).' },
+    { name: '\'Emerald\'n Gold\'', description: 'Frunziș variegat verde cu margine aurie (conform docaperene.ro).', size: '40-60 cm înălțime, până la 90 cm lățime', lightNeed: 'soare' },
+    { name: '\'Emerald Gaiety\'', description: 'Frunziș variegat verde cu margine albă (conform docaperene.ro).', size: '60-90 cm' },
   ],
   },
   {
@@ -7729,8 +7746,8 @@ export const plantCatalog: PlantCatalogEntry[] = [
   soilPh: "Well-drained soil; tolerates poor to moderately fertile soils; neutral pH preferred. (conform cunoștințelor horticole generale)",
     images: ['images/enciclopedie/cortaderia-selloana_cortaderia-selloana_1.jpg'],
   cultivars: [
-    { name: '\'Pink Feather\'', description: 'Penaje roz-pal, spre deosebire de alb-crem la forma de bază (conform docaperene.ro).' },
-    { name: '\'White Feather\'', description: 'Penaje alb-pur, foarte dense (conform docaperene.ro).' },
+    { name: '\'Pink Feather\'', description: 'Penaje roz-pal, spre deosebire de alb-crem la forma de bază (conform docaperene.ro).', size: '1,8-2,2 m' },
+    { name: '\'White Feather\'', description: 'Penaje alb-pur, foarte dense (conform docaperene.ro).', size: '2-2,5 m' },
   ],
   },
   {
@@ -7838,7 +7855,7 @@ export const plantCatalog: PlantCatalogEntry[] = [
   soilPh: "Well-drained, moderately fertile to lean soil; tolerates wide pH range; neutral preferred. (conform cunoștințelor horticole generale)",
     images: ['images/enciclopedie/pennisetum-alopecuroides_pennisetum-alopecuroides-little-bunny_1.jpg'],
   cultivars: [
-    { name: '\'Hameln\'', description: 'Formă compactă, spice pufoase crem — unul dintre cele mai populare soiuri (conform docaperene.ro).' },
+    { name: '\'Hameln\'', description: 'Formă compactă, spice pufoase crem — unul dintre cele mai populare soiuri (conform docaperene.ro).', size: '50-60 cm' },
     { name: '\'Black Beauty\'', description: 'Frunziș mai închis la culoare, spice întunecate (conform docaperene.ro).' },
     { name: '\'Red Head\'', description: 'Spice roșu-purpuriu, mai mari decât la soiul de bază (conform docaperene.ro).' },
     { name: '\'Fairy Tails\'', description: 'Spice albe, pufoase, foarte abundente (conform docaperene.ro).' },

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Ruler, Droplets, Sun, CalendarDays, Tag, Gauge } from 'lucide-react';
+import { Ruler, Droplets, Sun, CalendarDays, Tag, Gauge, Layers } from 'lucide-react';
 import { PlantCatalogEntry } from '../src/data/plantCatalog';
 
 interface PlantCardProps {
@@ -36,6 +36,7 @@ const PlantCard: React.FC<PlantCardProps> = ({
 }) => {
   const { t } = useTranslation();
   const hasPhoto = !!plant.images && plant.images.length > 0;
+  const cultivarCount = plant.cultivars?.length ?? 0;
 
   return (
     <button
@@ -60,6 +61,17 @@ const PlantCard: React.FC<PlantCardProps> = ({
           <div className="absolute top-2.5 left-2.5 flex items-center gap-1 px-2 py-1 rounded-full bg-amber-400/25 backdrop-blur-md border border-amber-300/40 shadow-sm">
             <span className="text-[10px] leading-none">👑</span>
             <span className="text-[9px] font-black uppercase tracking-widest text-amber-100 [text-shadow:0_1px_2px_rgba(0,0,0,0.6)]">{t('PRO')}</span>
+          </div>
+        )}
+        {/* Cultivar count — top-right so it never collides with the PRO
+            badge, and readable straight from the grid: the whole point is
+            spotting which species have named varieties without opening each. */}
+        {cultivarCount > 0 && (
+          <div className="absolute top-2.5 right-2.5 flex items-center gap-1 px-2 py-1 rounded-full bg-black/45 backdrop-blur-md border border-white/25 shadow-sm">
+            <Layers className="w-2.5 h-2.5 text-white shrink-0" />
+            <span className="text-[9px] font-black uppercase tracking-widest text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.6)]">
+              {cultivarCount} {t('soiuri')}
+            </span>
           </div>
         )}
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent pt-10 pb-2.5 px-3">

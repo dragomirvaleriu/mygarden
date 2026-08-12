@@ -71,6 +71,9 @@ const Explore: React.FC<Props> = ({ organizationId, subscriptionTier = 'free', o
   const [pageSize, setPageSize] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedPlant, setSelectedPlant] = useState<PlantCatalogEntry | null>(null);
+  // Drill-down within the plant detail modal: which cultivar of the open
+  // species is being viewed on its own (null = the species itself).
+  const [selectedCultivarIdx, setSelectedCultivarIdx] = useState<number | null>(null);
   const [galleryIndex, setGalleryIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
@@ -87,8 +90,14 @@ const Explore: React.FC<Props> = ({ organizationId, subscriptionTier = 'free', o
       return;
     }
     setSelectedPlant(plant);
+    setSelectedCultivarIdx(null);
     setGalleryIndex(0);
   };
+
+  const activeCultivar =
+    selectedPlant && selectedCultivarIdx !== null
+      ? selectedPlant.cultivars?.[selectedCultivarIdx] ?? null
+      : null;
 
   // Mobile quick-search FAB: the full search bar collapses into a floating
   // icon (bottom-right) once scrolled out of view, so search stays one tap
@@ -201,6 +210,49 @@ const Explore: React.FC<Props> = ({ organizationId, subscriptionTier = 'free', o
 
   const difficultyLabel = (difficulty: PlantCatalogEntry['difficulty']) =>
     difficultyLabels ? difficultyLabels[difficulty] : difficulty;
+
+  // Which fields this cultivar actually overrides, paired with the species
+  // value it replaces — rendered as "species → cultivar" so the difference
+  // reads as a difference, not as a standalone spec the reader has to
+  // mentally diff against the parent. Enum fields go through the same
+  // localized label maps as the species rows; free-text ones (size, bloom,
+  // frost) compare against whichever species field is their counterpart.
+  const cultivarDiffs = useMemo(() => {
+    if (!selectedPlant || !activeCultivar) return [];
+    const c = activeCultivar;
+    const p = selectedPlant;
+    const rows: { label: string; speciesValue?: string; cultivarValue: string }[] = [];
+
+    if (c.heightCategory && c.heightCategory !== p.heightCategory) {
+      rows.push({ label: t('Înălțime') as string, speciesValue: heightLabels[p.heightCategory], cultivarValue: heightLabels[c.heightCategory] });
+    }
+    if (c.lightNeed && c.lightNeed !== p.lightNeed) {
+      rows.push({ label: t('Lumină / zonă de plantare') as string, speciesValue: lightLabels[p.lightNeed], cultivarValue: lightLabels[c.lightNeed] });
+    }
+    if (c.waterNeed && c.waterNeed !== p.waterNeed) {
+      rows.push({ label: t('Nevoie de apă') as string, speciesValue: waterLabels[p.waterNeed], cultivarValue: waterLabels[c.waterNeed] });
+    }
+    if (c.difficulty && c.difficulty !== p.difficulty) {
+      rows.push({ label: t('Dificultate') as string, speciesValue: difficultyLabel(p.difficulty), cultivarValue: difficultyLabel(c.difficulty) });
+    }
+    if (c.seasons && c.seasons.length) {
+      const speciesSeasons = p.seasons.map((s) => seasonLabels[s]).join(', ');
+      const cultivarSeasons = c.seasons.map((s) => seasonLabels[s]).join(', ');
+      if (speciesSeasons !== cultivarSeasons) {
+        rows.push({ label: t('Anotimp de interes') as string, speciesValue: speciesSeasons, cultivarValue: cultivarSeasons });
+      }
+    }
+    if (c.size) {
+      rows.push({ label: t('Dimensiuni') as string, speciesValue: p.matureSize || p.sizeSpacing, cultivarValue: c.size });
+    }
+    if (c.bloomTime && c.bloomTime !== p.bloomTime) {
+      rows.push({ label: t('Perioadă de înflorire') as string, speciesValue: p.bloomTime, cultivarValue: c.bloomTime });
+    }
+    if (c.frostHardiness && c.frostHardiness !== p.frostHardiness) {
+      rows.push({ label: t('Rezistență la ger') as string, speciesValue: p.frostHardiness, cultivarValue: c.frostHardiness });
+    }
+    return rows;
+  }, [selectedPlant, activeCultivar, heightLabels, lightLabels, waterLabels, seasonLabels, difficultyLabels, t]);
 
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6 pb-24">
@@ -559,6 +611,51 @@ const Explore: React.FC<Props> = ({ organizationId, subscriptionTier = 'free', o
               <p className="text-sm text-text-secondary italic mb-5">{selectedPlant.scientificName}</p>
               <p className="text-sm text-text-main leading-relaxed mb-5">{selectedPlant.description}</p>
 
+              {/* Cultivars — surfaced high up (right under the description,
+                  above the care rows) rather than buried at the bottom of a
+                  long scroll: for a species that has named varieties, "which
+                  one do I actually want" is the first question, not the last.
+                  Horizontal strip so a long list doesn't push the care info
+                  off-screen; each tile drills into its own view. */}
+              {selectedPlant.cultivars && selectedPlant.cultivars.length > 0 && (
+                <div className="mb-6">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Layers className="w-4 h-4 text-accent-color shrink-0" />
+                    <p className="text-[10px] font-black uppercase tracking-wider text-text-secondary">
+                      {selectedPlant.cultivars.length} {t('soiuri disponibile')}
+                    </p>
+                  </div>
+                  <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-4 px-4 sm:-mx-6 sm:px-6 pb-1">
+                    {selectedPlant.cultivars.map((cultivar, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setSelectedCultivarIdx(i)}
+                          className="shrink-0 w-36 text-left bg-bg-main border border-border-color rounded-2xl overflow-hidden hover:border-accent-color transition active:scale-[0.98]"
+                        >
+                          {/* Only ever the cultivar's OWN photo — falling back
+                              to the species photo here would show e.g. plain
+                              lavender under the label 'Rosea' (pink), which is
+                              exactly the difference the reader is looking at
+                              the tile to judge. No photo = neutral placeholder. */}
+                          <div className="relative w-full aspect-[4/3] bg-accent-subtle overflow-hidden">
+                            {cultivar.image ? (
+                              <img src={`/${cultivar.image}`} alt={cultivar.name} loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
+                            ) : (
+                              <div className="absolute inset-0 flex items-center justify-center text-3xl opacity-40">{selectedPlant.emoji}</div>
+                            )}
+                          </div>
+                          <div className="p-2.5">
+                            <p className="text-xs font-black text-text-main leading-tight line-clamp-2">{cultivar.name}</p>
+                            {cultivar.size && (
+                              <p className="text-[10px] font-bold text-accent-color mt-1">{cultivar.size}</p>
+                            )}
+                          </div>
+                        </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 gap-3 mb-6">
                 <div className="flex items-start gap-3 bg-bg-main rounded-2xl p-3 border border-border-color">
                   <Droplets className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
@@ -722,41 +819,86 @@ const Explore: React.FC<Props> = ({ organizationId, subscriptionTier = 'free', o
                 )}
               </div>
 
-              {/* Cultivars/soiuri — a list rather than a single-line field
-                  like the rows above, since each one carries its own name +
-                  what distinguishes it from the species default. */}
-              {selectedPlant.cultivars && selectedPlant.cultivars.length > 0 && (
-                <div className="mb-6">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Layers className="w-4 h-4 text-text-secondary shrink-0" />
-                    <p className="text-[10px] font-black uppercase tracking-wider text-text-secondary">{t('Soiuri disponibile')}</p>
+              </div>
+              </div>
+
+              {/* Cultivar drill-down — an overlay inside the same modal
+                  rather than a second stacked dialog, so "back" returns to
+                  the species without unwinding two layers. Only the fields
+                  that genuinely differ per cultivar are shown; everything
+                  else is explicitly stated as inherited, which is the whole
+                  reason cultivars aren't separate catalog entries. */}
+              {activeCultivar && (
+                <div className="absolute inset-0 z-20 bg-bg-card flex flex-col">
+                  <div className="shrink-0 flex items-center gap-2 px-3 pt-[max(env(safe-area-inset-top),12px)] sm:pt-3 pb-3 border-b border-border-color">
+                    <button
+                      onClick={() => setSelectedCultivarIdx(null)}
+                      className="flex items-center gap-1.5 min-h-[44px] px-3 rounded-full text-sm font-bold text-text-main hover:bg-bg-main transition-colors"
+                    >
+                      <ArrowLeft className="w-5 h-5 shrink-0" />
+                      <span className="truncate">{selectedPlant.name}</span>
+                    </button>
                   </div>
-                  <div className="grid grid-cols-1 gap-2">
-                    {selectedPlant.cultivars.map((cultivar, i) => (
-                      <div key={i} className="flex items-center gap-3 bg-bg-main rounded-2xl p-3 border border-border-color">
-                        {cultivar.image && (
-                          <img
-                            src={`/${cultivar.image}`}
-                            alt={cultivar.name}
-                            className="w-14 h-14 rounded-xl object-cover shrink-0 shadow-inner"
-                          />
-                        )}
-                        <div className="min-w-0">
-                          <div className="flex items-baseline gap-2 flex-wrap">
-                            <p className="text-sm font-bold text-text-main">{cultivar.name}</p>
-                            {cultivar.size && (
-                              <span className="text-[10px] font-bold text-accent-color uppercase tracking-wide">{cultivar.size}</span>
-                            )}
-                          </div>
-                          <p className="text-xs text-text-secondary mt-0.5 leading-relaxed">{cultivar.description}</p>
-                        </div>
+
+                  <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
+                    {activeCultivar.image ? (
+                      <div className="relative w-full aspect-[4/3] bg-bg-main overflow-hidden">
+                        <img
+                          src={`/${activeCultivar.image}`}
+                          alt={activeCultivar.name}
+                          className="absolute inset-0 w-full h-full object-cover"
+                        />
                       </div>
-                    ))}
+                    ) : (
+                      <div className="relative w-full aspect-[16/7] bg-accent-subtle flex flex-col items-center justify-center gap-1">
+                        <span className="text-4xl opacity-40">{selectedPlant.emoji}</span>
+                        <span className="text-[10px] font-bold text-text-secondary uppercase tracking-wide">{t('Fără poză pentru acest soi')}</span>
+                      </div>
+                    )}
+
+                    <div className="px-4 sm:px-6 pt-4 pb-6">
+                      <h2 className="text-xl font-black text-text-main leading-tight">{activeCultivar.name}</h2>
+                      <p className="text-sm text-text-secondary italic mb-4">{selectedPlant.scientificName}</p>
+                      <p className="text-sm text-text-main leading-relaxed mb-5">{activeCultivar.description}</p>
+
+                      {cultivarDiffs.length > 0 && (
+                        <div className="mb-5">
+                          <p className="text-[10px] font-black uppercase tracking-wider text-text-secondary mb-2">{t('Diferă de specie')}</p>
+                          <div className="grid grid-cols-1 gap-2">
+                            {cultivarDiffs.map((diff) => (
+                              <div key={diff.label} className="bg-bg-main rounded-2xl p-3 border border-border-color">
+                                <p className="text-[10px] font-black uppercase tracking-wider text-text-secondary mb-1">{diff.label}</p>
+                                <div className="flex items-baseline gap-2 flex-wrap">
+                                  {diff.speciesValue && (
+                                    <>
+                                      <span className="text-xs text-text-secondary line-through decoration-text-secondary/40">{diff.speciesValue}</span>
+                                      <span className="text-text-secondary text-xs">→</span>
+                                    </>
+                                  )}
+                                  <span className="text-sm font-bold text-accent-color">{diff.cultivarValue}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="rounded-2xl border border-accent-border/50 bg-accent-subtle p-4">
+                        <p className="text-[10px] font-black uppercase tracking-wider text-text-secondary mb-2">{t('Restul îngrijirii')}</p>
+                        <p className="text-xs text-text-secondary leading-relaxed mb-3">
+                          {t('Identic cu specia — tot ce nu apare mai sus (udare, sol, tăiere, toxicitate) se moștenește de la')} <span className="font-bold text-text-main">{selectedPlant.name}</span>.
+                        </p>
+                        <button
+                          onClick={() => setSelectedCultivarIdx(null)}
+                          className="text-xs font-black text-accent-color hover:underline"
+                        >
+                          {t('Vezi îngrijirea completă')} →
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
-              </div>
-              </div>
 
               <div className="shrink-0 px-4 sm:px-6 pt-4 pb-[max(env(safe-area-inset-bottom),16px)] sm:pb-4 border-t border-border-color bg-bg-card">
               <button
