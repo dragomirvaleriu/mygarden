@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { Card, Pill } from '../components/ui/primitives';
 import { ActivityManagement } from '../components/ActivityManagement';
+import { GardenSetupPanel } from '../components/GardenSetupPanel';
 import {
   auth,
   db,
@@ -79,11 +80,14 @@ const SectionCard: React.FC<{
   </Card>
 );
 
+type SettingsTab = 'profil' | 'gradin' | 'securitate' | 'plan';
+
 const AccountSettings: React.FC<Props> = ({
   userProfile, onNavigate, subscriptionTier,
   theme, onToggleTheme, accentColors, selectedAccentColor, onSelectAccentColor,
 }) => {
   const { t, i18n } = useTranslation();
+  const [activeTab, setActiveTab] = useState<SettingsTab>('profil');
   const [displayName, setDisplayName] = useState(userProfile.displayName || '');
   const [phone, setPhone] = useState(userProfile.phoneNumber || '');
   const [isSavingName, setIsSavingName] = useState(false);
@@ -317,7 +321,58 @@ const AccountSettings: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* MAIN LAYOUT: Sidebar + Content */}
+        {/* Tab Switcher */}
+        <div className="sticky top-0 z-10 -mx-4 lg:-mx-8 px-4 lg:px-8 py-3 mb-6 bg-bg-main/95 backdrop-blur-sm border-b border-border-color flex gap-2 overflow-x-auto">
+          <button
+            onClick={() => setActiveTab('profil')}
+            className={`px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-all ${
+              activeTab === 'profil'
+                ? 'bg-accent-color text-white'
+                : 'text-text-secondary hover:bg-bg-card'
+            }`}
+          >
+            👤 {t('Profil')}
+          </button>
+          <button
+            onClick={() => setActiveTab('gradin')}
+            className={`px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-all ${
+              activeTab === 'gradin'
+                ? 'bg-accent-color text-white'
+                : 'text-text-secondary hover:bg-bg-card'
+            }`}
+          >
+            🌱 {t('Grădina')}
+          </button>
+          <button
+            onClick={() => setActiveTab('securitate')}
+            className={`px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-all ${
+              activeTab === 'securitate'
+                ? 'bg-accent-color text-white'
+                : 'text-text-secondary hover:bg-bg-card'
+            }`}
+          >
+            🔒 {t('Securitate')}
+          </button>
+          <button
+            onClick={() => setActiveTab('plan')}
+            className={`px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-all ${
+              activeTab === 'plan'
+                ? 'bg-accent-color text-white'
+                : 'text-text-secondary hover:bg-bg-card'
+            }`}
+          >
+            🎁 {t('Plan')}
+          </button>
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === 'gradin' && (
+          <div className="mb-8">
+            <GardenSetupPanel />
+          </div>
+        )}
+
+        {activeTab !== 'gradin' && (
         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6 items-start">
           {/* ── SIDEBAR: Profile summary ── */}
           <div className="lg:sticky lg:top-8 space-y-5">
@@ -681,6 +736,7 @@ const AccountSettings: React.FC<Props> = ({
             </div>
           </div>
         </div>
+        )}
       </div>
     </div>
   );

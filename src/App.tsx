@@ -45,7 +45,6 @@ import DesktopSidebar from '../components/DesktopSidebar';
 import MobileDock from '../components/MobileDock';
 import MobileSettingsModal from '../components/MobileSettingsModal';
 const PFTools = React.lazy(() => import('../pages/PFTools'));
-const GardenSetup = React.lazy(() => import('../pages/GardenSetup').then(m => ({ default: m.GardenSetup })));
 const AccountSettings = React.lazy(() => import('../pages/AccountSettings'));
 const ExploreGarden = React.lazy(() => import('../pages/ExploreGarden'));
 const SuperAdmin = React.lazy(() => import('../pages/SuperAdmin'));
@@ -526,8 +525,6 @@ const App: React.FC = () => {
               return <PFDashboard onNavigate={navigateTo} organizationId={profile.organizationId} userProfile={profile} />;
             case Page.Tools:
               return <PFTools />;
-            case Page.GardenSetup:
-              return <GardenSetup />;
             case Page.Administration:
               return <AccountSettings
                 userProfile={profile}
