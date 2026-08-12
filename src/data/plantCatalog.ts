@@ -4216,6 +4216,9 @@ export const plantCatalog: PlantCatalogEntry[] = [
   pruningTime: "Cut back to base in late February/early March (before new growth); do not cut in fall as foliage insulates crown from cold. (conform sursei WebSearch)",
   soilPh: "Tolerates wide soil range; prefers well-drained, moderately fertile soils; neutral pH. (conform cunoștințelor horticole generale)",
     images: ['images/enciclopedie/miscanthus-sinensis_miscanthus-sinensis_1.jpg'],
+  cultivars: [
+    { name: '\'Zebrinus\'', description: 'Frunze cu dungi transversale galbene, distinctive — \'iarba zebră\' (conform docaperene.ro).' },
+  ],
   },
   {
     id: 'festuca-glauca',
@@ -4248,6 +4251,9 @@ export const plantCatalog: PlantCatalogEntry[] = [
   pruningTime: "Comb through with gloved hands in spring to remove old foliage; replace plants every 3–4 years as they decline. (conform cunoștințelor horticole generale)",
   soilPh: "Neutral to slightly alkaline (6.5–7.5); sandy or loamy soils preferred; avoids heavy clay and wet conditions. (conform sursei WebSearch)",
     images: ['images/enciclopedie/festuca-glauca_festuca-glauca_1.jpg'],
+  cultivars: [
+    { name: '\'Elijah Blue\'', description: 'Nuanța cea mai intensă de albastru-argintiu din specie (conform docaperene.ro).' },
+  ],
   },
   {
     id: 'stipa-tenuissima',
@@ -4280,6 +4286,9 @@ export const plantCatalog: PlantCatalogEntry[] = [
   pruningTime: "Light annual pruning in late winter/early spring; comb through with gloved hands to remove old foliage; never cut in fall/summer. (conform sursei WebSearch)",
   soilPh: "Excellent drainage essential; prefers lean, well-drained soil; low fertility maintains tight growth. (conform cunoștințelor horticole generale)",
     images: ['images/enciclopedie/stipa-tenuissima_stipa-tenuissima_1.jpg'],
+  cultivars: [
+    { name: '\'Pony Tails\'', description: 'Frunziș extrem de fin, mișcare vaporoasă la vânt (conform docaperene.ro).' },
+  ],
   },
   {
     id: 'heuchera-spp',
@@ -7034,6 +7043,11 @@ export const plantCatalog: PlantCatalogEntry[] = [
     pruningTime: 'Îndepărtarea florilor ofilite prelungește înflorirea; frunzișul se taie primăvara devreme (conform cunoștințelor horticole generale)',
     soilPh: 'Sol bine drenat, neutru-alcalin, pH 6,5-7,5; nu tolerează umezeala stagnantă iarna (conform cunoștințelor horticole generale)',
     images: ['images/enciclopedie/aster-alpinus_aster-alpinus_1.jpg'],
+  cultivars: [
+    { name: '\'Happy End\'', description: 'Flori roz-intens, capitule dense (conform docaperene.ro).' },
+    { name: '\'Violet\'', description: 'Flori violet-albăstrui (conform docaperene.ro).' },
+    { name: '\'White\'', description: 'Flori albe, contrast cu mijlocul galben (conform docaperene.ro).' },
+  ],
   },
   {
     id: 'aster-novi-belgii',
@@ -7714,6 +7728,10 @@ export const plantCatalog: PlantCatalogEntry[] = [
   pruningTime: "Cut back hard in late February/early March before new growth (wear protective gloves and clothing). (conform sursei WebSearch)",
   soilPh: "Well-drained soil; tolerates poor to moderately fertile soils; neutral pH preferred. (conform cunoștințelor horticole generale)",
     images: ['images/enciclopedie/cortaderia-selloana_cortaderia-selloana_1.jpg'],
+  cultivars: [
+    { name: '\'Pink Feather\'', description: 'Penaje roz-pal, spre deosebire de alb-crem la forma de bază (conform docaperene.ro).' },
+    { name: '\'White Feather\'', description: 'Penaje alb-pur, foarte dense (conform docaperene.ro).' },
+  ],
   },
   {
     id: 'imperata-cylindrica',
@@ -7747,6 +7765,9 @@ export const plantCatalog: PlantCatalogEntry[] = [
   pruningTime: "Cut back in late winter before growth resumes; minimal pruning otherwise. (conform cunoștințelor horticole generale)",
   soilPh: "Full sun and average to moist, well-drained soil; excellent winter drainage essential; tolerates neutral pH. (conform sursei WebSearch)",
     images: ['images/enciclopedie/imperata-cylindrica_imperata-cylindrica-red-baron_1.jpg'],
+  cultivars: [
+    { name: '\'Red Baron\'', description: 'Frunziș roșu-sângeriu intens de la vârf spre bază — chiar soiul standard vândut sub acest nume (conform docaperene.ro).' },
+  ],
   },
   {
     id: 'calamagrostis-karl-foerster',
@@ -7780,6 +7801,9 @@ export const plantCatalog: PlantCatalogEntry[] = [
   pruningTime: "Cut back by mid-February (pushes fresh growth early, unlike other Calamagrostis) before new growth damage occurs; avoid fall cutting. (conform sursei WebSearch)",
   soilPh: "Tolerates wide soil range; prefers well-drained, moderately fertile soil; neutral pH. (conform cunoștințelor horticole generale)",
     images: ['images/enciclopedie/calamagrostis-karl-foerster_calamagrostis-x-acutiflora-karl-foerster_1.jpg'],
+  cultivars: [
+    { name: '\'Overdam\'', description: 'Frunziș variegat crem-verde, spre deosebire de verde uniform la \'Karl Foerster\' (conform docaperene.ro).' },
+  ],
   },
   {
     id: 'pennisetum-alopecuroides',
@@ -7813,6 +7837,12 @@ export const plantCatalog: PlantCatalogEntry[] = [
   pruningTime: "Cut back to 10 cm in late winter/early spring before new growth; avoid fall cutting as dried foliage provides winter interest. (conform sursei WebSearch)",
   soilPh: "Well-drained, moderately fertile to lean soil; tolerates wide pH range; neutral preferred. (conform cunoștințelor horticole generale)",
     images: ['images/enciclopedie/pennisetum-alopecuroides_pennisetum-alopecuroides-little-bunny_1.jpg'],
+  cultivars: [
+    { name: '\'Hameln\'', description: 'Formă compactă, spice pufoase crem — unul dintre cele mai populare soiuri (conform docaperene.ro).' },
+    { name: '\'Black Beauty\'', description: 'Frunziș mai închis la culoare, spice întunecate (conform docaperene.ro).' },
+    { name: '\'Red Head\'', description: 'Spice roșu-purpuriu, mai mari decât la soiul de bază (conform docaperene.ro).' },
+    { name: '\'Fairy Tails\'', description: 'Spice albe, pufoase, foarte abundente (conform docaperene.ro).' },
+  ],
   },
   // ─── Plante de baltă & acvatice suplimentare ────────
   {
