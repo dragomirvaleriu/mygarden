@@ -3,30 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Search, ArrowLeft, Check, Sprout, Sun, Droplets, Gauge, Ruler, SlidersHorizontal, MapPin, Layers, Flower2, Scissors, Bug, Shuffle, X, ChevronLeft, ChevronRight, CalendarDays, AlertTriangle, Thermometer, Snowflake, RefreshCw, TestTube2 } from 'lucide-react';
 import { useModalBackNavigation } from '../src/hooks/useModalBackNavigation';
-import {
-  plantCatalog,
-  plantDifficulties,
-  plantCategories,
-  plantHeights,
-  plantWaterNeeds,
-  plantLightNeeds,
-  plantSeasons,
-  PLANT_CATEGORY_LABELS,
-  PLANT_HEIGHT_LABELS,
-  PLANT_WATER_LABELS,
-  PLANT_LIGHT_LABELS,
-  PLANT_SEASON_LABELS,
+import { useLazyPlantCatalog } from '../src/hooks/useLazyPlantCatalog';
+import type {
   PlantCatalogEntry,
 } from '../src/data/plantCatalog';
-import {
-  getLocalizedPlant,
-  PLANT_CATEGORY_LABELS_EN,
-  PLANT_HEIGHT_LABELS_EN,
-  PLANT_WATER_LABELS_EN,
-  PLANT_LIGHT_LABELS_EN,
-  PLANT_SEASON_LABELS_EN,
-  DIFFICULTY_LABELS_EN,
-} from '../src/data/plantCatalogEn';
+import { getLocalizedPlant } from '../src/data/plantCatalogEn';
 import { db, collection, addDoc, serverTimestamp, functions, httpsCallable } from '../services/firebase';
 import { query, where, onSnapshot } from 'firebase/firestore';
 import { auth } from '../services/firebase';
@@ -54,12 +35,41 @@ type SeasonFilter = 'toate' | PlantCatalogEntry['seasons'][number];
 const Explore: React.FC<Props> = ({ organizationId, subscriptionTier = 'free', onNavigateToUpgrade }) => {
   const { t, i18n } = useTranslation();
   const lang = i18n.language?.startsWith('en') ? 'en' : 'ro';
-  const categoryLabels = lang === 'en' ? PLANT_CATEGORY_LABELS_EN : PLANT_CATEGORY_LABELS;
-  const heightLabels = lang === 'en' ? PLANT_HEIGHT_LABELS_EN : PLANT_HEIGHT_LABELS;
-  const waterLabels = lang === 'en' ? PLANT_WATER_LABELS_EN : PLANT_WATER_LABELS;
-  const lightLabels = lang === 'en' ? PLANT_LIGHT_LABELS_EN : PLANT_LIGHT_LABELS;
-  const seasonLabels = lang === 'en' ? PLANT_SEASON_LABELS_EN : PLANT_SEASON_LABELS;
-  const difficultyLabels = lang === 'en' ? DIFFICULTY_LABELS_EN : undefined;
+  const { catalog, loading: catalogLoading } = useLazyPlantCatalog();
+
+  const categoryLabels = useMemo(() => {
+    if (!catalog) return {};
+    return lang === 'en' ? {} : catalog.PLANT_CATEGORY_LABELS;
+  }, [catalog, lang]);
+
+  const heightLabels = useMemo(() => {
+    if (!catalog) return {};
+    return lang === 'en' ? {} : catalog.PLANT_HEIGHT_LABELS;
+  }, [catalog, lang]);
+
+  const waterLabels = useMemo(() => {
+    if (!catalog) return {};
+    return lang === 'en' ? {} : catalog.PLANT_WATER_LABELS;
+  }, [catalog, lang]);
+
+  const lightLabels = useMemo(() => {
+    if (!catalog) return {};
+    return lang === 'en' ? {} : catalog.PLANT_LIGHT_LABELS;
+  }, [catalog, lang]);
+
+  const seasonLabels = useMemo(() => {
+    if (!catalog) return {};
+    return lang === 'en' ? {} : catalog.PLANT_SEASON_LABELS;
+  }, [catalog, lang]);
+
+  const difficultyLabels = undefined;
+
+  const plantDifficulties = useMemo(() => catalog?.plantDifficulties ?? [], [catalog]);
+  const plantCategories = useMemo(() => catalog?.plantCategories ?? [], [catalog]);
+  const plantHeights = useMemo(() => catalog?.plantHeights ?? [], [catalog]);
+  const plantWaterNeeds = useMemo(() => catalog?.plantWaterNeeds ?? [], [catalog]);
+  const plantLightNeeds = useMemo(() => catalog?.plantLightNeeds ?? [], [catalog]);
+  const plantSeasons = useMemo(() => catalog?.plantSeasons ?? [], [catalog]);
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('toate');
   const [difficultyFilter, setDifficultyFilter] = useState<DifficultyFilter>('toate');
@@ -126,7 +136,14 @@ const Explore: React.FC<Props> = ({ organizationId, subscriptionTier = 'free', o
     if (fabSearchOpen) searchInputRef.current?.focus();
   }, [fabSearchOpen]);
 
-  const { requestClose: closePlantDetail } = useModalBackNavigation(!!selectedPlant, () => setSelectedPlant(null));
+  const { requestClose: closePlantDetail } = useModalBackNavigation(!!selectedPlant, () => {
+    // If cultivar is open, back button closes cultivar first, then plant
+    if (selectedCultivarIdx !== null) {
+      setSelectedCultivarIdx(null);
+    } else {
+      setSelectedPlant(null);
+    }
+  });
 
   // Lock the page behind the modal. Without this the background keeps
   // scrolling under the overlay, which reads as the modal itself "jumping".
@@ -149,7 +166,10 @@ const Explore: React.FC<Props> = ({ organizationId, subscriptionTier = 'free', o
     return unsubscribe;
   }, []);
 
-  const localizedCatalog = useMemo(() => plantCatalog.map((p) => getLocalizedPlant(p, lang)), [lang]);
+  const localizedCatalog = useMemo(() => {
+    if (!catalog) return [];
+    return catalog.plantCatalog.map((p) => getLocalizedPlant(p, lang));
+  }, [catalog, lang]);
 
   const filteredPlants = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -294,6 +314,17 @@ const Explore: React.FC<Props> = ({ organizationId, subscriptionTier = 'free', o
     }
     return rows;
   }, [selectedPlant, activeCultivar, heightLabels, lightLabels, waterLabels, seasonLabels, difficultyLabels, t]);
+
+  if (catalogLoading || !catalog) {
+    return (
+      <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6 pb-24 flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-2 border-accent-color border-t-transparent" />
+          <p className="text-text-secondary">{t('Se încarcă catalogul...')}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6 pb-24">
