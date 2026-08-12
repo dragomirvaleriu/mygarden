@@ -576,7 +576,7 @@ const App: React.FC = () => {
             profile={profile}
           />
         </div>
-        <main className="flex-1 md:ml-60 px-4 pt-[calc(max(env(safe-area-inset-top),16px))] pb-32 md:py-6 sm:px-6 md:px-6 min-w-0">
+        <main className="flex-1 md:ml-60 px-4 pt-[calc(max(env(safe-area-inset-top),16px))] pb-32 md:py-8 sm:px-6 md:px-10 min-w-0">
           <div className="max-w-7xl mx-auto w-full">
             {systemConfig.announcement && dismissedAnnouncement !== systemConfig.announcement && (
               <div className="mb-6 bg-accent-color p-3 rounded-xl shadow-lg shadow-accent-color/20 flex items-center gap-3 animate-in slide-in-from-top duration-500 relative group">
