@@ -33,6 +33,7 @@ import { plantMainImagePath } from '../services/contentImages';
 import ContentImage from '../components/ContentImage';
 import PlantCard from '../components/PlantCard';
 import PremiumUpgradeModal from '../components/PremiumUpgradeModal';
+import HeroHeader from '../components/ui/HeroHeader';
 import toast from 'react-hot-toast';
 
 interface Props {
@@ -203,17 +204,20 @@ const Explore: React.FC<Props> = ({ organizationId, subscriptionTier = 'free', o
 
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6 pb-24">
-      <div className="flex items-center gap-4">
-        <div className="w-14 h-14 rounded-2xl bg-accent-color flex items-center justify-center text-white shadow-lg shadow-accent-color/30 shrink-0">
-          <Sprout className="w-7 h-7" />
+      <HeroHeader className="p-6 md:p-8">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-accent-color flex items-center justify-center text-white shadow-lg shadow-accent-color/30 shrink-0">
+            <Sprout className="w-7 h-7" />
+          </div>
+          <div>
+            <p className="text-[10px] font-black text-accent-color uppercase tracking-[0.3em] mb-1">My Garden</p>
+            <h1 className="text-2xl md:text-3xl font-black text-accent-dark dark:text-white tracking-tight leading-tight">{t('Explorează')}</h1>
+            <p className="text-accent-dark/70 dark:text-white/60 text-sm font-medium mt-1">
+              {t('Caută plante, vezi cum le îngrijești și adaugă-le în grădina ta.')}
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl md:text-3xl font-black text-text-main tracking-tight leading-tight">{t('Explorează')}</h1>
-          <p className="text-text-secondary text-sm font-medium mt-1">
-            {t('Caută plante, vezi cum le îngrijești și adaugă-le în grădina ta.')}
-          </p>
-        </div>
-      </div>
+      </HeroHeader>
 
       <div ref={searchBarRef} className="relative">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary" />
