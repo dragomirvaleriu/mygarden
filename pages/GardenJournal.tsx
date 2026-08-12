@@ -332,6 +332,12 @@ const GardenJournal: React.FC<Props> = ({ organizationId, onNavigate, userId, is
           if (userSnap.exists()) {
             const currentExp = userSnap.data().exp || 0;
             await updateDoc(doc(db, 'users', userId), { exp: currentExp + 15 });
+            // Recalculate level based on new exp
+            await fetch('/api/user/update-level', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ userId }),
+            }).catch(err => console.error('Error updating level:', err));
           }
         } catch (e) {
           console.error("Error updating XP", e);

@@ -243,6 +243,12 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
         await updateDoc(doc(db, 'users', userProfile.uid), {
           exp: currentExp + 25
         });
+        // Recalculate level based on new exp
+        await fetch('/api/user/update-level', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: userProfile.uid }),
+        }).catch(err => console.error('Error updating level:', err));
         toast.success(t('Task marked as done! +25 XP 🌿'));
       } else {
         toast.success(t('Task marked as done! 🌿'));
