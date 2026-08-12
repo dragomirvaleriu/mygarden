@@ -12,12 +12,15 @@ import { DoctorulGradiniiDashboard } from '../components/DoctorulGradiniiDashboa
 import AdBanner from '../components/AdBanner';
 import NotificationBell from '../components/NotificationBell';
 import { RecentJournalTimeline } from '../components/RecentJournalTimeline';
-import { Card, SectionHeader } from '../components/ui/primitives';
+import {
+  DashHero, Bento, Metric, Display, DashSegmented, Surface,
+  DashButton, DashIconBadge, DashPill, DashSectionHeader,
+} from '../components/dashboard/DashboardUI';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sprout, Calendar, BookOpen, Camera, ChevronRight, CheckCircle2,
   Clock, Droplets, Scissors, Bug, Plus, Sun, Leaf, Star,
-  ArrowRight, LayoutGrid, MapPin, AlertCircle, Flower2, CloudRain
+  ArrowRight, LayoutGrid, MapPin, AlertCircle, Flower2, CloudRain, Ruler
 } from 'lucide-react';
 import { format, isToday, isAfter, isBefore, addDays } from 'date-fns';
 import { ro, enUS } from 'date-fns/locale';
@@ -38,15 +41,6 @@ const categoryIcons: Record<string, any> = {
   pruning: Scissors,
   treatment: Bug,
   other: Plus,
-};
-
-const categoryColors: Record<string, string> = {
-  watering: 'text-blue-500 bg-blue-500/10 border-blue-500/20',
-  mowing: 'text-green-600 dark:text-green-400 bg-green-600/10 dark:bg-green-500/10 border-green-600/20 dark:border-green-500/20',
-  fertilizing: 'text-emerald-500 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
-  pruning: 'text-amber-600 dark:text-amber-400 bg-amber-600/10 dark:bg-amber-500/10 border-amber-600/20 dark:border-amber-500/20',
-  treatment: 'text-red-500 dark:text-red-400 bg-red-500/10 border-red-500/20',
-  other: 'text-purple-500 dark:text-purple-400 bg-purple-500/10 border-purple-500/20',
 };
 
 const staggerContainer = {
@@ -326,159 +320,190 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
   }, [properties]);
 
   return (
-    <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6 pb-24">
-      {/* ── COMPACT HEADER: greeting + date + expert toggle ── */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="relative overflow-hidden rounded-2xl border border-white/10 shadow-sm p-4 md:p-5"
-      >
-        <div className={`absolute inset-0 opacity-40 mix-blend-multiply dark:mix-blend-screen transition-colors duration-1000 ${
-          isRainingToday
-            ? 'bg-gradient-to-br from-slate-200 via-cyan-100 to-blue-200 dark:from-slate-900 dark:via-cyan-900 dark:to-blue-900'
-            : 'bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-accent-color/5 dark:from-amber-500/20 dark:via-orange-500/10 dark:to-accent-color/10'
-        }`} />
+    <div className="max-w-[1400px] mx-auto space-y-5 md:space-y-6 pb-24">
+      {/* ── MASTHEAD ──────────────────────────────────────────────────
+          The greeting is the page title, set in the display serif at a
+          size that actually carries. Everything secondary (date, garden,
+          weather) collapses into one quiet meta line above it, so the
+          eye lands on the name first and the chrome second. */}
+      <DashHero className="p-6 md:p-10 animate-rise">
+        <div className="flex items-start justify-between gap-6">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center flex-wrap gap-x-2.5 gap-y-1 text-[13px] font-semibold text-text-secondary dark:text-white/60 mb-3">
+              <span className="inline-flex items-center gap-1.5">
+                <Calendar size={13} className="text-accent-color" />
+                {format(now, 'EEEE, d MMMM', { locale })}
+              </span>
+              {myGarden && (
+                <>
+                  <span className="opacity-40">·</span>
+                  <span className="inline-flex items-center gap-1.5 truncate max-w-[200px]">
+                    <MapPin size={13} className="text-accent-color" />
+                    {myGarden.name}
+                  </span>
+                </>
+              )}
+              {weatherInfo?.current?.temp != null && (
+                <>
+                  <span className="opacity-40">·</span>
+                  <span className="inline-flex items-center gap-1.5 nums">
+                    {isRainingToday ? (
+                      <CloudRain size={13} className="text-sky-500" />
+                    ) : (
+                      <Sun size={13} className="text-amber-500" />
+                    )}
+                    {Math.round(weatherInfo.current.temp)}°C
+                  </span>
+                </>
+              )}
+            </div>
 
-        <div className="relative z-10 flex items-center justify-between gap-4">
-          <div className="flex items-start gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-bg-main/50 dark:bg-white/5 backdrop-blur-md border border-border-color dark:border-white/10 flex items-center justify-center shrink-0">
-              <Sprout className="w-5 h-5 text-accent-color dark:text-accent-color" strokeWidth={2} />
-            </div>
-            <div className="min-w-0">
-              <motion.h1
-                key={liveDisplayName}
-                initial={{ opacity: 0, y: -5 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-                className="text-base md:text-xl font-black text-main tracking-tight leading-snug"
-              >
-                {greeting}
-              </motion.h1>
-              <p className="text-text-secondary text-[10px] md:text-xs font-black uppercase tracking-[0.15em] flex items-center gap-1.5">
-                <Calendar size={11} className="text-accent-color shrink-0" />
-                {format(now, 'EEEE, dd MMMM', { locale })}
-                {myGarden && <span className="hidden sm:inline"> · {myGarden.name}</span>}
-              </p>
-            </div>
+            <Display size="lg" as="h1" className="dark:text-white">
+              {greeting}
+            </Display>
+
+            {/* One-line status: the single most useful sentence on the
+                page, phrased as prose rather than as a stat block. */}
+            <p className="text-[15px] text-text-secondary dark:text-white/65 mt-3 max-w-xl">
+              {overdueTasks.length > 0
+                ? `${overdueTasks.length} ${overdueTasks.length === 1 ? t('sarcină întârziată') : t('sarcini întârziate')} · ${upcomingTasks.length} ${t('în următoarele 7 zile')}`
+                : upcomingTasks.length > 0
+                ? `${upcomingTasks.length} ${upcomingTasks.length === 1 ? t('sarcină în următoarele 7 zile') : t('sarcini în următoarele 7 zile')}`
+                : t('Nicio sarcină în așteptare. Grădina ta este fericită!')}
+            </p>
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-          <div className="md:hidden">
-            <NotificationBell uid={userProfile?.uid} />
-          </div>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            onClick={() => setIsExpertMode(!isExpertMode)}
-            className={`flex flex-col items-end gap-0 px-3 py-2 rounded-xl border transition-all shrink-0 ${
-              isExpertMode
-                ? 'bg-amber-100 border-amber-200 text-amber-700 dark:bg-amber-500/20 dark:border-amber-500/30 dark:text-amber-400'
-                : 'bg-bg-main/50 border-border-color text-text-secondary hover:text-main dark:bg-white/5 dark:border-white/10 dark:text-white/50'
-            }`}
-          >
-            <span className="text-[8px] font-black uppercase tracking-widest leading-none">Mod</span>
-            <span className="text-[11px] font-black leading-none mt-0.5">{isExpertMode ? 'Expert' : 'Simplu'}</span>
-          </motion.button>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Property selector (only if multi-property) */}
-      {properties && properties.length > 1 && (
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          className="flex items-center gap-3"
-        >
-          <label className="text-xs font-bold uppercase tracking-wider text-text-secondary">{t('Proprietate')}:</label>
-          <select
-            value={selectedPropertyId || ''}
-            onChange={(e) => setSelectedPropertyId(e.target.value || null)}
-            className="px-3 py-2 rounded-lg bg-bg-card border border-border-color text-sm font-medium text-text-main outline-none focus:border-accent-color transition-colors"
-          >
-            <option value="">{t('Toate proprietățile')}</option>
-            {properties.map((prop) => (
-              <option key={prop.id} value={prop.id}>
-                {prop.name || `Proprietate ${prop.id}`}
-              </option>
-            ))}
-          </select>
-        </motion.div>
-      )}
-
-      {/* ── AZI: hero card, sarcinile zilei — primul lucru vizibil pe ecran ── */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-      >
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xs font-black uppercase tracking-[0.2em] text-text-secondary flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${upcomingTasks.length > 0 ? 'bg-accent-color animate-pulse' : 'bg-accent-color'}`} />
-            {t('Tasks & Reminders')}
-          </h2>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 mr-2">
-              <span className="text-[10px] font-bold text-text-secondary uppercase tracking-wider hidden sm:block">✨ Autopilot {isAutopilotEnabled ? 'Activ' : 'Oprit'}</span>
-              <button
-                onClick={() => setIsAutopilotEnabled(!isAutopilotEnabled)}
-                className={`relative w-9 h-5 rounded-full transition-colors duration-300 ${isAutopilotEnabled ? 'bg-accent-color' : 'bg-border-color'}`}
-              >
-                <div className={`absolute top-0.5 left-0.5 bg-white w-4 h-4 rounded-full transition-transform duration-300 ${isAutopilotEnabled ? 'translate-x-4 shadow-sm' : ''}`} />
-              </button>
+            <div className="md:hidden">
+              <NotificationBell uid={userProfile?.uid} />
             </div>
             <button
-              onClick={() => onNavigate(Page.CareCalendar)}
-              className="text-[10px] font-black text-accent-color uppercase tracking-wider flex items-center gap-1 hover:gap-2 transition-all"
+              onClick={() => setIsExpertMode(!isExpertMode)}
+              className={`press h-10 px-4 rounded-full text-[13px] font-bold inline-flex items-center gap-2 ${
+                isExpertMode
+                  ? 'bg-amber-500/15 text-amber-700 dark:text-amber-400'
+                  : 'bg-text-main/[0.06] dark:bg-white/10 text-text-secondary dark:text-white/70 hover:text-text-main'
+              }`}
+              title={t('Mod')}
             >
-              {t('View all')} <ChevronRight size={12} />
+              <Star size={14} />
+              {isExpertMode ? 'Expert' : 'Simplu'}
             </button>
           </div>
         </div>
 
+        {/* Property switcher — a segmented control instead of a native
+            <select>, so switching gardens is one tap rather than two. */}
+        {properties && properties.length > 1 && (
+          <div className="mt-6 -mb-1 overflow-x-auto no-scrollbar">
+            <DashSegmented
+              value={selectedPropertyId ?? ''}
+              onChange={(v) => setSelectedPropertyId(v || null)}
+              options={[
+                { value: '', label: t('Toate') },
+                ...properties.map((p) => ({ value: p.id, label: p.name || t('Proprietate') })),
+              ]}
+            />
+          </div>
+        )}
+      </DashHero>
+
+      {/* ── VITALS ────────────────────────────────────────────────────
+          Four numbers that answer "how is my garden doing" without any
+          reading. Big display figures, quiet labels. */}
+      <Bento className="lg:grid-cols-4">
+        <Bento.Tile index={0} tone="glass" padding="lg">
+          <Metric
+            icon={Flower2}
+            label={t('Zile la rând')}
+            value={currentStreak}
+            unit={currentStreak === 1 ? t('zi') : t('zile')}
+          />
+        </Bento.Tile>
+        <Bento.Tile index={1} tone="glass" padding="lg">
+          <Metric
+            icon={CheckCircle2}
+            label={overdueTasks.length > 0 ? t('Întârziate') : t('Sarcini active')}
+            value={overdueTasks.length > 0 ? overdueTasks.length : upcomingTasks.length}
+          />
+        </Bento.Tile>
+        <Bento.Tile index={2} tone="glass" padding="lg">
+          <Metric icon={LayoutGrid} label={t('Zone')} value={myGarden?.zones.length ?? 0} />
+        </Bento.Tile>
+        <Bento.Tile index={3} tone="glass" padding="lg">
+          <Metric
+            icon={Ruler}
+            label={t('Suprafață')}
+            value={myGarden?.totalArea ? Math.round(myGarden.totalArea) : 0}
+            unit="m²"
+          />
+        </Bento.Tile>
+      </Bento>
+
+      {/* ── AZI: sarcinile zilei ──
+          Plain div + CSS .animate-rise instead of a framer-motion
+          initial/animate wrapper: that pattern was leaving this section
+          stuck at opacity:0 (the animate state never resolved — same
+          issue for both the empty-state and populated-list cases, so a
+          child re-render was almost certainly resetting the tween before
+          it completed). CSS keyframes run independently of React's
+          render cycle so they can't be interrupted the same way. */}
+      <div className="animate-rise">
+        <DashSectionHeader
+          icon={CheckCircle2}
+          action={
+            <div className="flex items-center gap-3">
+              <div className="hidden sm:flex items-center gap-2">
+                <span className="text-[12px] font-semibold text-text-secondary">✨ Autopilot</span>
+                <button
+                  onClick={() => setIsAutopilotEnabled(!isAutopilotEnabled)}
+                  className={`relative w-9 h-5 rounded-full transition-colors duration-300 ${isAutopilotEnabled ? 'bg-accent-color' : 'bg-border-color'}`}
+                >
+                  <div className={`absolute top-0.5 left-0.5 bg-white w-4 h-4 rounded-full transition-transform duration-300 ${isAutopilotEnabled ? 'translate-x-4 shadow-sm' : ''}`} />
+                </button>
+              </div>
+              <DashButton variant="quiet" size="sm" iconRight={ChevronRight} onClick={() => onNavigate(Page.CareCalendar)}>
+                {t('View all')}
+              </DashButton>
+            </div>
+          }
+        >
+          {t('Tasks & Reminders')}
+        </DashSectionHeader>
+
         {upcomingTasks.length === 0 && overdueTasks.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-bg-card/50 backdrop-blur-md border border-border-color rounded-2xl p-8 text-center"
-          >
+          <Surface tone="tint" padding="xl" className="text-center animate-rise">
             {isRainingToday ? (
               <>
                 <motion.div
                   animate={{ y: [0, -10, 0] }}
-                  transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-                  className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-4"
+                  transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
+                  className="w-16 h-16 bg-sky-500/12 rounded-full flex items-center justify-center mx-auto mb-4"
                 >
-                  <CloudRain size={28} className="text-blue-500 drop-shadow-md" />
+                  <CloudRain size={28} className="text-sky-500" />
                 </motion.div>
-                <p className="text-sm font-black text-main mb-1">Astăzi plouă 🌧️</p>
-                <p className="text-xs text-text-secondary font-medium">Sarcinile de udare sunt suspendate automat. Solul primește destulă apă!</p>
+                <p className="font-display text-xl text-text-main mb-1.5">Astăzi plouă</p>
+                <p className="text-[13px] text-text-secondary max-w-xs mx-auto">Sarcinile de udare sunt suspendate automat. Solul primește destulă apă!</p>
               </>
             ) : (
               <>
                 <motion.div
                   animate={{ rotate: [0, 360] }}
-                  transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                  className="w-16 h-16 bg-accent-color/10 rounded-full flex items-center justify-center mx-auto mb-4"
+                  transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+                  className="w-16 h-16 bg-accent-color/12 rounded-full flex items-center justify-center mx-auto mb-4"
                 >
-                  <CheckCircle2 size={28} className="text-accent-color drop-shadow-md" />
+                  <CheckCircle2 size={28} className="text-accent-color" />
                 </motion.div>
-                <p className="text-sm font-black text-main mb-1">{t('All caught up!')} 🌿</p>
-                <p className="text-xs text-text-secondary font-medium">{t('No pending tasks. Your garden is happy!')}</p>
+                <p className="font-display text-xl text-text-main mb-1.5">{t('All caught up!')} 🌿</p>
+                <p className="text-[13px] text-text-secondary">{t('No pending tasks. Your garden is happy!')}</p>
               </>
             )}
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => onNavigate(Page.CareCalendar)}
-              className="mt-4 flex items-center gap-2 px-4 py-2 bg-accent-color/10 text-accent-color border border-accent-color/20 rounded-xl text-[11px] font-black uppercase tracking-wider mx-auto hover:bg-accent-color hover:text-white transition-all shadow-lg"
-            >
-              <Plus size={12} /> {t('Add Task')}
-            </motion.button>
-          </motion.div>
+            <DashButton variant="soft" size="sm" icon={Plus} className="mt-5 mx-auto" onClick={() => onNavigate(Page.CareCalendar)}>
+              {t('Add Task')}
+            </DashButton>
+          </Surface>
         ) : (
-          <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-3">
+          <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-2.5">
             <AnimatePresence mode="popLayout">
               {/* Overdue first */}
               {overdueTasks.slice(0, 2).map(task => {
@@ -489,33 +514,27 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
                     key={task.id}
                     variants={staggerItem}
                     exit={{ opacity: 0, scale: 0.9 }}
-                    whileHover={{ y: -4, scale: 1.01 }}
-                    className="flex items-center gap-4 bg-red-500/5 backdrop-blur-md border border-red-500/20 rounded-2xl p-4 group hover:shadow-[0_8px_30px_rgba(239,68,68,0.15)] transition-all cursor-pointer"
+                    className="press flex items-center gap-4 bg-red-500/[0.06] border border-red-500/15 rounded-[var(--radius-md)] p-4 group cursor-pointer"
                   >
-                    <div className="w-11 h-11 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0">
-                      <Icon size={20} className="text-red-500 drop-shadow" />
-                    </div>
+                    <DashIconBadge icon={Icon} tone="danger" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-black text-main truncate group-hover:text-red-500 transition-colors">{task.title}</p>
-                      <p className="text-[10px] font-bold text-red-500 uppercase tracking-wider">
-                        ⚠ {t('Overdue')}: {format(due, 'dd MMM', { locale })}
+                      <p className="text-[14px] font-bold text-text-main truncate">{task.title}</p>
+                      <p className="text-[12px] font-semibold text-red-500">
+                        {t('Overdue')} · {format(due, 'dd MMM', { locale })}
                       </p>
                     </div>
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
+                    <button
                       onClick={() => handleCompleteTask(task)}
-                      className="w-9 h-9 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all shrink-0"
+                      className="press w-10 h-10 rounded-full bg-red-500/12 text-red-500 grid place-items-center hover:bg-red-500 hover:text-white transition-colors shrink-0"
                     >
-                      <CheckCircle2 size={16} />
-                    </motion.button>
+                      <CheckCircle2 size={17} />
+                    </button>
                   </motion.div>
                 );
               })}
               {/* Upcoming */}
-              {upcomingTasks.map((task, index) => {
+              {upcomingTasks.map((task) => {
                 const Icon = categoryIcons[task.category] || Plus;
-                const colorClass = categoryColors[task.category] || categoryColors.other;
                 const due = task.nextDue?.toDate ? task.nextDue.toDate() : new Date(task.nextDue);
                 const todayTask = isToday(due);
                 return (
@@ -523,31 +542,26 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
                     key={task.id}
                     variants={staggerItem}
                     exit={{ opacity: 0, scale: 0.9 }}
-                    whileHover={{ y: -4, scale: 1.01 }}
-                    className={`flex items-center gap-4 rounded-2xl p-4 border backdrop-blur-sm cursor-pointer group transition-colors ${
+                    className={`press flex items-center gap-4 rounded-[var(--radius-md)] p-4 border group cursor-pointer ${
                       todayTask
-                        ? 'bg-accent-color/5 border-accent-color/30 hover:shadow-[0_8px_30px_rgba(16,185,129,0.15)]'
-                        : 'bg-white/5 dark:bg-black/20 border-white/10 hover:border-accent-color/30 hover:shadow-[0_8px_30px_rgba(255,255,255,0.05)]'
+                        ? 'bg-accent-color/[0.06] border-accent-color/20'
+                        : 'bg-bg-card border-border-color'
                     }`}
                   >
-                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 border ${colorClass} group-hover:bg-accent-color group-hover:text-white transition-colors`}>
-                      <Icon size={20} />
-                    </div>
+                    <DashIconBadge icon={Icon} tone={todayTask ? 'accent' : 'neutral'} />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-black text-main truncate group-hover:text-accent-color transition-colors">{task.title}</p>
-                      <p className={`text-[10px] font-bold uppercase tracking-wider ${todayTask ? 'text-accent-color' : 'text-text-secondary/60'}`}>
-                        {todayTask ? `📅 ${t('Today')}!` : format(due, 'dd MMM', { locale })}
+                      <p className="text-[14px] font-bold text-text-main truncate">{task.title}</p>
+                      <p className={`text-[12px] font-semibold ${todayTask ? 'text-accent-color' : 'text-text-secondary'}`}>
+                        {todayTask ? t('Today') : format(due, 'dd MMM', { locale })}
                         {task.notes ? ` · ${task.notes}` : ''}
                       </p>
                     </div>
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
+                    <button
                       onClick={() => handleCompleteTask(task)}
-                      className="w-9 h-9 rounded-xl bg-bg-card/50 text-text-secondary flex items-center justify-center hover:bg-accent-color hover:text-white hover:shadow-[0_0_15px_rgba(16,185,129,0.5)] transition-all shrink-0"
+                      className="press w-10 h-10 rounded-full bg-text-main/[0.05] text-text-secondary grid place-items-center hover:bg-accent-color hover:text-white transition-colors shrink-0"
                     >
-                      <CheckCircle2 size={16} />
-                    </motion.button>
+                      <CheckCircle2 size={17} />
+                    </button>
                   </motion.div>
                 );
               })}
@@ -558,94 +572,71 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
         {/* Time-critical seeding-mode override — never shown alongside the
             regular seasonal tip below, since it supersedes it while active. */}
         {isSeedingMode && (
-          <div className="mt-4 bg-red-500/10 border-2 border-red-500/30 rounded-2xl p-5 relative overflow-hidden animate-pulse shadow-lg shadow-red-500/5">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/10 rounded-bl-full blur-2xl pointer-events-none" />
-            <div className="flex items-center gap-2 mb-3">
+          <Surface tone="solid" padding="lg" className="mt-3 !border-red-500/25 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 rounded-bl-full blur-2xl pointer-events-none" />
+            <div className="relative flex items-center gap-2 mb-2">
               <Sprout size={14} className="text-red-500" />
-              <span className="text-[10px] font-black text-red-500 uppercase tracking-[0.2em]">
-                {t('Protocol Însămânțare')}
-              </span>
+              <span className="text-[12px] font-bold text-red-500">{t('Protocol Însămânțare')}</span>
             </div>
-            <h3 className="text-sm font-black text-red-600 dark:text-red-400 mb-2 leading-snug">Mod Germinare Activ!</h3>
-            <p className="text-[11px] text-red-500 font-bold leading-relaxed mb-4">
-              Evită uscarea embrionului! Irigă "Puțin și Foarte Des": de 3-4 ori pe zi (ex: 09:00, 13:00, 16:00), timp de 2-4 minute.
+            <p className="relative font-display text-lg text-red-600 dark:text-red-400 mb-1.5">Mod Germinare Activ</p>
+            <p className="relative text-[13px] text-text-secondary leading-relaxed mb-4">
+              Evită uscarea embrionului! Irigă „puțin și foarte des" — de 3–4 ori pe zi (ex. 09:00, 13:00, 16:00), timp de 2–4 minute.
             </p>
-            <button
-              onClick={() => onNavigate(Page.CareCalendar)}
-              className="flex items-center gap-1.5 text-[10px] font-black text-red-600 uppercase tracking-wider hover:gap-2.5 transition-all"
-            >
-              {t('Vezi Detalii Calendar')} <ArrowRight size={11} />
-            </button>
-          </div>
+            <DashButton variant="danger" size="sm" iconRight={ArrowRight} onClick={() => onNavigate(Page.CareCalendar)}>
+              {t('Vezi Detalii Calendar')}
+            </DashButton>
+          </Surface>
         )}
-      </motion.div>
+      </div>
 
       {/* ── FOCUSUL LUNII ── */}
       {seasonalTip && (
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15, type: 'spring' }}
-          className="relative overflow-hidden rounded-3xl border border-accent-color/20 shadow-xl"
-        >
-          {/* Gradient Background — same pale-mint family as the ADAUGĂ SARCINA button (accent-color), no dark overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-accent-subtle via-accent-light to-accent-light dark:from-accent-dark/60 dark:via-accent-dark/40 dark:to-accent-dark/40" />
-          <div className="absolute -right-16 -bottom-16 w-64 h-64 bg-accent-light/30 dark:bg-accent-color/10 rounded-full blur-3xl" />
-          <div className="absolute -left-8 -top-8 w-40 h-40 bg-accent-light/30 dark:bg-accent-color/10 rounded-full blur-2xl" />
-
-          <div className="relative z-10 p-6 md:p-8">
-            <div className="flex flex-col md:flex-row md:items-center gap-6">
-
-              {/* Left: Title */}
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-[10px] font-black text-accent-ink/80 uppercase tracking-[0.2em]">
-                    {[5, 6, 7, 8].includes(currentMonth) ? '🌞 Sezon Cald' : [2, 3, 4].includes(currentMonth) ? '🌱 Primăvară' : '❄️ Sezon Rece'}
-                  </span>
-                  <span className="text-accent-ink/30 text-[10px]">•</span>
-                  <span className="text-[10px] font-black text-accent-ink/80 uppercase tracking-[0.2em]">Focus Luna Aceasta</span>
-                </div>
-                <h2 className="text-2xl md:text-3xl font-black text-accent-ink leading-tight tracking-tight mb-1">
-                  {seasonalTip.title}
-                </h2>
-                <p className="text-accent-ink/80 text-sm font-medium">
-                  {seasonalTip.tip?.split('.')[0]}.
-                </p>
+        <Surface tone="tint" padding="none" grain className="animate-rise overflow-hidden">
+          <div
+            className="absolute -right-20 -bottom-20 w-72 h-72 rounded-full animate-drift"
+            style={{ background: 'radial-gradient(circle, var(--accent-color) 0%, transparent 70%)', opacity: 0.16, filter: 'blur(40px)' }}
+          />
+          <div className="relative z-10 p-6 md:p-9 flex flex-col md:flex-row md:items-center gap-7">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-3 text-[12px] font-bold text-accent-ink/75">
+                <span>
+                  {[5, 6, 7, 8].includes(currentMonth) ? '🌞 Sezon Cald' : [2, 3, 4].includes(currentMonth) ? '🌱 Primăvară' : '❄️ Sezon Rece'}
+                </span>
+                <span className="opacity-40">·</span>
+                <span>Focus Luna Aceasta</span>
               </div>
+              <Display size="lg" className="text-accent-ink mb-2">{seasonalTip.title}</Display>
+              <p className="text-accent-ink/75 text-[15px] max-w-md">{seasonalTip.tip?.split('.')[0]}.</p>
+            </div>
 
-              {/* Right: Task Badges */}
-              <div className="flex flex-col gap-2 md:min-w-[260px]">
-                <p className="text-[10px] font-black text-accent-ink/70 uppercase tracking-widest mb-1">Priorități Cheie</p>
-                {seasonalTip.tasks.slice(0, 3).map((task: any, idx: number) => {
-                  const catEmoji: Record<string, string> = {
-                    mowing: '✂️', watering: '💧', fertilizing: '🌱', pruning: '🌿', treatment: '🪲', other: '📋',
-                  };
-                  const emoji = catEmoji[task.category] || '📋';
-                  return (
-                    <motion.div
-                      key={task.id}
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.2 + idx * 0.08 }}
-                      className="flex items-center gap-3 px-4 py-3 rounded-2xl border bg-white/60 dark:bg-accent-dark/30 border-accent-color/20 text-accent-ink backdrop-blur-sm"
-                    >
-                      <span className="text-base shrink-0">{emoji}</span>
-                      <span className="text-sm font-bold leading-tight flex-1">{task.title}</span>
-                      {task.important && (
-                        <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 bg-accent-color/15 dark:bg-accent-color/25 rounded-md text-accent-ink shrink-0">Urgent</span>
-                      )}
-                    </motion.div>
-                  );
-                })}
-              </div>
+            <div className="flex flex-col gap-2 md:min-w-[280px]">
+              <p className="text-[11px] font-bold text-accent-ink/60 uppercase tracking-wider mb-1">Priorități Cheie</p>
+              {seasonalTip.tasks.slice(0, 3).map((task: any, idx: number) => {
+                const catEmoji: Record<string, string> = {
+                  mowing: '✂️', watering: '💧', fertilizing: '🌱', pruning: '🌿', treatment: '🪲', other: '📋',
+                };
+                return (
+                  <motion.div
+                    key={task.id}
+                    initial={{ opacity: 0, x: 16 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2 + idx * 0.08 }}
+                    className="flex items-center gap-3 px-4 py-3 rounded-[var(--radius-sm)] bg-bg-card/70 backdrop-blur-sm"
+                  >
+                    <span className="text-base shrink-0">{catEmoji[task.category] || '📋'}</span>
+                    <span className="text-[13.5px] font-bold text-text-main leading-tight flex-1">{task.title}</span>
+                    {task.important && <DashPill tone="warn">Urgent</DashPill>}
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
-        </motion.div>
+        </Surface>
       )}
 
 
       {/* ── MAIN GRID ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
 
         {/* LEFT (3 cols): "ce problemă am?" — the core beginner diagnostic tools, given the most room */}
         <div className="lg:col-span-3 space-y-4">
@@ -655,77 +646,74 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
         {/* RIGHT (2 cols): weather (compact) + irrigation + vitality + Journal + Zones */}
         <div className="lg:col-span-2 space-y-4">
 
-          <div className="bg-bg-card border border-border-color rounded-2xl p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-text-secondary flex items-center gap-2">
-                <Sun size={14} className="text-yellow-500" />
-                {t('Weather') || 'Vremea'}
-              </h3>
-              <button
-                onClick={() => setShowFullWeather(v => !v)}
-                className="text-[10px] font-black text-accent-color uppercase tracking-wider flex items-center gap-1 hover:gap-2 transition-all"
-              >
-                {showFullWeather ? 'Restrânge' : 'Prognoză 7 Zile'}
-                <ChevronRight size={12} className={`transition-transform ${showFullWeather ? '-rotate-90' : 'rotate-90'}`} />
-              </button>
-            </div>
+          <Surface tone="solid" padding="lg">
+            <DashSectionHeader
+              icon={Sun}
+              action={
+                <DashButton
+                  variant="quiet"
+                  size="sm"
+                  iconRight={ChevronRight}
+                  onClick={() => setShowFullWeather(v => !v)}
+                  className={showFullWeather ? '[&_svg:last-child]:-rotate-90' : '[&_svg:last-child]:rotate-90'}
+                >
+                  {showFullWeather ? t('Restrânge') : t('Prognoză 7 Zile')}
+                </DashButton>
+              }
+            >
+              {t('Weather') || 'Vremea'}
+            </DashSectionHeader>
             <Weather address={gardenAddress || 'Craiova, Romania'} showFullForecast={showFullWeather} onWeatherData={setWeatherInfo} />
 
             {/* ET0 Hydration Alerts */}
             {isExpertMode && hydrationAlerts.length > 0 && (
               <div className="mt-4 space-y-2">
                 {hydrationAlerts.map((alert, idx) => (
-                  <div key={idx} className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 flex items-start gap-3 animate-pulse">
+                  <div key={idx} className="bg-red-500/[0.07] rounded-[var(--radius-sm)] p-3 flex items-start gap-3">
                     <Droplets size={16} className="text-red-500 shrink-0 mt-0.5" />
-                    <p className="text-xs font-bold text-red-600 dark:text-red-400">{alert}</p>
+                    <p className="text-[12.5px] font-semibold text-red-600 dark:text-red-400">{alert}</p>
                   </div>
                 ))}
               </div>
             )}
-          </div>
+          </Surface>
 
           {isExpertMode && <IrrigationWidget />}
 
           {/* Garden Vitality — motivational, secondary */}
-          <div className="bg-bg-card border border-border-color rounded-2xl shadow-sm flex justify-center">
+          <Surface tone="solid" padding="lg" className="flex justify-center">
             <GardenVitalityRing
               level={userProfile?.level || 1}
               exp={userProfile?.exp || 0}
               healthStatus={overdueTasks.length > 0 ? 'Atenție' : 'Excelent'}
               streak={currentStreak}
             />
-          </div>
+          </Surface>
 
           {/* Recent Journal */}
-          <Card>
-            <SectionHeader
+          <Surface tone="solid" padding="lg">
+            <DashSectionHeader
               icon={BookOpen}
               action={
-                <button
-                  onClick={() => onNavigate(Page.GardenJournal)}
-                  className="text-[10px] font-black text-accent-color uppercase tracking-wider flex items-center gap-1 hover:gap-2 transition-all"
-                >
-                  {t('All')} <ChevronRight size={11} />
-                </button>
+                <DashButton variant="quiet" size="sm" iconRight={ChevronRight} onClick={() => onNavigate(Page.GardenJournal)}>
+                  {t('All')}
+                </DashButton>
               }
             >
               {t('Recent Journal')}
-            </SectionHeader>
+            </DashSectionHeader>
 
             {journalLoading ? (
-              <div className="space-y-3">
-                {[1,2,3].map(i => <div key={i} className="h-12 bg-bg-main rounded-xl animate-pulse" />)}
+              <div className="space-y-2">
+                {[1, 2, 3].map(i => <div key={i} className="h-14 bg-text-main/[0.04] rounded-[var(--radius-sm)] animate-pulse" />)}
               </div>
             ) : recentJournalEntries.length === 0 ? (
-              <div className="text-center py-6">
-                <Flower2 size={28} className="mx-auto text-text-secondary/30 mb-2" />
-                <p className="text-[11px] font-bold text-text-secondary">{t('No journal entries yet')}</p>
-                <button
-                  onClick={() => onNavigate(Page.GardenJournal)}
-                  className="mt-3 flex items-center gap-1.5 text-[10px] font-black text-accent-color uppercase tracking-wider mx-auto hover:gap-2 transition-all"
-                >
-                  <Plus size={11} /> {t('Add First Entry')}
-                </button>
+              <div className="text-center py-8">
+                <Flower2 size={26} className="mx-auto text-text-secondary/40 mb-2.5" />
+                <p className="text-[13px] font-semibold text-text-secondary">{t('No journal entries yet')}</p>
+                <DashButton variant="soft" size="sm" icon={Plus} className="mt-3.5 mx-auto" onClick={() => onNavigate(Page.GardenJournal)}>
+                  {t('Add First Entry')}
+                </DashButton>
               </div>
             ) : (
               <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-2">
@@ -733,15 +721,15 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
                   const entryDate = entry.date?.toDate ? entry.date.toDate() : new Date(entry.date || entry.createdAt);
                   const hasPhoto = entry.photos?.length > 0;
                   return (
-                    <motion.div variants={staggerItem} key={entry.id} className="flex items-center gap-3 p-3 rounded-xl bg-bg-main border border-border-color/50 hover:border-accent-color/30 transition-all group">
-                      <div className="w-8 h-8 rounded-lg bg-accent-color/10 flex items-center justify-center text-base shrink-0">
+                    <motion.div variants={staggerItem} key={entry.id} className="press flex items-center gap-3 p-3 rounded-[var(--radius-sm)] bg-text-main/[0.03] cursor-pointer">
+                      <span className="w-9 h-9 rounded-[var(--radius-xs)] bg-accent-color/12 grid place-items-center text-base shrink-0">
                         {getActivityIcon(entry.type || 'other')}
-                      </div>
+                      </span>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[11px] font-black text-main truncate">
+                        <p className="text-[13px] font-bold text-text-main truncate">
                           {entry.details || entry.note || entry.services?.[0]?.name || t('Activity')}
                         </p>
-                        <p className="text-[9px] font-bold text-text-secondary uppercase tracking-wider">
+                        <p className="text-[11.5px] font-medium text-text-secondary">
                           {format(entryDate, 'dd MMM yyyy', { locale })}
                           {hasPhoto ? ' · 📷' : ''}
                         </p>
@@ -751,13 +739,13 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
                 })}
                 <button
                   onClick={() => onNavigate(Page.GardenJournal)}
-                  className="w-full mt-2 py-2 border border-dashed border-border-color rounded-xl text-[10px] font-black text-text-secondary uppercase tracking-wider hover:border-accent-color hover:text-accent-color transition-all"
+                  className="w-full mt-1 py-2.5 rounded-[var(--radius-sm)] border border-dashed border-border-color text-[12.5px] font-bold text-text-secondary hover:border-accent-color hover:text-accent-color transition-colors"
                 >
                   + {t('Add Entry')}
                 </button>
               </motion.div>
             )}
-          </Card>
+          </Surface>
 
           {/* Recent Journal Timeline */}
           <RecentJournalTimeline
@@ -768,42 +756,40 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
 
           {/* My Garden Zones mini-card */}
           {myGarden && myGarden.zones.length > 0 && (
-            <div className="bg-bg-card border border-border-color rounded-2xl p-5 shadow-sm">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-text-secondary flex items-center gap-2">
-                  <LayoutGrid size={12} className="text-accent-color" />
-                  {t('Garden Zones')}
-                </h3>
-                <button
-                  onClick={() => onNavigate(Page.GardenSetup)}
-                  className="text-[10px] font-black text-accent-color uppercase tracking-wider flex items-center gap-1 hover:gap-2 transition-all"
-                >
-                  {t('Edit')} <ChevronRight size={11} />
-                </button>
-              </div>
-              <div className="space-y-2">
+            <Surface tone="solid" padding="lg">
+              <DashSectionHeader
+                icon={LayoutGrid}
+                action={
+                  <DashButton variant="quiet" size="sm" iconRight={ChevronRight} onClick={() => onNavigate(Page.GardenSetup)}>
+                    {t('Edit')}
+                  </DashButton>
+                }
+              >
+                {t('Garden Zones')}
+              </DashSectionHeader>
+              <div className="space-y-0.5">
                 {myGarden.zones.slice(0, 4).map((zone: any, i: number) => (
-                  <div key={zone.id || i} className="flex items-center justify-between py-1.5">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-accent-color" />
-                      <span className="text-[11px] font-bold text-main">{zone.name || `Zona ${i+1}`}</span>
+                  <div key={zone.id || i} className="flex items-center justify-between py-2">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-accent-color" />
+                      <span className="text-[13px] font-bold text-text-main">{zone.name || `Zona ${i + 1}`}</span>
                     </div>
                     {zone.size > 0 && (
-                      <span className="text-[10px] font-black text-text-secondary">{zone.size} m²</span>
+                      <span className="text-[12px] font-bold text-text-secondary nums">{zone.size} m²</span>
                     )}
                   </div>
                 ))}
                 {myGarden.zones.length > 4 && (
-                  <p className="text-[9px] font-bold text-text-secondary/50 text-center pt-1">
+                  <p className="text-[11.5px] font-semibold text-text-secondary/60 text-center pt-2">
                     +{myGarden.zones.length - 4} {t('more zones')}
                   </p>
                 )}
               </div>
-              <div className="mt-3 pt-3 border-t border-border-color/50 flex items-center justify-between">
-                <span className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">{t('Total Surface')}</span>
-                <span className="text-sm font-black text-accent-color">{myGarden.totalArea} m²</span>
+              <div className="mt-3 pt-3 border-t border-border-color flex items-center justify-between">
+                <span className="text-[12px] font-bold text-text-secondary">{t('Total Surface')}</span>
+                <span className="text-[15px] font-display text-accent-color nums">{myGarden.totalArea} m²</span>
               </div>
-            </div>
+            </Surface>
           )}
 
           {/* Promotional Banner — shows ads for free tier, hidden for ad-free/bundle */}
