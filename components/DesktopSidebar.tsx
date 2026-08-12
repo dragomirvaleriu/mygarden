@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Page, UserProfile } from '../src/types';
 import { auth, logout, db, doc, updateDoc } from '../services/firebase';
-import { Sun, Moon, LogOut, Calendar, LayoutDashboard, ShieldCheck, Shield, User, Camera, BookOpen, ShieldAlert, Compass } from 'lucide-react';
+import { Sun, Moon, LogOut, Calendar, LayoutDashboard, ShieldCheck, Shield, User, Camera, BookOpen, ShieldAlert, Compass, Leaf } from 'lucide-react';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import { useTranslation } from 'react-i18next';
 import { APP_NAME } from '../src/config/appVariant';
@@ -57,6 +57,7 @@ const DesktopSidebar: React.FC<Props> = ({
     { id: Page.CareCalendar, label: t('Calendar'), icon: Calendar },
     { id: Page.Academy, label: t('Academie'), icon: BookOpen },
     { id: Page.Explore, label: t('Explorează'), icon: Compass },
+    { id: Page.GardenCollection, label: t('Grădina mea'), icon: Leaf },
     { id: Page.Administration, label: t('Contul meu'), icon: User },
   ];
 

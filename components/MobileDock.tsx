@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Page } from '../src/types';
-import { LayoutDashboard, Calendar, Camera, BookOpen, User, WifiOff, Compass } from 'lucide-react';
+import { LayoutDashboard, Calendar, Camera, BookOpen, User, WifiOff, Compass, Leaf } from 'lucide-react';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 
 interface Props {
@@ -26,6 +26,7 @@ const MobileDock: React.FC<Props> = ({ activePage, onNavigate, profile }) => {
     { id: Page.CareCalendar, icon: Calendar },
     { id: Page.Academy, icon: BookOpen },
     { id: Page.Explore, icon: Compass },
+    { id: Page.GardenCollection, icon: Leaf },
     { id: Page.Administration, icon: User },
   ];
 
@@ -35,6 +36,7 @@ const MobileDock: React.FC<Props> = ({ activePage, onNavigate, profile }) => {
     if (id === Page.Academy) return t('Academie');
     if (id === Page.GardenJournal) return t('Jurnal');
     if (id === Page.Explore) return t('Explorează');
+    if (id === Page.GardenCollection) return t('Grădina mea');
     if (id === Page.Administration) return t('Contul meu');
     return '';
   };

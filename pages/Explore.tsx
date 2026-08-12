@@ -28,6 +28,7 @@ import {
   DIFFICULTY_LABELS_EN,
 } from '../src/data/plantCatalogEn';
 import { db, collection, addDoc, serverTimestamp, functions, httpsCallable } from '../services/firebase';
+import { query, where, onSnapshot } from 'firebase/firestore';
 import { auth } from '../services/firebase';
 import { plantMainImagePath } from '../services/contentImages';
 import ContentImage from '../components/ContentImage';
@@ -135,6 +136,18 @@ const Explore: React.FC<Props> = ({ organizationId, subscriptionTier = 'free', o
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = previous; };
   }, [selectedPlant]);
+
+  // Load user's already-added plants from Firestore on mount
+  useEffect(() => {
+    const uid = auth.currentUser?.uid;
+    if (!uid) return;
+    const q = query(collection(db, 'user_plants'), where('userId', '==', uid));
+    const unsubscribe = onSnapshot(q, (snap) => {
+      const ids = new Set(snap.docs.map(d => d.data().catalogId));
+      setAddedIds(ids);
+    });
+    return unsubscribe;
+  }, []);
 
   const localizedCatalog = useMemo(() => plantCatalog.map((p) => getLocalizedPlant(p, lang)), [lang]);
 

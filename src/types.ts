@@ -390,7 +390,8 @@ export enum Page {
   Tools = 'tools',
   GardenSetup = 'garden-setup',
   Timesheets = 'timesheets',
-  Explore = 'explore'
+  Explore = 'explore',
+  GardenCollection = 'garden-collection'
 }
 
 export type PaymentHistory = ClientHistory;
