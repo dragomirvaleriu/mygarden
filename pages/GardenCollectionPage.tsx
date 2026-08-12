@@ -13,9 +13,14 @@ interface GardenPlant {
   emoji: string;
   type: string;
   addedAt: any;
+  propertyId?: string;
 }
 
-const GardenCollectionPage: React.FC = () => {
+interface Props {
+  propertyId?: string | null;
+}
+
+const GardenCollectionPage: React.FC<Props> = ({ propertyId }) => {
   const { t } = useTranslation();
   const [plants, setPlants] = useState<GardenPlant[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,7 +34,11 @@ const GardenCollectionPage: React.FC = () => {
         return;
       }
       try {
-        const q = query(collection(db, 'user_plants'), where('userId', '==', uid));
+        const constraints = [where('userId', '==', uid)];
+        if (propertyId) {
+          constraints.push(where('propertyId', '==', propertyId));
+        }
+        const q = query(collection(db, 'user_plants'), ...constraints);
         const snap = await getDocs(q);
         const docs = snap.docs.map(d => ({ id: d.id, ...d.data() } as GardenPlant));
         setPlants(docs.sort((a, b) => (b.addedAt?.toDate?.() || 0) - (a.addedAt?.toDate?.() || 0)));
@@ -41,7 +50,7 @@ const GardenCollectionPage: React.FC = () => {
       }
     };
     loadGardenPlants();
-  }, [auth.currentUser?.uid, t]);
+  }, [auth.currentUser?.uid, propertyId, t]);
 
   const handleRemove = async (docId: string, plantName: string) => {
     if (!confirm(`${t('Elimini')} "${plantName}"?`)) return;

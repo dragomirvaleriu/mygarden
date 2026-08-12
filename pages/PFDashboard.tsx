@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Page, UserProfile, GardenTask } from '../src/types';
 import { useData } from '../src/context/DataContext';
 import { monthlyGuide } from '../src/data/monthlyGuide';
+import { useFrostAlerts } from '../src/hooks/useFrostAlerts';
 import Weather from '../components/Weather';
 import { IrrigationWidget } from '../components/iot/IrrigationWidget';
 import { TreatmentCalculator } from '../components/TreatmentCalculator';
@@ -63,6 +64,9 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
   const { properties, loading, gardenTasks, organization, isExpertMode, setIsExpertMode } = useData();
   const locale = i18n.language === 'ro' ? ro : enUS;
 
+  // Load frost alerts on dashboard
+  useFrostAlerts();
+
   const [recentJournalEntries, setRecentJournalEntries] = useState<any[]>([]);
   const [journalLoading, setJournalLoading] = useState(true);
   const [liveDisplayName, setLiveDisplayName] = useState<string>('');
@@ -70,6 +74,7 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
   const [isAutopilotWorking, setIsAutopilotWorking] = useState(false);
   const [weatherInfo, setWeatherInfo] = useState<any>(null);
   const [showFullWeather, setShowFullWeather] = useState(false);
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(properties?.[0]?.id || null);
 
   // Live-load displayName from Firestore so greeting is always fresh
   useEffect(() => {
@@ -176,9 +181,17 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
   useEffect(() => {
     if (!organizationId) return;
     const userId = userProfile?.uid;
-    const q = userId
-      ? query(collection(db, 'garden_journal'), where('organizationId', '==', organizationId), where('userId', '==', userId))
-      : query(collection(db, 'client_history'), where('organizationId', '==', organizationId));
+    const constraints: any[] = [where('organizationId', '==', organizationId)];
+
+    if (userId) {
+      constraints.push(where('userId', '==', userId));
+    }
+    if (selectedPropertyId) {
+      constraints.push(where('propertyId', '==', selectedPropertyId));
+    }
+
+    const collectionName = userId ? 'garden_journal' : 'client_history';
+    const q = query(collection(db, collectionName), ...constraints);
 
     const unsub = onSnapshot(q, snap => {
       const entries = snap.docs
@@ -193,7 +206,7 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
       setJournalLoading(false);
     }, () => setJournalLoading(false));
     return () => unsub();
-  }, [organizationId, userProfile?.uid]);
+  }, [organizationId, userProfile?.uid, selectedPropertyId]);
 
   // Autopilot Engine Trigger
   useEffect(() => {
@@ -369,6 +382,30 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
           </div>
         </div>
       </motion.div>
+
+      {/* Property selector (only if multi-property) */}
+      {properties && properties.length > 1 && (
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="flex items-center gap-3"
+        >
+          <label className="text-xs font-bold uppercase tracking-wider text-text-secondary">{t('Proprietate')}:</label>
+          <select
+            value={selectedPropertyId || ''}
+            onChange={(e) => setSelectedPropertyId(e.target.value || null)}
+            className="px-3 py-2 rounded-lg bg-bg-card border border-border-color text-sm font-medium text-text-main outline-none focus:border-accent-color transition-colors"
+          >
+            <option value="">{t('Toate proprietățile')}</option>
+            {properties.map((prop) => (
+              <option key={prop.id} value={prop.id}>
+                {prop.name || `Proprietate ${prop.id}`}
+              </option>
+            ))}
+          </select>
+        </motion.div>
+      )}
 
       {/* ── AZI: hero card, sarcinile zilei — primul lucru vizibil pe ecran ── */}
       <motion.div

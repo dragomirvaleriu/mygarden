@@ -82,3 +82,12 @@ root.render(
   </React.StrictMode>
 );
 console.log("My Garden: root.render call completed.");
+
+// Register service worker for web (push notifications, offline support)
+if (!Capacitor.isNativePlatform() && 'serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').then(reg => {
+    console.log('Service Worker registered:', reg);
+  }).catch(err => {
+    console.error('Service Worker registration failed:', err);
+  });
+}
