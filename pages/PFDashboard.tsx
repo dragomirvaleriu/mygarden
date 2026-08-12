@@ -10,6 +10,7 @@ import { GardenVitalityRing } from '../components/gamification/GardenVitalityRin
 import { DoctorulGradiniiDashboard } from '../components/DoctorulGradiniiDashboard';
 import AdBanner from '../components/AdBanner';
 import NotificationBell from '../components/NotificationBell';
+import { RecentJournalTimeline } from '../components/RecentJournalTimeline';
 import { Card, SectionHeader } from '../components/ui/primitives';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -720,6 +721,13 @@ const PFDashboard: React.FC<Props> = ({ onNavigate, organizationId, userProfile 
               </motion.div>
             )}
           </Card>
+
+          {/* Recent Journal Timeline */}
+          <RecentJournalTimeline
+            entries={recentJournalEntries}
+            loading={journalLoading}
+            onViewAll={() => onNavigate(Page.GardenJournal)}
+          />
 
           {/* My Garden Zones mini-card */}
           {myGarden && myGarden.zones.length > 0 && (
