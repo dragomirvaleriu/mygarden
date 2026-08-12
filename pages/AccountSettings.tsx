@@ -432,7 +432,7 @@ const AccountSettings: React.FC<Props> = ({
                       </button>
                     </div>
                     <p className="text-[11px] text-text-secondary font-medium">
-                      {t('Folosit pentru mesaje WhatsApp (ex: „e timpul să uzi", „tunde gazonul")')}
+                      {t('Planificat pentru mesaje WhatsApp (ex: „e timpul să uzi", „tunde gazonul")')} — {t('momentan in development')}
                     </p>
                   </form>
                 </div>
