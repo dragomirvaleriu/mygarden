@@ -4,7 +4,7 @@ import { ScheduledActivity } from '../src/types';
 import { Check, Trash2, Calendar, Clock, Bell } from 'lucide-react';
 import { format } from 'date-fns';
 import { ro } from 'date-fns/locale';
-import { updateDoc, doc, deleteDoc } from '../services/firebase';
+import { updateDoc, doc, deleteDoc, db } from '../services/firebase';
 import toast from 'react-hot-toast';
 
 interface Props {
@@ -32,11 +32,7 @@ const ScheduledActivitiesList: React.FC<Props> = ({
 
   const handleMarkComplete = async (activity: ScheduledActivity) => {
     try {
-      const docRef = doc(
-        window.database || require('../services/firebase').db,
-        'scheduled_activities',
-        activity.id
-      );
+      const docRef = doc(db, 'scheduled_activities', activity.id);
 
       let updateData: any = {
         completed: true,
@@ -77,13 +73,7 @@ const ScheduledActivitiesList: React.FC<Props> = ({
     if (!window.confirm(`Șterge "${activity.name}"?`)) return;
 
     try {
-      await deleteDoc(
-        doc(
-          window.database || require('../services/firebase').db,
-          'scheduled_activities',
-          activity.id
-        )
-      );
+      await deleteDoc(doc(db, 'scheduled_activities', activity.id));
       toast.success('Activitate ștearsă');
       onActivityCompleted?.();
     } catch (err: any) {

@@ -74,8 +74,13 @@
   --shadow-float: 0 6px 12px rgba(0, 0, 0, 0.5), 0 28px 64px -20px rgba(0, 0, 0, 0.75);
 }
 
+/* `overflow-x: clip` rather than `hidden`: `hidden` turns the element into a
+   scroll container, which silently breaks `position: sticky` for every
+   descendant (the sticky app bars would scroll away instead of pinning).
+   `clip` crops the same overflow without creating that scroll container. */
 body {
-  @apply antialiased m-0 p-0 overflow-x-hidden bg-bg-main text-text-secondary;
+  @apply antialiased m-0 p-0 bg-bg-main text-text-secondary;
+  overflow-x: clip;
   font-family: 'Inter', system-ui, sans-serif;
   transition: background-color 0.2s, color 0.2s;
 }

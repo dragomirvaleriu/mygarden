@@ -22,6 +22,7 @@ import PremiumUpgradeModal from '../components/PremiumUpgradeModal';
 import { useData } from '../src/context/DataContext';
 import { useModalBackNavigation } from '../src/hooks/useModalBackNavigation';
 import HeroHeader from '../components/ui/HeroHeader';
+import AppBar from '../components/ui/AppBar';
 
 // ─── Types ────────────────────────────────────────────
 interface Props {
@@ -620,8 +621,36 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto pb-20 animate-in fade-in duration-500">
 
-      {/* ── Hero Header ── */}
-      <HeroHeader className="mb-8 p-8 md:p-10">
+      {/* ── Mobile app bar (R1) ──────────────────────────────────────
+          Replaces the hero below, which pushed the first article to
+          742px on a 812px screen — 91% of the opening view spent
+          repeating the page name. Progress moves into the subtitle and
+          the category row rides along as sticky children, so filtering
+          stays reachable without costing separate vertical space. */}
+      <AppBar
+        title={t('Academie')}
+        subtitle={`${readCount}/${totalCount} ${t('ghiduri citite')} · ${progressPct}%`}
+        actions={[
+          { icon: Search, label: t('Caută'), onClick: () => setShowMobileSearch(true) },
+          ...(!isPro ? [{ icon: Crown, label: 'PRO', onClick: onNavigateToUpgrade, primary: true }] : []),
+        ]}
+      >
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar -mx-4 px-4">
+          <CategoryPill label={t('Toate')} emoji="📚" active={activeCategory === 'all'} onClick={() => setActiveCategory('all')} />
+          {availableCategories.map(cat => (
+            <CategoryPill
+              key={cat.id}
+              label={lang === 'ro' ? cat.labelRo : cat.labelEn}
+              emoji={cat.emoji}
+              active={activeCategory === cat.id}
+              onClick={() => setActiveCategory(cat.id)}
+            />
+          ))}
+        </div>
+      </AppBar>
+
+      {/* ── Hero Header (desktop only) ── */}
+      <HeroHeader className="hidden md:block mb-8 p-8 md:p-10">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
           <div>
             <div className="flex items-center gap-3 mb-4">
@@ -757,7 +786,7 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
           md+: reverts to a plain wrapping row — desktop has the width to
           spare, and wrapping shows every category without needing a
           horizontal-scroll affordance nobody would look for there. */}
-      <div className="flex items-center gap-2.5 mb-8 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap md:overflow-x-visible">
+      <div className="hidden md:flex items-center gap-2.5 mb-8 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap md:overflow-x-visible">
         <CategoryPill label={t('Toate')} emoji="📚" active={activeCategory === 'all'} onClick={() => setActiveCategory('all')} />
         {availableCategories.map(cat => (
           <CategoryPill
@@ -770,9 +799,12 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
         ))}
       </div>
 
-      {/* ── Upgrade Banner (if not PRO) ── */}
+      {/* ── Upgrade Banner (desktop only) ──
+          On mobile the PRO route is the crown action in the app bar, so this
+          130px banner would just be a second ask sitting between the user and
+          the first article. */}
       {!isPro && (
-        <div className="relative overflow-hidden rounded-3xl mb-8 border border-amber-500/20 bg-gradient-to-r from-amber-500/5 via-bg-card to-bg-card p-5 flex flex-col sm:flex-row items-center gap-4">
+        <div className="hidden md:flex relative overflow-hidden rounded-3xl mb-8 border border-amber-500/20 bg-gradient-to-r from-amber-500/5 via-bg-card to-bg-card p-5 flex-col sm:flex-row items-center gap-4">
           <div className="w-10 h-10 rounded-2xl bg-amber-500/20 flex items-center justify-center shrink-0">
             <Crown size={20} className="text-amber-500 dark:text-amber-400" />
           </div>

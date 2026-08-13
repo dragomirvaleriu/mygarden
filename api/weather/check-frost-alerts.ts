@@ -1,81 +1,110 @@
-import { Handler } from '@netlify/functions';
-import { db } from '../../services/firebase';
-import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
+import { initializeApp, getApps, cert } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
 
-const handler: Handler = async (event) => {
+const FIREBASE_PROJECT_ID = 'mygarden-hq';
+
+function getAdminApp() {
+  if (getApps().length) return getApps()[0];
+  const key = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+  if (key) {
+    return initializeApp({ credential: cert(JSON.parse(key)), projectId: FIREBASE_PROJECT_ID });
+  }
+  return initializeApp({ projectId: FIREBASE_PROJECT_ID });
+}
+
+const db = getFirestore(getAdminApp());
+
+/** How many days ahead to look for a frost event. */
+const FORECAST_DAYS = 3;
+/** Assumed hardiness when a plant has none recorded — cold enough that we
+ *  stay quiet rather than crying wolf about a plant we know nothing about. */
+const DEFAULT_HARDINESS_C = -15;
+
+interface FrostAlert {
+  zone: string;
+  date: string;
+  minTemp: number;
+  affectedPlants: string[];
+}
+
+/**
+ * Frost-risk check for a user's properties.
+ *
+ * Was previously written against `@netlify/functions` with the *client*
+ * Firebase SDK — on Vercel that meant the route never ran at all, so frost
+ * alerts silently never fired. Rewritten to the Vercel handler signature
+ * with firebase-admin, matching api/user/update-level.ts.
+ */
+export default async function handler(req: any, res: any) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
   try {
-    if (event.httpMethod !== 'POST') {
-      return { statusCode: 405, body: 'Method Not Allowed' };
+    const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
+    const { propertyIds } = body;
+
+    if (!Array.isArray(propertyIds) || propertyIds.length === 0) {
+      return res.status(400).json({ error: 'propertyIds array required' });
     }
 
-    const { propertyIds } = JSON.parse(event.body || '{}');
-    if (!propertyIds || !Array.isArray(propertyIds)) {
-      return { statusCode: 400, body: 'propertyIds array required' };
-    }
-
-    // Get coordinates for each property to fetch weather
-    const alerts: any[] = [];
+    const alerts: FrostAlert[] = [];
 
     for (const propId of propertyIds) {
-      const propRef = doc(db, 'properties', propId);
-      const propSnap = await getDoc(propRef);
-      if (!propSnap.exists()) continue;
+      const propSnap = await db.collection('properties').doc(String(propId)).get();
+      if (!propSnap.exists) continue;
 
-      const prop = propSnap.data();
+      const prop = propSnap.data() || {};
       const { latitude, longitude } = prop;
-      if (!latitude || !longitude) continue;
+      if (latitude == null || longitude == null) continue;
 
-      // Fetch weather forecast (open-meteo API)
       const weatherRes = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=temperature_2m_min,precipitation_sum&timezone=auto`
+        `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}` +
+        `&daily=temperature_2m_min&forecast_days=${FORECAST_DAYS}&timezone=auto`
       );
+      if (!weatherRes.ok) continue;
+
       const weather = await weatherRes.json();
+      const mins: number[] = weather?.daily?.temperature_2m_min ?? [];
+      const dates: string[] = weather?.daily?.time ?? [];
+      if (mins.length === 0) continue;
 
-      if (!weather.daily) continue;
+      // Only load the property's plants if some day actually drops below zero —
+      // saves a Firestore read per property on every non-frost day, which is
+      // the overwhelmingly common case.
+      const coldestAhead = Math.min(...mins);
+      if (coldestAhead >= 0) continue;
 
-      // Check next 3 days for frost (temp < 0°C)
-      for (let i = 0; i < Math.min(3, weather.daily.time.length); i++) {
-        const minTemp = weather.daily.temperature_2m_min[i];
-        if (minTemp < 0) {
-          // Get plants in this property to find frost-sensitive ones
-          const plantsQ = query(
-            collection(db, 'user_plants'),
-            where('propertyId', '==', propId)
-          );
-          const plantSnap = await getDocs(plantsQ);
-          const plants = plantSnap.docs.map(d => d.data());
+      const plantSnap = await db
+        .collection('user_plants')
+        .where('propertyId', '==', propId)
+        .get();
+      const plants = plantSnap.docs.map(d => d.data());
 
-          // Filter plants with low frost hardiness
-          const affected = plants
-            .filter(p => {
-              const hardiness = p.frostHardiness || -15; // Default safe
-              return hardiness > minTemp; // Plant will freeze
-            })
-            .map(p => p.name);
+      for (let i = 0; i < mins.length; i++) {
+        const minTemp = mins[i];
+        if (minTemp >= 0) continue;
 
-          if (affected.length > 0) {
-            alerts.push({
-              zone: prop.name || `Proprietate ${propId}`,
-              date: weather.daily.time[i],
-              minTemp: Math.round(minTemp * 10) / 10,
-              affectedPlants: affected,
-            });
-          }
+        // A plant is at risk when the forecast dips below what it tolerates.
+        const affected = plants
+          .filter(p => (p.frostHardiness ?? DEFAULT_HARDINESS_C) > minTemp)
+          .map(p => p.name)
+          .filter(Boolean);
+
+        if (affected.length > 0) {
+          alerts.push({
+            zone: prop.name || `Proprietate ${propId}`,
+            date: dates[i],
+            minTemp: Math.round(minTemp * 10) / 10,
+            affectedPlants: affected,
+          });
         }
       }
     }
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ alerts }),
-    };
+    return res.status(200).json({ alerts });
   } catch (err) {
     console.error('Frost alert check error:', err);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: String(err) }),
-    };
+    return res.status(500).json({ error: 'Frost alert check failed' });
   }
-};
-
-export { handler };
+}

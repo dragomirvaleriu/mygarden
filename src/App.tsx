@@ -181,17 +181,13 @@ const App: React.FC = () => {
             console.debug("Could not update lastLoginAt immediately", err);
           });
 
-          // Fetch user profile to check passwordChangedAt
-          // NOTE: Session invalidation for password changes in OTHER tabs is disabled to allow
-          // password resets via Firebase email links without false-positive logouts.
-          const userDocRef = doc(db, 'users', firebaseUser.uid);
-          onSnapshot(userDocRef, { includeMetadataChanges: false }, (userSnap) => {
-            if (userSnap.exists()) {
-              const userData = userSnap.data();
-              // Password change detection disabled - sessionCreatedAt is reset on each login,
-              // so password changes from email resets don't trigger false logouts
-            }
-          }, { once: true }); // Only check once per auth state change
+          // NOTE: session invalidation on password change is deliberately not
+          // done here — sessionCreatedAt is reset on every login, so Firebase
+          // email-link password resets would trigger false-positive logouts.
+          // A listener used to sit here with an empty callback and a bogus
+          // `{ once: true }` argument (not a Firestore option), so it never
+          // unsubscribed and leaked one listener per auth state change while
+          // doing nothing at all. Removed rather than kept as dead code.
 
           // Set up settings listener
           const settingsRef = doc(db, 'user_settings', firebaseUser.uid);
@@ -562,7 +558,9 @@ const App: React.FC = () => {
 
   return (
     <DataProvider organizationId={profile.organizationId}>
-      <div id="root-container" className="flex flex-col md:flex-row min-h-screen w-full overflow-x-hidden bg-bg-main transition-colors duration-300 relative">
+      {/* overflow-x-clip, not -hidden: `hidden` makes this a scroll container,
+          which breaks `position: sticky` on the mobile app bars. */}
+      <div id="root-container" className="flex flex-col md:flex-row min-h-screen w-full overflow-x-clip bg-bg-main transition-colors duration-300 relative">
         <div className="hidden md:flex w-60 h-screen fixed left-0 top-0 flex-shrink-0 z-50 border-r border-border-color">
           <DesktopSidebar
             activePage={currentPage}

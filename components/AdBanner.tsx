@@ -11,6 +11,10 @@ interface Ad {
   discountPercent?: number;
   category?: string;
   isAmazonAffiliate?: boolean;
+  /** Opt-*out* switch: an ad is live unless this is explicitly false. Nothing
+   *  in the admin UI writes this field today, so treating it as opt-in meant
+   *  the filter below matched nothing and no ad ever rendered. */
+  isActive?: boolean;
 }
 
 interface Props {
@@ -31,7 +35,7 @@ const AdBanner: React.FC<Props> = ({ userSubscriptionProduct }) => {
         const adsCol = collection(db, 'superadmin', 'data', 'ads');
         const adsSnap = await getDocs(adsCol);
         const adsList = adsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Ad));
-        setAds(adsList.filter(ad => ad.isActive));
+        setAds(adsList.filter(ad => ad.isActive !== false));
       } catch (err) {
         console.error('Failed to load ads:', err);
       }
