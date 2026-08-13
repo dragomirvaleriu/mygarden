@@ -23,6 +23,7 @@ import {
   Palette
 } from 'lucide-react';
 import { Card, Pill } from '../components/ui/primitives';
+import AppBar from '../components/ui/AppBar';
 import { ActivityManagement } from '../components/ActivityManagement';
 import { GardenSetupPanel } from '../components/GardenSetupPanel';
 import {
@@ -309,9 +310,37 @@ const AccountSettings: React.FC<Props> = ({
 
   return (
     <div className="min-h-screen bg-bg-main">
-      <div className="max-w-6xl mx-auto px-4 lg:px-8 py-8">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
+      <div className="max-w-6xl mx-auto px-4 lg:px-8 py-4 md:py-8">
+        {/* ── Mobile app bar (R1) ──
+            The old header plus its subtitle cost ~70px to say what the dock
+            tab already said, and the tab row another ~60px below it. Both
+            collapse into the bar; tabs ride along as sticky children. */}
+        <AppBar title={t('Contul Meu')}>
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+            {([
+              ['profil', '👤', t('Profil')],
+              ['gradin', '🌱', t('Grădina')],
+              ['securitate', '🔒', t('Securitate')],
+              ['plan', '🎁', t('Plan')],
+            ] as [SettingsTab, string, string][]).map(([id, emoji, label]) => (
+              <button
+                key={id}
+                onClick={() => setActiveTab(id)}
+                className={`press shrink-0 inline-flex items-center gap-1.5 pl-2 pr-2.5 py-1.5 rounded-full text-[12.5px] font-bold tracking-tight transition-colors ${
+                  activeTab === id
+                    ? 'bg-accent-color text-white'
+                    : 'bg-bg-card border border-border-color text-text-secondary'
+                }`}
+              >
+                <span className="text-[13px] leading-none">{emoji}</span>
+                {label}
+              </button>
+            ))}
+          </div>
+        </AppBar>
+
+        {/* Header (desktop only) */}
+        <div className="hidden md:flex items-center gap-4 mb-8">
           <div className="w-12 h-12 rounded-2xl bg-accent-color/10 flex items-center justify-center shrink-0">
             <User size={24} className="text-accent-color" />
           </div>
@@ -321,8 +350,8 @@ const AccountSettings: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* Tab Switcher */}
-        <div className="sticky top-0 z-10 -mx-4 lg:-mx-8 px-4 lg:px-8 py-3 mb-6 bg-bg-main/95 backdrop-blur-sm border-b border-border-color flex gap-2 overflow-x-auto">
+        {/* Tab Switcher (desktop only) */}
+        <div className="hidden md:flex sticky top-0 z-10 -mx-4 lg:-mx-8 px-4 lg:px-8 py-3 mb-6 bg-bg-main/95 backdrop-blur-sm border-b border-border-color gap-2 overflow-x-auto">
           <button
             onClick={() => setActiveTab('profil')}
             className={`px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-all ${
@@ -376,7 +405,37 @@ const AccountSettings: React.FC<Props> = ({
         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6 items-start">
           {/* ── SIDEBAR: Profile summary ── */}
           <div className="lg:sticky lg:top-8 space-y-5">
-            <Card padding="lg">
+            {/* Identity + progress. On mobile this is one compact row — the
+                centred column below stacked avatar, name, email and badge
+                into ~200px of screen to tell you who you already know you
+                are. Desktop keeps the roomier column, where there's a
+                sidebar to fill. */}
+            <Card padding="sm" className="md:hidden">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-accent-color text-accent-text grid place-items-center text-[15px] font-black shrink-0">
+                  {displayName.charAt(0).toUpperCase() || 'G'}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-[14px] font-black text-main truncate">{displayName || t('Grădinar')}</h3>
+                    <Pill tone={tierMeta.tone}>{tierMeta.label}</Pill>
+                  </div>
+                  <p className="text-[11.5px] text-text-secondary font-medium truncate">{userProfile.email}</p>
+                </div>
+                <div className="shrink-0 text-right">
+                  <p className="text-[11px] font-bold text-text-secondary leading-none">{t('Nivel')}</p>
+                  <p className="text-[17px] font-black text-accent-color nums leading-tight">{userProfile.level || 1}</p>
+                </div>
+              </div>
+              <div className="mt-2.5 w-full bg-bg-main rounded-full h-1.5 overflow-hidden">
+                <div
+                  className="bg-accent-color h-1.5 rounded-full transition-all"
+                  style={{ width: `${(userProfile.exp || 0) % 100}%` }}
+                />
+              </div>
+            </Card>
+
+            <Card padding="lg" className="hidden md:block">
               <div className="flex flex-col items-center text-center">
                 <div className="w-16 h-16 rounded-2xl bg-accent-color text-accent-text flex items-center justify-center text-xl font-black mb-3">
                   {displayName.charAt(0).toUpperCase() || 'G'}
@@ -399,7 +458,7 @@ const AccountSettings: React.FC<Props> = ({
               </div>
             </Card>
 
-            <Card padding="lg">
+            <Card padding="lg" className="hidden md:block">
               <p className="text-[10px] font-black text-text-secondary uppercase tracking-wider mb-3">{t('Progres')}</p>
               <div className="flex items-baseline justify-between mb-1.5">
                 <span className="text-sm font-bold text-main">{t('Nivel')} {userProfile.level || 1}</span>

@@ -27,6 +27,7 @@ import { format, isAfter, addDays, addWeeks, isToday, parseISO, getMonth } from 
 import { db, collection, addDoc, updateDoc, doc, serverTimestamp, storage, ref, uploadBytes, getDownloadURL, auth } from '../services/firebase';
 import { calendarCoverPath } from '../services/contentImages';
 import ContentImage from '../components/ContentImage';
+import AppBar from '../components/ui/AppBar';
 import { compressImage } from '../utils/image';
 import toast from 'react-hot-toast';
 
@@ -369,8 +370,46 @@ const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
 
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6 animate-in fade-in duration-700">
-      {/* ── PREMIUM TERMINAL HEADER ── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between bg-gradient-to-r from-accent-color/10 via-transparent to-transparent p-4 md:p-6 md:min-h-[104px] rounded-3xl border border-accent-color/20 mb-6 shadow-sm gap-4">
+      {/* ── Mobile app bar (R1) ──────────────────────────────────────
+          The month is the whole point of this page, but it used to sit
+          behind a 140px header, two stat cards and an image carousel —
+          709px down an 812px screen. The month switcher now lives in the
+          bar itself, so changing month is always one tap away. */}
+      <AppBar
+        title={t('Calendar')}
+        actions={[{ icon: Plus, label: t('Register Activity'), onClick: () => setShowAddModal(true), primary: true }]}
+      >
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setSelectedMonth((selectedMonth + 11) % 12)}
+            aria-label={t('Luna anterioară')}
+            className="press w-8 h-8 grid place-items-center rounded-full bg-bg-card border border-border-color text-text-secondary shrink-0"
+          >
+            <ChevronLeft size={16} />
+          </button>
+          <div className="flex-1 text-center min-w-0">
+            <span className="font-ui-title text-[15px] text-text-main">{months[selectedMonth]}</span>
+          </div>
+          <button
+            onClick={() => setSelectedMonth((selectedMonth + 1) % 12)}
+            aria-label={t('Luna următoare')}
+            className="press w-8 h-8 grid place-items-center rounded-full bg-bg-card border border-border-color text-text-secondary shrink-0"
+          >
+            <ChevronRight size={16} />
+          </button>
+          {selectedMonth !== new Date().getMonth() && (
+            <button
+              onClick={() => setSelectedMonth(new Date().getMonth())}
+              className="press shrink-0 px-2.5 h-8 rounded-full bg-accent-color/15 text-accent-color text-[12px] font-bold"
+            >
+              {t('Azi')}
+            </button>
+          )}
+        </div>
+      </AppBar>
+
+      {/* ── PREMIUM TERMINAL HEADER (desktop only) ── */}
+      <div className="hidden md:flex flex-col md:flex-row md:items-center justify-between bg-gradient-to-r from-accent-color/10 via-transparent to-transparent p-4 md:p-6 md:min-h-[104px] rounded-3xl border border-accent-color/20 mb-6 shadow-sm gap-4">
         
         <div className="flex items-center gap-4 md:gap-5">
           <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-accent-color flex items-center justify-center text-white shadow-lg shadow-accent-color/30 transform -rotate-3 hover:rotate-0 transition-transform duration-300 shrink-0">
@@ -438,7 +477,10 @@ const CareCalendar: React.FC<CareCalendarProps> = ({ userProfile }) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      {/* Desktop-only status cards: on mobile the vegetation phase and task
+          count are one compact strip further down rather than two stacked
+          cards costing ~240px above the month itself. */}
+      <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
            <div className="stihl-card bg-bg-card border border-border-color rounded-2xl p-4 flex flex-col justify-between shadow-lg relative overflow-hidden group">
               <div className="absolute -top-10 -right-10 w-24 h-24 bg-accent-color/5 rounded-full blur-3xl group-hover:bg-accent-color/10 transition-colors"></div>
               <div className="flex items-center justify-between mb-2">

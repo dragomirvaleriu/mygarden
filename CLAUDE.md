@@ -120,10 +120,23 @@ calculator udare (ET0) · calendar fenologic pomi · pH & amendamente · „ce s
 | Pagină | Înainte | După | Recuperat | Stare |
 |---|---|---|---|---|
 | Academie | 742px / 91% | **220px / 27%** | −522px | ✅ |
-| Calendar | 709px / 87% | — | — | ⏳ |
-| Enciclopedie | ~700px / 86% | — | — | ⏳ |
-| Contul meu | — | — | — | ⏳ |
-| Dashboard | 675px / 83% | — | — | ⏳ |
+| Enciclopedie | ~700px / 86% | **221px / 27%** | −479px | ✅ |
+| Calendar | 709px / 87% | selector de lună în bară | ~−500px | ✅ |
+| Contul meu | ~440px până la prima setare | rând compact 64px | ~−340px | ✅ |
+| Dashboard | 675px / 83% | — | — | ⏳ header cu vremea |
+
+## Tipografie (agreat 2026-08-13)
+
+- **Manrope** — UI/body (a înlocuit Inter, care era neutru până la anonim).
+- **Fraunces** cu axele `SOFT` + `WONK` — display editorial (salut Dashboard, nume de lună).
+- `.font-ui-title` = Manrope 800 — titlurile din app bar. **Nu** serif:
+  serif-ul e pentru *conținut* editorial, chrome-ul trebuie să se retragă.
+  (Utilizatorul a respins explicit Fraunces pe titlul „Academie”.)
+- `.appbar-gradient` — gradient dinamic pe 3 stopuri din culoarea temei,
+  derivă lent (18s), sub pragul la care mișcarea devine distragere.
+
+**Respins:** subtitlul cu numărul de ghiduri citite (vanitate, nu informație)
+și iconița de search în app bar (search-ul e deja în butonul flotant dreapta-jos).
 
 `components/ui/AppBar.tsx` — componenta reutilizabilă: 52px → 44px la scroll,
 fundal `accent-subtle` discret, `rounded-b`, acțiuni contextuale cu badge,
