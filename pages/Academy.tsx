@@ -31,16 +31,32 @@ interface Props {
 }
 
 // ─── Category Filter Pill ──────────────────────────────
-const CategoryPill: React.FC<{ label: string; emoji: string; active: boolean; onClick: () => void }> = ({ label, emoji, active, onClick }) => (
+// Compact by design: the previous pill was uppercase with widest tracking,
+// which stretched every Romanian category label so far that four of them
+// filled the screen. Sentence case at 12.5px carries the same information in
+// roughly half the width, so a whole row of categories is reachable at once.
+const CategoryPill: React.FC<{
+  label: string;
+  emoji: string;
+  active: boolean;
+  onClick: () => void;
+  count?: number;
+}> = ({ label, emoji, active, onClick, count }) => (
   <button
     onClick={onClick}
-    className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-[11px] font-black uppercase tracking-widest transition-all
+    className={`press flex-shrink-0 inline-flex items-center gap-1.5 pl-2 pr-2.5 py-1.5 rounded-full text-[12.5px] font-bold tracking-tight transition-colors
       ${active
-        ? 'bg-accent-color text-white shadow-lg shadow-accent-color/30'
-        : 'bg-bg-card border border-border-color text-text-secondary hover:border-accent-color/30 hover:text-text-main'
+        ? 'bg-accent-color text-white'
+        : 'bg-bg-card border border-border-color text-text-secondary hover:text-text-main'
       }`}
   >
-    <span>{emoji}</span> {label}
+    <span className="text-[13px] leading-none">{emoji}</span>
+    <span className="whitespace-nowrap">{label}</span>
+    {count != null && (
+      <span className={`text-[11px] font-bold nums ${active ? 'text-white/70' : 'text-text-secondary/60'}`}>
+        {count}
+      </span>
+    )}
   </button>
 );
 
@@ -457,6 +473,9 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchAutocomplete, setShowSearchAutocomplete] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
+  // Category row in the mobile app bar: collapsed = one swipeable line,
+  // expanded = every category wrapped, with counts.
+  const [filtersExpanded, setFiltersExpanded] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const [paywallArticle, setPaywallArticle] = useState<ArticleMeta | null>(null);
   const [openArticle, setOpenArticle] = useState<ArticleMeta | null>(null);
@@ -627,25 +646,66 @@ export const Academy: React.FC<Props> = ({ subscriptionTier: externalSubscriptio
           repeating the page name. Progress moves into the subtitle and
           the category row rides along as sticky children, so filtering
           stays reachable without costing separate vertical space. */}
+      {/* No subtitle: a read-count is vanity, not information — it doesn't
+          help anyone pick an article. No search action either; search already
+          lives in the floating button bottom-right, and duplicating it here
+          would just be two of the same control on one screen. */}
       <AppBar
         title={t('Academie')}
-        subtitle={`${readCount}/${totalCount} ${t('ghiduri citite')} · ${progressPct}%`}
-        actions={[
-          { icon: Search, label: t('Caută'), onClick: () => setShowMobileSearch(true) },
-          ...(!isPro ? [{ icon: Crown, label: 'PRO', onClick: onNavigateToUpgrade, primary: true }] : []),
-        ]}
+        actions={!isPro ? [{ icon: Crown, label: 'PRO', onClick: onNavigateToUpgrade, primary: true }] : []}
       >
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar -mx-4 px-4">
-          <CategoryPill label={t('Toate')} emoji="📚" active={activeCategory === 'all'} onClick={() => setActiveCategory('all')} />
-          {availableCategories.map(cat => (
-            <CategoryPill
-              key={cat.id}
-              label={lang === 'ro' ? cat.labelRo : cat.labelEn}
-              emoji={cat.emoji}
-              active={activeCategory === cat.id}
-              onClick={() => setActiveCategory(cat.id)}
-            />
-          ))}
+        {/* Collapsed it's one swipeable row; tapping the filter button opens
+            every category at once as a wrapped grid with article counts, so
+            you can see the whole taxonomy instead of discovering it by
+            scrolling sideways. Selecting a category closes it again. */}
+        <div className="flex items-start gap-2">
+          <button
+            onClick={() => setFiltersExpanded(v => !v)}
+            aria-expanded={filtersExpanded}
+            aria-label={t('Filtre')}
+            className={`press shrink-0 inline-flex items-center gap-1 pl-2 pr-1.5 py-1.5 rounded-full text-[12.5px] font-bold transition-colors ${
+              filtersExpanded || activeCategory !== 'all'
+                ? 'bg-accent-color/15 text-accent-color'
+                : 'bg-bg-card border border-border-color text-text-secondary'
+            }`}
+          >
+            <Filter size={13} />
+            {activeCategory !== 'all' && <span className="w-1.5 h-1.5 rounded-full bg-accent-color" />}
+            {filtersExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+          </button>
+
+          {filtersExpanded ? (
+            <div className="flex flex-wrap gap-1.5 flex-1 min-w-0">
+              <CategoryPill
+                label={t('Toate')} emoji="📚" count={totalCount}
+                active={activeCategory === 'all'}
+                onClick={() => { setActiveCategory('all'); setFiltersExpanded(false); }}
+              />
+              {availableCategories.map(cat => (
+                <CategoryPill
+                  key={cat.id}
+                  label={lang === 'ro' ? cat.labelRo : cat.labelEn}
+                  emoji={cat.emoji}
+                  count={articles.filter(a => articleMatchesCategory(a, cat.id)).length}
+                  active={activeCategory === cat.id}
+                  onClick={() => { setActiveCategory(cat.id); setFiltersExpanded(false); }}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar flex-1 min-w-0">
+              <CategoryPill label={t('Toate')} emoji="📚" active={activeCategory === 'all'} onClick={() => setActiveCategory('all')} />
+              {availableCategories.map(cat => (
+                <CategoryPill
+                  key={cat.id}
+                  label={lang === 'ro' ? cat.labelRo : cat.labelEn}
+                  emoji={cat.emoji}
+                  active={activeCategory === cat.id}
+                  onClick={() => setActiveCategory(cat.id)}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </AppBar>
 

@@ -36,7 +36,7 @@
      headlines, where its warmth reads as horticultural rather than
      corporate. Everything else stays on Inter. */
   --font-display: 'Fraunces', 'Iowan Old Style', Georgia, serif;
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Manrope', 'Inter', system-ui, -apple-system, sans-serif;
 
   /* ─── Radii ──────────────────────────────────────────────────────
      Deliberately larger than the old flat 2xl-everywhere. Organic
@@ -81,7 +81,10 @@
 body {
   @apply antialiased m-0 p-0 bg-bg-main text-text-secondary;
   overflow-x: clip;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: var(--font-sans);
+  /* Manrope's default spacing is airy; a hair negative tightens body copy
+     into something that reads as designed rather than defaulted. */
+  letter-spacing: -0.011em;
   transition: background-color 0.2s, color 0.2s;
 }
 
@@ -167,15 +170,19 @@ body {
    Fraunces at a high optical size. Reserved for headlines and big
    metrics — the serif is the single strongest signal that this is a
    horticultural product and not a generic admin panel. */
+/* SOFT rounds the terminals and WONK unlocks Fraunces' canted, slightly
+   irregular letterforms — together they're what stop the serif reading as a
+   stock newspaper face and give it the hand-grown warmth this app wants.
+   Kept moderate (SOFT 40, WONK 1) so it stays legible at title sizes. */
 .font-display {
   font-family: var(--font-display);
-  font-variation-settings: 'opsz' 96;
+  font-variation-settings: 'opsz' 96, 'SOFT' 40, 'WONK' 1;
   letter-spacing: -0.02em;
   font-weight: 700;
 }
 .font-display-tight {
   font-family: var(--font-display);
-  font-variation-settings: 'opsz' 144;
+  font-variation-settings: 'opsz' 144, 'SOFT' 30, 'WONK' 1;
   letter-spacing: -0.035em;
   font-weight: 800;
   line-height: 0.92;
