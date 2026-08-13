@@ -16,6 +16,7 @@ import ContentImage from '../components/ContentImage';
 import PlantCard from '../components/PlantCard';
 import PremiumUpgradeModal from '../components/PremiumUpgradeModal';
 import HeroHeader from '../components/ui/HeroHeader';
+import AppBar from '../components/ui/AppBar';
 import toast from 'react-hot-toast';
 
 interface Props {
@@ -328,7 +329,40 @@ const Explore: React.FC<Props> = ({ organizationId, subscriptionTier = 'free', o
 
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6 pb-24">
-      <HeroHeader className="p-6 md:p-8">
+      {/* ── Mobile app bar (R1 + R2) ──────────────────────────────────
+          Replaces the hero, the standalone search field and three wrapped
+          rows of filter pills, which together pushed the first plant to
+          ~700px on a 812px screen. Search rides in the bar itself and the
+          filters collapse behind one control that carries its active
+          count, so the catalogue starts almost immediately. */}
+      <AppBar
+        title={t('Enciclopedie')}
+        actions={[{
+          icon: SlidersHorizontal,
+          label: t('Filtre'),
+          onClick: () => setShowMoreFilters(v => !v),
+          badge: totalActiveFilterCount,
+          primary: totalActiveFilterCount > 0,
+        }]}
+      >
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1 min-w-0">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary pointer-events-none" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t('Caută o plantă...')}
+              className="w-full h-9 bg-bg-card/80 border border-border-color rounded-full pl-9 pr-3 text-[13px] font-medium text-text-main placeholder:text-text-secondary outline-none focus:border-accent-color transition"
+            />
+          </div>
+          <span className="shrink-0 text-[12px] font-bold text-text-secondary nums">
+            {filteredPlants.length}
+          </span>
+        </div>
+      </AppBar>
+
+      <HeroHeader className="hidden md:block p-6 md:p-8">
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 rounded-2xl bg-accent-color flex items-center justify-center text-white shadow-lg shadow-accent-color/30 shrink-0">
             <Sprout className="w-7 h-7" />
@@ -343,7 +377,8 @@ const Explore: React.FC<Props> = ({ organizationId, subscriptionTier = 'free', o
         </div>
       </HeroHeader>
 
-      <div ref={searchBarRef} className="relative">
+      {/* Desktop search; mobile searches from the app bar instead. */}
+      <div ref={searchBarRef} className="relative hidden md:block">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary" />
         <input
           type="text"
@@ -354,7 +389,9 @@ const Explore: React.FC<Props> = ({ organizationId, subscriptionTier = 'free', o
         />
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      {/* Desktop filter rows. On mobile these live inside the collapsible
+          panel opened from the app bar's filter button. */}
+      <div className="hidden md:flex flex-wrap gap-2">
         {(['toate', 'interior', 'exterior'] as TypeFilter[]).map((option) => (
           <button
             key={option}
@@ -412,6 +449,44 @@ const Explore: React.FC<Props> = ({ organizationId, subscriptionTier = 'free', o
 
       {showMoreFilters && (
         <div className="bg-accent-subtle border border-accent-border/50 rounded-2xl p-4 space-y-4">
+          {/* Type + difficulty appear here only on mobile — on desktop they
+              already sit in the always-visible filter row above. */}
+          <div className="md:hidden">
+            <p className="text-[10px] font-black uppercase tracking-wider text-text-secondary mb-2">{t('Tip')}</p>
+            <div className="flex flex-wrap gap-2">
+              {(['toate', 'interior', 'exterior'] as TypeFilter[]).map((option) => (
+                <button
+                  key={option}
+                  onClick={() => setTypeFilter(option)}
+                  className={`press px-3 py-1.5 rounded-full text-[12px] font-bold border transition ${
+                    typeFilter === option
+                      ? 'bg-accent-color text-white border-accent-color'
+                      : 'bg-bg-main border-border-color text-text-secondary'
+                  }`}
+                >
+                  {option === 'toate' ? t('Toate') : option === 'interior' ? t('Interior') : t('Exterior')}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="md:hidden">
+            <p className="text-[10px] font-black uppercase tracking-wider text-text-secondary mb-2">{t('Dificultate')}</p>
+            <div className="flex flex-wrap gap-2">
+              {(['toate', ...plantDifficulties] as DifficultyFilter[]).map((option) => (
+                <button
+                  key={option}
+                  onClick={() => setDifficultyFilter(option)}
+                  className={`press px-3 py-1.5 rounded-full text-[12px] font-bold border transition ${
+                    difficultyFilter === option
+                      ? 'bg-accent-color text-white border-accent-color'
+                      : 'bg-bg-main border-border-color text-text-secondary'
+                  }`}
+                >
+                  {option === 'toate' ? t('Orice') : difficultyLabel(option)}
+                </button>
+              ))}
+            </div>
+          </div>
           <div>
             <p className="text-[10px] font-black uppercase tracking-wider text-text-secondary mb-2">{t('Categorie')}</p>
             <div className="flex flex-wrap gap-2">
@@ -521,7 +596,10 @@ const Explore: React.FC<Props> = ({ organizationId, subscriptionTier = 'free', o
         </div>
       ) : (
         <>
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          {/* Desktop-only (R4): a page-size selector is desktop thinking —
+              on a phone you scroll, and the result count already sits in
+              the app bar. This block alone cost ~90px above the grid. */}
+          <div className="hidden md:flex flex-wrap items-center justify-between gap-3">
             <p className="text-xs font-bold text-text-secondary">
               {t('Afișare')} {(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, filteredPlants.length)} {t('din')} {filteredPlants.length}
             </p>

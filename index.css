@@ -191,6 +191,47 @@ body {
 /* Tabular figures keep metrics from jittering as values tick over. */
 .nums { font-variant-numeric: tabular-nums; }
 
+/* UI chrome titles (app bar, toolbars). Deliberately NOT the display serif:
+   a serif belongs on editorial content — a page greeting, a month name —
+   whereas chrome should recede and feel like part of the app frame. Manrope
+   at 800 with tight tracking reads modern and confident at small sizes. */
+.font-ui-title {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  letter-spacing: -0.032em;
+}
+
+/* ─── Dynamic app bar gradient ────────────────────────────────────────
+   A slow three-stop wash derived from the user's accent colour. The
+   background-position drift makes it feel alive without ever competing
+   with content — 18s per cycle is below the threshold where motion
+   registers as animation rather than atmosphere. */
+.appbar-gradient {
+  background-image: linear-gradient(
+    115deg,
+    color-mix(in srgb, var(--accent-color) 16%, var(--bg-main)) 0%,
+    color-mix(in srgb, var(--accent-color) 5%, var(--bg-main)) 42%,
+    color-mix(in srgb, var(--accent-color) 20%, var(--bg-main)) 100%
+  );
+  background-size: 220% 220%;
+  animation: appbar-shift 18s ease-in-out infinite;
+}
+[data-theme='dark'] .appbar-gradient {
+  background-image: linear-gradient(
+    115deg,
+    color-mix(in srgb, var(--accent-color) 26%, var(--bg-card)) 0%,
+    color-mix(in srgb, var(--accent-color) 8%, var(--bg-card)) 42%,
+    color-mix(in srgb, var(--accent-color) 32%, var(--bg-card)) 100%
+  );
+}
+@keyframes appbar-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .appbar-gradient { animation: none; }
+}
+
 /* ─── Motion ──────────────────────────────────────────────────────────
    Entrance used by bento tiles; the slight Y offset plus scale reads as
    the card settling into place rather than appearing. */

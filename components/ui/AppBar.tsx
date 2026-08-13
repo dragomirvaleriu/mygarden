@@ -60,7 +60,7 @@ export const AppBar: React.FC<{
     <div
       className={cn(
         'md:hidden sticky top-0 z-40 -mx-4 sm:-mx-6 px-4 sm:px-6',
-        'bg-accent-subtle/95 backdrop-blur-xl border-b border-accent-border/30',
+        'appbar-gradient border-b border-accent-border/30',
         'rounded-b-[var(--radius-lg)]',
         className
       )}
@@ -91,7 +91,7 @@ export const AppBar: React.FC<{
 
         <div className="min-w-0 flex-1">
           <h1
-            className="font-display-tight text-text-main truncate leading-none"
+            className="font-ui-title text-text-main truncate leading-none"
             style={{
               fontSize: scrolled ? 17 : 20,
               transition: 'font-size 0.28s var(--ease-out-quint)',
